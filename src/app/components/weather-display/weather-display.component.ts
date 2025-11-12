@@ -21,7 +21,7 @@ export class SafeHtmlPipe implements PipeTransform {
 
 // --- Interfaz para datos horarios combinados ---
 interface HoraCombinada {
-  periodo: string;
+  periodo: string; // Ahora representa rangos: "00-24", "12-18", etc.
   temperatura: string;
   estadoCielo: string;
   probPrecipitacion: number;
@@ -139,12 +139,60 @@ export class WeatherDisplayComponent implements OnChanges {
     return today.toDateString() === date.toDateString();
   }
 
+  // Obtener días desde hoy en adelante (para vista diaria)
+  getDiasFuturos(): Dia[] {
+    if (!this.prediccion?.prediccion?.dia) return [];
+    
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    return this.prediccion.prediccion.dia.filter(dia => {
+      const fechaDia = new Date(dia.fecha);
+      fechaDia.setHours(0, 0, 0, 0);
+      return fechaDia >= hoy;
+    }); // Mostrar todos los días disponibles
+  }
+
+  // Obtener días con datos horarios disponibles (para vista horaria)
+  getDiasConHoras(): Dia[] {
+    if (!this.prediccion?.prediccion?.dia) return [];
+    
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    // Filtrar días desde hoy que tengan rangos horarios
+    return this.prediccion.prediccion.dia.filter(dia => {
+      const fechaDia = new Date(dia.fecha);
+      fechaDia.setHours(0, 0, 0, 0);
+      
+      // Solo días desde hoy en adelante
+      if (fechaDia < hoy) return false;
+      
+      // Verificar que tenga datos para mostrar
+      const rangosCombinados = this.getHorasCombinadas(dia);
+      return rangosCombinados.length > 0;
+    }); // Mostrar todos los días con rangos disponibles
+  }
+
   retryLoad() {
     this.cargarPrediccion();
   }
 
   formatHora(periodo: string): string {
+    // Manejar rangos horarios: "00-24", "12-18", "06-12", etc.
+    if (!periodo || periodo === 'undefined') return 'Todo el día';
+    
+    // Si es un rango (contiene guión)
+    if (periodo.includes('-')) {
+      const [inicio, fin] = periodo.split('-');
+      const horaInicio = inicio.padStart(2, '0');
+      const horaFin = fin.padStart(2, '0');
+      return `${horaInicio}:00 - ${horaFin}:00`;
+    }
+    
+    // Si es una hora individual (legacy)
     const hora = parseInt(periodo);
+    if (isNaN(hora)) return periodo;
     if (hora === 0) return '00:00';
     if (hora < 10) return `0${hora}:00`;
     return `${hora}:00`;
@@ -153,41 +201,54 @@ export class WeatherDisplayComponent implements OnChanges {
   // --- Nuevos Métodos para Predicción Horaria Combinada ---
 
   getHorasCombinadas(dia: Dia): HoraCombinada[] {
-    const horas: HoraCombinada[] = [];
+    // Usar Map para evitar duplicados - mantiene solo el último valor por rango
+    const rangosMap = new Map<string, HoraCombinada>();
 
     // Verificar que tengamos datos básicos
     if (!dia.estadoCielo || dia.estadoCielo.length === 0) {
-      console.warn('No hay datos de estado del cielo para', dia.fecha);
       return [];
     }
 
-    // Verificar que tengamos temperaturas
     if (!dia.temperatura) {
-      console.warn('No hay datos de temperatura para', dia.fecha);
       return [];
     }
 
-    // Validar temperaturas mín/máx
-    const tempMin = dia.temperatura.minima ?? 10; // Valor por defecto razonable
-    const tempMax = dia.temperatura.maxima ?? 20; // Valor por defecto razonable
-    
-    // Si no hay temperatura.dato, usar valores estimados basados en max/min
+    const tempMin = dia.temperatura.minima ?? 10;
+    const tempMax = dia.temperatura.maxima ?? 20;
     const tieneDatosTemperatura = dia.temperatura.dato && dia.temperatura.dato.length > 0;
+    
+    // Obtener fecha actual
+    const ahora = new Date();
+    const fechaDia = new Date(dia.fecha);
+    
+    // Si el día es anterior a hoy, no mostrar
+    if (fechaDia < new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())) {
+      return [];
+    }
     
     console.log('Procesando día:', dia.fecha, {
       tieneDatosTemperatura,
       tempMin,
       tempMax,
-      numeroPeriodos: dia.estadoCielo.length
+      numeroRangos: dia.estadoCielo.length
     });
     
-    for (const estadoCieloHora of dia.estadoCielo) {
-      const periodo = estadoCieloHora.periodo;
-      const periodoNum = parseInt(periodo);
-      const horaActual = new Date().getHours();
+    // Procesar todos los rangos horarios
+    for (const estadoCieloRango of dia.estadoCielo) {
+      const periodo = estadoCieloRango.periodo;
       
-      // Filtrar solo horas pasadas (no la actual) para hoy
-      if (this.isToday(dia.fecha) && periodoNum < horaActual) {
+      // Saltar periodos undefined o inválidos
+      if (!periodo || periodo === 'undefined') {
+        console.warn('Periodo inválido omitido:', periodo);
+        continue;
+      }
+
+      // Convertir a string para evitar tipos BigInt
+      const estadoCielo = String(estadoCieloRango.value).trim();
+      
+      // Validar que tengamos código de estado del cielo
+      if (!estadoCielo || estadoCielo === '' || estadoCielo === 'undefined') {
+        console.warn(`Estado del cielo vacío para periodo ${periodo}, omitiendo`);
         continue;
       }
 
@@ -195,33 +256,58 @@ export class WeatherDisplayComponent implements OnChanges {
       let esReal: boolean;
       
       if (tieneDatosTemperatura) {
-        // Si hay datos horarios de temperatura, usarlos
         const tempValue = this.findMatchingValue(dia.temperatura.dato, periodo);
-        if (tempValue !== '--') {
+        if (tempValue !== '--' && tempValue !== 'N/D') {
           temperatura = tempValue;
           esReal = true;
         } else {
-          // Si no hay dato para este periodo específico, estimar
-          temperatura = this.estimarTemperatura(periodoNum, tempMin, tempMax);
+          // Calcular temperatura promedio del rango
+          temperatura = Math.round((tempMin + tempMax) / 2).toString();
           esReal = false;
         }
       } else {
-        // Si no hay datos horarios, interpolar entre min y max
-        temperatura = this.estimarTemperatura(periodoNum, tempMin, tempMax);
-        esReal = false; // Temperatura estimada
+        temperatura = Math.round((tempMin + tempMax) / 2).toString();
+        esReal = false;
       }
 
-      horas.push({
+      // Usar Map - si ya existe, se sobrescribe
+      rangosMap.set(periodo, {
         periodo: periodo,
-        estadoCielo: estadoCieloHora.value,
+        estadoCielo: estadoCieloRango.value,
         temperatura: temperatura,
         probPrecipitacion: parseInt(this.findMatchingValue(dia.probPrecipitacion, periodo)) || 0,
         esReal: esReal
       });
     }
     
-    console.log('Horas combinadas generadas:', horas);
-    return horas;
+    // Convertir Map a array y ordenar por especificidad del rango
+    const rangosArray = Array.from(rangosMap.values()).sort((a, b) => {
+      // Priorizar rangos más específicos (más cortos)
+      const duracionA = this.calcularDuracionRango(a.periodo);
+      const duracionB = this.calcularDuracionRango(b.periodo);
+      if (duracionA !== duracionB) {
+        return duracionA - duracionB; // Rangos más cortos primero
+      }
+      // Si tienen la misma duración, ordenar por hora de inicio
+      return this.obtenerHoraInicio(a.periodo) - this.obtenerHoraInicio(b.periodo);
+    });
+    
+    console.log('Horas únicas generadas:', rangosArray.length, rangosArray.map(h => h.periodo));
+    return rangosArray;
+  }
+
+  // Calcular duración de un rango horario
+  private calcularDuracionRango(periodo: string): number {
+    if (!periodo || !periodo.includes('-')) return 24;
+    const [inicio, fin] = periodo.split('-').map(Number);
+    return fin - inicio;
+  }
+
+  // Obtener hora de inicio de un rango
+  private obtenerHoraInicio(periodo: string): number {
+    if (!periodo || !periodo.includes('-')) return 0;
+    const [inicio] = periodo.split('-').map(Number);
+    return inicio;
   }
 
   private estimarTemperatura(hora: number, min: number, max: number): string {

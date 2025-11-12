@@ -82,7 +82,7 @@ export class AemetService {
 
   private getCachedMunicipios(): Municipio[] | null {
     try {
-      const CACHE_VERSION = 'v2'; // Incrementar para invalidar caché antiguo
+      const CACHE_VERSION = 'v3'; // Incrementar para invalidar caché antiguo
       const cached = localStorage.getItem('aemet_municipios');
       const timestamp = localStorage.getItem('aemet_municipios_timestamp');
       const version = localStorage.getItem('aemet_municipios_version');
@@ -116,13 +116,13 @@ export class AemetService {
 
   private cacheMunicipios(municipios: Municipio[]): void {
     try {
-      const CACHE_VERSION = 'v2';
+      const CACHE_VERSION = 'v3';
       localStorage.setItem('aemet_municipios', JSON.stringify(municipios));
       localStorage.setItem('aemet_municipios_timestamp', Date.now().toString());
       localStorage.setItem('aemet_municipios_version', CACHE_VERSION);
       console.log('Municipios guardados en caché (versión ' + CACHE_VERSION + ')');
     } catch (error) {
-      console.error('Error al guardar caché:', error);
+      console.error('Error guardando municipios en caché:', error);
     }
   }
 
@@ -224,15 +224,17 @@ export class AemetService {
 
   private getCachedPrediccion(municipioId: string): PrediccionDiaria | null {
     try {
+      const CACHE_VERSION = 'v3';
       const cached = localStorage.getItem(`aemet_prediccion_${municipioId}`);
       const timestamp = localStorage.getItem(`aemet_prediccion_${municipioId}_timestamp`);
+      const version = localStorage.getItem(`aemet_prediccion_${municipioId}_version`);
       
-      if (!cached || !timestamp) {
+      if (!cached || !timestamp || version !== CACHE_VERSION) {
         return null;
       }
 
       // Verificar si el caché tiene menos de 3 horas (las predicciones cambian más frecuentemente)
-      const cacheAge = Date.now() - parseInt(timestamp);
+      const cacheAge = Date.now() - parseInt(timestamp!);
       const CACHE_DURATION = 3 * 60 * 60 * 1000; // 3 horas
       
       if (cacheAge > CACHE_DURATION) {
@@ -240,7 +242,7 @@ export class AemetService {
         return null;
       }
 
-      return JSON.parse(cached);
+      return JSON.parse(cached!);
     } catch (error) {
       console.error('Error al leer caché de predicción:', error);
       return null;
@@ -249,8 +251,10 @@ export class AemetService {
 
   private cachePrediccion(municipioId: string, prediccion: PrediccionDiaria): void {
     try {
+      const CACHE_VERSION = 'v3';
       localStorage.setItem(`aemet_prediccion_${municipioId}`, JSON.stringify(prediccion));
       localStorage.setItem(`aemet_prediccion_${municipioId}_timestamp`, Date.now().toString());
+      localStorage.setItem(`aemet_prediccion_${municipioId}_version`, CACHE_VERSION);
       console.log(`Predicción para ${municipioId} guardada en caché`);
     } catch (error) {
       console.error('Error al guardar caché de predicción:', error);
@@ -288,15 +292,17 @@ export class AemetService {
 
   private getCachedPrediccionHoraria(municipioId: string): PrediccionDiaria | null {
     try {
+      const CACHE_VERSION = 'v3';
       const cached = localStorage.getItem(`aemet_prediccion_horaria_${municipioId}`);
       const timestamp = localStorage.getItem(`aemet_prediccion_horaria_${municipioId}_timestamp`);
+      const version = localStorage.getItem(`aemet_prediccion_horaria_${municipioId}_version`);
       
-      if (!cached || !timestamp) {
+      if (!cached || !timestamp || version !== CACHE_VERSION) {
         return null;
       }
 
       // Verificar si el caché tiene menos de 1 hora (las predicciones horarias se actualizan más frecuentemente)
-      const cacheAge = Date.now() - parseInt(timestamp);
+      const cacheAge = Date.now() - parseInt(timestamp!);
       const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hora
       
       if (cacheAge > CACHE_DURATION) {
@@ -304,7 +310,7 @@ export class AemetService {
         return null;
       }
 
-      return JSON.parse(cached);
+      return JSON.parse(cached!);
     } catch (error) {
       console.error('Error al leer caché de predicción horaria:', error);
       return null;
@@ -313,9 +319,11 @@ export class AemetService {
 
   private cachePrediccionHoraria(municipioId: string, prediccion: PrediccionDiaria): void {
     try {
+      const CACHE_VERSION = 'v3';
       localStorage.setItem(`aemet_prediccion_horaria_${municipioId}`, JSON.stringify(prediccion));
       localStorage.setItem(`aemet_prediccion_horaria_${municipioId}_timestamp`, Date.now().toString());
-      console.log(`Predicción horaria para ${municipioId} guardada en caché`);
+      localStorage.setItem(`aemet_prediccion_horaria_${municipioId}_version`, CACHE_VERSION);
+      console.log(`Predicción horaria para ${municipioId} guardada en caché (versión ${CACHE_VERSION})`);
     } catch (error) {
       console.error('Error al guardar caché de predicción horaria:', error);
     }

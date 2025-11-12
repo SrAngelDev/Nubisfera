@@ -352,7 +352,7 @@
 }
 
 .hour-card {
-  flex: 0 0 140px;
+  flex: 0 0 160px; /* Más ancho para acomodar rangos horarios */
   display: flex;
   flex-direction: column;
   background: var(--surface-dark);
@@ -383,10 +383,11 @@
 
 .hour-time {
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 0.95rem; /* Reducir un poco para que quepa el rango */
   color: white;
   margin: 0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
 }
 
 .hour-body {

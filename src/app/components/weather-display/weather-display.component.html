@@ -39,7 +39,7 @@
     <ng-container *ngIf="tipoPrecision === 'diaria'">
       <div class="daily-grid">
         <div 
-          *ngFor="let dia of prediccion.prediccion.dia.slice(0, 7); let i = index"
+          *ngFor="let dia of getDiasFuturos(); let i = index"
           class="day-card"
           [class.is-today]="isToday(dia.fecha)"
           [@slideIn]="i"
@@ -69,8 +69,8 @@
     <!-- Predicción Horaria -->
     <ng-container *ngIf="tipoPrecision === 'horaria'">
       <div class="hourly-forecast">
-        <div *ngFor="let dia of prediccion.prediccion.dia.slice(0, 2); let diaIndex = index" class="hourly-day-section">
-          <ng-container *ngIf="dia.temperatura && getHorasCombinadas(dia).length > 0">
+        <div *ngFor="let dia of getDiasConHoras(); let diaIndex = index" class="hourly-day-section">
+          <ng-container>
             <div class="hourly-day-header">
               <h3 class="hourly-day-title">
                 <span class="day-badge">{{ getDayName(dia.fecha) }}</span>
