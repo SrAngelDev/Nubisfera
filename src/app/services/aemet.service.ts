@@ -35,8 +35,9 @@ export class AemetService {
   private buildUrl(endpoint: string): string {
     // Si hay proxy (desarrollo), usarlo. Si no (producción), URL directa
     if (this.CORS_PROXY) {
-      return `${this.CORS_PROXY}${encodeURIComponent(this.BASE_URL + endpoint)}`;
+      return `${this.CORS_PROXY}${encodeURIComponent('https://opendata.aemet.es/opendata' + endpoint)}`;
     }
+    // En producción, el endpoint ya incluye /api, así que solo agregamos la parte específica
     return `${this.BASE_URL}${endpoint}`;
   }
 
