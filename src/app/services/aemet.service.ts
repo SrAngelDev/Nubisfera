@@ -50,11 +50,14 @@ export class AemetService {
 
   /**
    * Obtiene la lista de todos los municipios de España
-   * Ahora carga desde un JSON local para evitar problemas de codificación
    */
   getMunicipios(): Observable<Municipio[]> {
-    // Cargar desde el JSON local
-    return this.http.get<Municipio[]>('/assets/municipios.json');
+    return this.makeRequest<Municipio[]>('/maestro/municipios').pipe(
+      map(municipios => {
+        console.log('Municipios recibidos de la API:', municipios.slice(0, 5));
+        return municipios;
+      })
+    );
   }
 
   /**
