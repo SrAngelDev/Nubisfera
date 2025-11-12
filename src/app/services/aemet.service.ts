@@ -63,20 +63,38 @@ export class AemetService {
     console.log('Cargando municipios desde la API de AEMET');
     return this.makeRequest<Municipio[]>('/maestro/municipios').pipe(
       map(municipios => {
-        console.log('Municipios recibidos de la API:', municipios.slice(0, 5));
+        console.log('Municipios recibidos de la API (raw):', municipios.slice(0, 3));
+        
+        // Limpiar nombres con caracteres corruptos
+        const municipiosLimpios = municipios.map(m => ({
+          ...m,
+          nombre: this.decodeHtmlEntities(m.nombre)
+        }));
+        
+        console.log('Municipios después de limpiar:', municipiosLimpios.slice(0, 3));
+        
         // Guardar en caché
-        this.cacheMunicipios(municipios);
-        return municipios;
+        this.cacheMunicipios(municipiosLimpios);
+        return municipiosLimpios;
       })
     );
   }
 
   private getCachedMunicipios(): Municipio[] | null {
     try {
+      const CACHE_VERSION = 'v2'; // Incrementar para invalidar caché antiguo
       const cached = localStorage.getItem('aemet_municipios');
       const timestamp = localStorage.getItem('aemet_municipios_timestamp');
+      const version = localStorage.getItem('aemet_municipios_version');
       
-      if (!cached || !timestamp) {
+      // Si no hay caché o la versión es antigua, invalidar
+      if (!cached || !timestamp || version !== CACHE_VERSION) {
+        if (version !== CACHE_VERSION) {
+          console.log('Versión de caché antigua, invalidando...');
+          localStorage.removeItem('aemet_municipios');
+          localStorage.removeItem('aemet_municipios_timestamp');
+          localStorage.removeItem('aemet_municipios_version');
+        }
         return null;
       }
 
@@ -98,9 +116,11 @@ export class AemetService {
 
   private cacheMunicipios(municipios: Municipio[]): void {
     try {
+      const CACHE_VERSION = 'v2';
       localStorage.setItem('aemet_municipios', JSON.stringify(municipios));
       localStorage.setItem('aemet_municipios_timestamp', Date.now().toString());
-      console.log('Municipios guardados en caché');
+      localStorage.setItem('aemet_municipios_version', CACHE_VERSION);
+      console.log('Municipios guardados en caché (versión ' + CACHE_VERSION + ')');
     } catch (error) {
       console.error('Error al guardar caché:', error);
     }
@@ -112,8 +132,10 @@ export class AemetService {
   private decodeHtmlEntities(text: string): string {
     if (!text) return text;
     
-    // Si hay caracteres corruptos (�), normalizar eliminando o reemplazando
+    // Si hay caracteres corruptos (�), normalizar
     if (text.includes('�')) {
+      console.log('Caracter corrupto detectado en:', text);
+      
       // Patrones comunes de municipios con caracteres corruptos
       const patterns: { [key: string]: string } = {
         'Legan�s': 'Leganes',
@@ -132,22 +154,39 @@ export class AemetService {
         'San Sebasti�n': 'San Sebastian',
         'Ja�n': 'Jaen',
         '�rense': 'Orense',
-        'Ourense': 'Ourense',
-        'C�ceres': 'Caceres'
+        'C�ceres': 'Caceres',
+        'M�rida': 'Merida',
+        'Santander': 'Santander',
+        'Pamplona': 'Pamplona',
+        'Vitoria': 'Vitoria',
+        'Gasteiz': 'Gasteiz'
       };
       
-      let result = text;
-      
-      // Intentar reemplazar patrones conocidos
+      // Intentar reemplazar patrones conocidos primero
       for (const [corrupted, clean] of Object.entries(patterns)) {
-        if (result.includes(corrupted)) {
+        if (text === corrupted || text.includes(corrupted)) {
+          console.log(`Reemplazando "${text}" por "${clean}"`);
           return clean;
         }
       }
       
-      // Si no coincide con ningún patrón, simplemente eliminar el �
-      result = result.replace(/�/g, '');
-      return result;
+      // Si no coincide, normalizar eliminando acentos de forma general
+      const normalized = text
+        .replace(/�/g, 'n')  // ñ
+        .replace(/[áàâã]/g, 'a')
+        .replace(/[éèê]/g, 'e')
+        .replace(/[íìî]/g, 'i')
+        .replace(/[óòô]/g, 'o')
+        .replace(/[úùû]/g, 'u')
+        .replace(/[ÁÀÂÃ]/g, 'A')
+        .replace(/[ÉÈÊ]/g, 'E')
+        .replace(/[ÍÌÎ]/g, 'I')
+        .replace(/[ÓÒÔ]/g, 'O')
+        .replace(/[ÚÙÛ]/g, 'U')
+        .replace(/Ñ/g, 'N');
+      
+      console.log(`Normalizado de "${text}" a "${normalized}"`);
+      return normalized;
     }
     
     // Si no hay caracteres corruptos, devolver tal cual
