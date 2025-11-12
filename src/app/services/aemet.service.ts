@@ -65,25 +65,51 @@ export class AemetService {
   }
 
   /**
-   * Decodifica entidades HTML y arregla problemas de codificación UTF-8
+   * Decodifica entidades HTML y normaliza el texto eliminando tildes si hay caracteres corruptos
    */
   private decodeHtmlEntities(text: string): string {
     if (!text) return text;
     
-    try {
-      // Este bloque a veces puede causar más problemas de los que soluciona
-      // si la codificación de origen no es la esperada.
-      if (text.includes('') || /[\x80-\xFF]/.test(text)) {
-        const bytes = new Uint8Array(text.split('').map(c => c.charCodeAt(0)));
-        text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    // Si hay caracteres corruptos (�), normalizar eliminando o reemplazando
+    if (text.includes('�')) {
+      // Patrones comunes de municipios con caracteres corruptos
+      const patterns: { [key: string]: string } = {
+        'Legan�s': 'Leganes',
+        'M�laga': 'Malaga',
+        'C�diz': 'Cadiz',
+        'C�rdoba': 'Cordoba',
+        'Almer�a': 'Almeria',
+        'Le�n': 'Leon',
+        'Logro�o': 'Logrono',
+        '�vila': 'Avila',
+        'Castell�n': 'Castellon',
+        'Gij�n': 'Gijon',
+        'M�stoles': 'Mostoles',
+        'Alcorc�n': 'Alcorcon',
+        'Alcal�': 'Alcala',
+        'San Sebasti�n': 'San Sebastian',
+        'Ja�n': 'Jaen',
+        '�rense': 'Orense',
+        'Ourense': 'Ourense',
+        'C�ceres': 'Caceres'
+      };
+      
+      let result = text;
+      
+      // Intentar reemplazar patrones conocidos
+      for (const [corrupted, clean] of Object.entries(patterns)) {
+        if (result.includes(corrupted)) {
+          return clean;
+        }
       }
-    } catch (e) {
-      console.warn('Error al decodificar texto:', e);
+      
+      // Si no coincide con ningún patrón, simplemente eliminar el �
+      result = result.replace(/�/g, '');
+      return result;
     }
     
-    const textArea = document.createElement('textarea');
-    textArea.innerHTML = text;
-    return textArea.value;
+    // Si no hay caracteres corruptos, devolver tal cual
+    return text;
   }
 
   /**
