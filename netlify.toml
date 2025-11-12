@@ -1,0 +1,3 @@
+[build]
+  publish = "dist/Nubisfera/browser"
+  command = "npm run build"
