@@ -10,18 +10,11 @@ import { PrediccionResponse, PrediccionDiaria } from '../models/prediccion.model
 export class AemetService {
   private readonly API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbmdlbHNhbmdhczFAZ21haWwuY29tIiwianRpIjoiZDRmZmZmOTEtODk5OS00OTNiLTk5NmYtYzcyZDVlY2Q0YmMyIiwiaXNzIjoiQUVNRVQiLCJpYXQiOjE3NTc1NDQyODYsInVzZXJJZCI6ImQ0ZmZmZjkxLTg5OTktNDkzYi05OTZmLWM3MmQ1ZWNkNGJjMiIsInJvbGUiOiIifQ.wmp9WUL5ILsusgnnJqgNEWppAzpv8tiPH8CkiNtESgs';
   
-  // Detectar si estamos en desarrollo o producción
   private readonly isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
-  // URLs base según el entorno
-  private readonly BASE_URL = this.isDevelopment 
-    ? 'https://opendata.aemet.es/opendata'
-    : '/api/aemet';
-  
-  // Proxy CORS solo para desarrollo local
-  private readonly CORS_PROXY = this.isDevelopment 
-    ? 'https://api.allorigins.win/raw?url='
-    : '';
+  private readonly AEMET_BASE_URL = 'https://opendata.aemet.es/opendata';
+  private readonly PROD_PROXY_PREFIX = '/api/aemet';
+  private readonly DEV_CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
   constructor(private http: HttpClient) { }
 
@@ -33,25 +26,33 @@ export class AemetService {
   }
 
   private buildUrl(endpoint: string): string {
-    // Si hay proxy (desarrollo), usarlo. Si no (producción), URL directa
-    if (this.CORS_PROXY) {
-      return `${this.CORS_PROXY}${encodeURIComponent('https://opendata.aemet.es/opendata' + endpoint)}`;
+    if (this.isDevelopment) {
+      const fullUrl = this.AEMET_BASE_URL + endpoint;
+      return `${this.DEV_CORS_PROXY}${encodeURIComponent(fullUrl)}`;
     }
-    // En producción, el endpoint ya incluye /api, así que solo agregamos la parte específica
-    return `${this.BASE_URL}${endpoint}`;
+    // En producción, añadimos el prefijo del proxy de Netlify a la ruta.
+    return this.PROD_PROXY_PREFIX + endpoint;
   }
 
   private makeRequest<T>(endpoint: string): Observable<T> {
-    return this.http.get<any>(this.buildUrl(endpoint), { 
+    const requestUrl = this.buildUrl(endpoint);
+    
+    return this.http.get<any>(requestUrl, { 
       headers: this.getHeaders(),
       responseType: 'json'
     }).pipe(
       switchMap(response => {
         if (response.datos) {
-          // Segunda petición para obtener los datos reales
-          const datosUrl = this.CORS_PROXY 
-            ? `${this.CORS_PROXY}${encodeURIComponent(response.datos)}`
-            : response.datos.replace('https://opendata.aemet.es/opendata', this.BASE_URL);
+          // La URL de 'datos' es absoluta. Hay que transformarla para cada entorno.
+          let datosUrl = response.datos;
+          if (this.isDevelopment) {
+            // En desarrollo, la envolvemos en el proxy CORS.
+            datosUrl = `${this.DEV_CORS_PROXY}${encodeURIComponent(datosUrl)}`;
+          } else {
+            // En producción, reemplazamos la base de AEMET por la ruta de nuestro proxy.
+            datosUrl = datosUrl.replace(this.AEMET_BASE_URL, this.PROD_PROXY_PREFIX);
+          }
+            
           return this.http.get<T>(datosUrl, {
             responseType: 'json'
           });
@@ -65,7 +66,8 @@ export class AemetService {
    * Obtiene la lista de todos los municipios de España
    */
   getMunicipios(): Observable<Municipio[]> {
-    return this.makeRequest<Municipio[]>('/api/maestro/municipios').pipe(
+    // Llamamos solo con la parte específica del endpoint. buildUrl se encarga del resto.
+    return this.makeRequest<Municipio[]>('/maestro/municipios').pipe(
       map(municipios => {
         // Asegurar que los nombres estén correctamente decodificados
         return municipios.map(m => ({
@@ -83,11 +85,10 @@ export class AemetService {
   private decodeHtmlEntities(text: string): string {
     if (!text) return text;
     
-    // Primero intentar arreglar problemas de codificación UTF-8 mal interpretados
     try {
-      // Detectar si hay caracteres mal codificados (como �)
-      if (text.includes('�') || /[\x80-\xFF]/.test(text)) {
-        // Intentar recodificar desde ISO-8859-1 a UTF-8
+      // Este bloque a veces puede causar más problemas de los que soluciona
+      // si la codificación de origen no es la esperada.
+      if (text.includes('') || /[\x80-\xFF]/.test(text)) {
         const bytes = new Uint8Array(text.split('').map(c => c.charCodeAt(0)));
         text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
       }
@@ -95,7 +96,6 @@ export class AemetService {
       console.warn('Error al decodificar texto:', e);
     }
     
-    // Luego decodificar entidades HTML si existen
     const textArea = document.createElement('textarea');
     textArea.innerHTML = text;
     return textArea.value;
@@ -105,9 +105,8 @@ export class AemetService {
    * Obtiene la predicción diaria para un municipio
    */
   getPrediccionDiaria(municipioId: string): Observable<PrediccionDiaria> {
-    // Limpiar el ID: remover el prefijo "id" si existe
     const cleanId = municipioId.replace(/^id/, '');
-    return this.makeRequest<PrediccionDiaria[]>(`/api/prediccion/especifica/municipio/diaria/${cleanId}`)
+    return this.makeRequest<PrediccionDiaria[]>(`/prediccion/especifica/municipio/diaria/${cleanId}`)
       .pipe(
         map(response => {
           if (Array.isArray(response) && response.length > 0) {
@@ -122,9 +121,8 @@ export class AemetService {
    * Obtiene la predicción horaria para un municipio
    */
   getPrediccionHoraria(municipioId: string): Observable<PrediccionDiaria> {
-    // Limpiar el ID: remover el prefijo "id" si existe
     const cleanId = municipioId.replace(/^id/, '');
-    return this.makeRequest<PrediccionDiaria[]>(`/api/prediccion/especifica/municipio/horaria/${cleanId}`)
+    return this.makeRequest<PrediccionDiaria[]>(`/prediccion/especifica/municipio/horaria/${cleanId}`)
       .pipe(
         map(response => {
           if (Array.isArray(response) && response.length > 0) {
@@ -139,13 +137,13 @@ export class AemetService {
    * Obtiene datos de observación actual
    */
   getObservacionActual(): Observable<any[]> {
-    return this.makeRequest<any[]>('/api/observacion/convencional/todas');
+    return this.makeRequest<any[]>('/observacion/convencional/todas');
   }
 
   /**
    * Obtiene predicción de radiación UV
    */
   getRadiacionUV(dia: number = 0): Observable<any[]> {
-    return this.makeRequest<any[]>(`/api/prediccion/especifica/uvi/${dia}`);
+    return this.makeRequest<any[]>(`/prediccion/especifica/uvi/${dia}`);
   }
 }
