@@ -25,12 +25,8 @@ export class AemetService {
     const fullEndpoint = `/api${endpoint}`;
     const urlWithKey = `${fullEndpoint}${separator}api_key=${this.API_KEY}`;
     
-    if (this.isDevelopment) {
-      const fullUrl = this.AEMET_BASE_URL + urlWithKey;
-      return `${this.DEV_CORS_PROXY}${encodeURIComponent(fullUrl)}`;
-    }
-    // En producción, añadimos el prefijo del proxy de Netlify a la ruta.
-    return this.PROD_PROXY_PREFIX + urlWithKey;
+    // Siempre usar la URL directa de AEMET - no necesitamos proxy
+    return this.AEMET_BASE_URL + urlWithKey;
   }
 
   private makeRequest<T>(endpoint: string): Observable<T> {
@@ -42,16 +38,8 @@ export class AemetService {
       switchMap(response => {
         if (response.datos) {
           // La URL de 'datos' es absoluta y ya incluye la API key
-          let datosUrl = response.datos;
-          if (this.isDevelopment) {
-            // En desarrollo, la envolvemos en el proxy CORS.
-            datosUrl = `${this.DEV_CORS_PROXY}${encodeURIComponent(datosUrl)}`;
-          } else {
-            // En producción, reemplazamos la base de AEMET por la ruta de nuestro proxy.
-            datosUrl = datosUrl.replace(this.AEMET_BASE_URL, this.PROD_PROXY_PREFIX);
-          }
-            
-          return this.http.get<T>(datosUrl, {
+          // Ya viene completa desde AEMET, solo la usamos directamente
+          return this.http.get<T>(response.datos, {
             responseType: 'json'
           });
         }
