@@ -22,7 +22,8 @@ export class AemetService {
   private buildUrl(endpoint: string): string {
     // La API key va en la URL como parámetro de consulta según la documentación de AEMET
     const separator = endpoint.includes('?') ? '&' : '?';
-    const urlWithKey = `${endpoint}${separator}api_key=${this.API_KEY}`;
+    const fullEndpoint = `/api${endpoint}`;
+    const urlWithKey = `${fullEndpoint}${separator}api_key=${this.API_KEY}`;
     
     if (this.isDevelopment) {
       const fullUrl = this.AEMET_BASE_URL + urlWithKey;
@@ -63,8 +64,7 @@ export class AemetService {
    * Obtiene la lista de todos los municipios de España
    */
   getMunicipios(): Observable<Municipio[]> {
-    // La API de AEMET necesita el prefijo /api/
-    return this.makeRequest<Municipio[]>('/api/maestro/municipios').pipe(
+    return this.makeRequest<Municipio[]>('/maestro/municipios').pipe(
       map(municipios => {
         // Asegurar que los nombres estén correctamente decodificados
         return municipios.map(m => ({
@@ -103,7 +103,7 @@ export class AemetService {
    */
   getPrediccionDiaria(municipioId: string): Observable<PrediccionDiaria> {
     const cleanId = municipioId.replace(/^id/, '');
-    return this.makeRequest<PrediccionDiaria[]>(`/api/prediccion/especifica/municipio/diaria/${cleanId}`)
+    return this.makeRequest<PrediccionDiaria[]>(`/prediccion/especifica/municipio/diaria/${cleanId}`)
       .pipe(
         map(response => {
           if (Array.isArray(response) && response.length > 0) {
@@ -119,7 +119,7 @@ export class AemetService {
    */
   getPrediccionHoraria(municipioId: string): Observable<PrediccionDiaria> {
     const cleanId = municipioId.replace(/^id/, '');
-    return this.makeRequest<PrediccionDiaria[]>(`/api/prediccion/especifica/municipio/horaria/${cleanId}`)
+    return this.makeRequest<PrediccionDiaria[]>(`/prediccion/especifica/municipio/horaria/${cleanId}`)
       .pipe(
         map(response => {
           if (Array.isArray(response) && response.length > 0) {
@@ -134,13 +134,13 @@ export class AemetService {
    * Obtiene datos de observación actual
    */
   getObservacionActual(): Observable<any[]> {
-    return this.makeRequest<any[]>('/api/observacion/convencional/todas');
+    return this.makeRequest<any[]>('/observacion/convencional/todas');
   }
 
   /**
    * Obtiene predicción de radiación UV
    */
   getRadiacionUV(dia: number = 0): Observable<any[]> {
-    return this.makeRequest<any[]>(`/api/prediccion/especifica/uvi/${dia}`);
+    return this.makeRequest<any[]>(`/prediccion/especifica/uvi/${dia}`);
   }
 }
