@@ -1,1 +1,93 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===== NUBISFERA - ESTILOS GLOBALES ===== */
+
+/* Importamos la fuente Poppins que definimos en index.html */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Variables CSS para el tema "Cielo Etéreo" */
+:root {
+  /* Paleta de colores "Cielo" */
+  --primary-blue: #4a76c0; /* Azul pizarra sofisticado */
+  --secondary-blue: #82a4d9; /* Azul cielo claro */
+  --accent-sunrise: #ff8c6b; /* Coral cálido para acentos */
+  --accent-sunset: #ffc857; /* Dorado suave */
+  
+  /* Colores funcionales */
+  --success-green: #28a745;
+  --warning-yellow: #ffc107;
+  --error-red: #dc3545;
+  --info-cyan: #17a2b8;
+  
+  /* Fondos y Superficies */
+  --background-light: #f9faff; /* Blanco con tinte azulado sutil */
+  --surface-light: #ffffff;
+  
+  /* Colores de Texto */
+  --text-primary: #212529; /* Carbón oscuro, más suave que el negro */
+  --text-secondary: #6c757d; /* Gris para texto secundario */
+  --text-inverse: #f8f9fa;
+  
+  /* Bordes */
+  --border-light: #eef2f7; /* Borde muy claro y suave */
+  --border-medium: #dee2e6;
+  
+  /* Sombras "Etéreas" */
+  --shadow-sm: 0 2px 4px 0 rgb(60 80 120 / 0.04);
+  --shadow-md: 0 6px 12px -2px rgb(60 80 120 / 0.1);
+  --shadow-lg: 0 12px 24px -4px rgb(60 80 120 / 0.12);
+  --shadow-xl: 0 25px 50px -10px rgb(60 80 120 / 0.18);
+  
+  /* Degradados "Atmosféricos" */
+  --gradient-sky: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+  --gradient-horizon: linear-gradient(135deg, var(--accent-sunrise), var(--accent-sunset));
+  --gradient-ethereal: linear-gradient(145deg, #e0f2fe 0%, #f0f9ff 50%, #fff7e6 100%);
+}
+
+/* Reset y estilos base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--background-light);
+  color: var(--text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+  font-weight: 300; /* Tipografía base más ligera */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-sunrise);
+}
+
+button {
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+}
+
+/* Clases de utilidad */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}

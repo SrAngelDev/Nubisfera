@@ -1,0 +1,104 @@
+<div class="weather-display-container" *ngIf="municipio" @fadeInOut>
+
+  <!-- Estado de Carga -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner">
+      <div class="spinner-inner"></div>
+    </div>
+    <h3 class="loading-title">Obteniendo la predicción...</h3>
+    <p class="loading-subtitle">Consultando los datos para <strong>{{ municipio.nombre }}</strong></p>
+  </div>
+
+  <!-- Estado de Error -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <div class="error-icon">😔</div>
+    <h3 class="error-title">¡Vaya! Hubo un problema</h3>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="retryLoad()">
+      <span class="retry-icon">🔄</span>
+      <span>Reintentar</span>
+    </button>
+  </div>
+
+  <!-- Contenido de la Predicción -->
+  <div *ngIf="prediccion && !isLoading && !error" class="prediction-content">
+
+    <!-- Cabecera de la Predicción -->
+    <header class="prediction-header">
+      <div class="location-info">
+        <h2 class="municipio-name">{{ prediccion.nombre }}</h2>
+        <p class="provincia-name">{{ prediccion.provincia }}</p>
+      </div>
+      <div class="prediction-badge">
+        <span class="badge-icon">{{ tipoPrecision === 'diaria' ? '📅' : '⏰' }}</span>
+        <span>{{ tipoPrecision === 'diaria' ? 'Predicción Semanal' : 'Predicción por Horas' }}</span>
+      </div>
+    </header>
+
+    <!-- Predicción Diaria -->
+    <ng-container *ngIf="tipoPrecision === 'diaria'">
+      <div class="daily-grid">
+        <div 
+          *ngFor="let dia of prediccion.prediccion.dia.slice(0, 7); let i = index"
+          class="day-card"
+          [class.is-today]="isToday(dia.fecha)"
+          [@slideIn]="i"
+        >
+          <div class="day-card-header">
+            <p class="day-name">{{ getDayName(dia.fecha) }}</p>
+            <p class="day-date">{{ formatDate(dia.fecha, 'd MMM') }}</p>
+          </div>
+          <div class="day-card-body">
+            <div class="weather-icon" [innerHTML]="getWeatherIcon(dia.estadoCielo[0]?.value || '') | safeHtml"></div>
+            <p class="weather-description">{{ getWeatherDescription(dia.estadoCielo[0]?.value || '') }}</p>
+          </div>
+          <div class="day-card-footer">
+            <div class="temperature">
+              <span class="temp-max">{{ dia.temperatura.maxima }}°</span>
+              <span class="temp-min">{{ dia.temperatura.minima }}°</span>
+            </div>
+            <div class="precipitation">
+              <span class="precip-icon">💧</span>
+              <span>{{ dia.probPrecipitacion[0]?.value || 0 }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Predicción Horaria -->
+    <ng-container *ngIf="tipoPrecision === 'horaria'">
+      <div class="hourly-forecast">
+        <div *ngFor="let dia of prediccion.prediccion.dia.slice(0, 2)" class="hourly-day-section">
+          <h3 class="hourly-day-title">{{ getDayName(dia.fecha) }} - {{ formatDate(dia.fecha, 'EEEE d') }}</h3>
+          <div class="hourly-scroll-container">
+            <div class="hourly-grid">
+              <div *ngFor="let hora of getHorasCombinadas(dia); let i = index" class="hour-card" [@slideIn]="i">
+                <p class="hour-time">{{ hora.periodo }}:00</p>
+                <div class="hour-icon" [innerHTML]="getWeatherIcon(hora.estadoCielo) | safeHtml"></div>
+                <p class="hour-temp">{{ hora.temperatura }}°</p>
+                <div class="hour-precip">
+                  <span class="precip-icon">💧</span>
+                  <span>{{ hora.probPrecipitacion }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Pie de la Predicción -->
+    <footer class="prediction-footer">
+      <p class="data-source">
+        <span class="source-icon">📡</span>
+        Datos proporcionados por <strong>AEMET</strong>
+      </p>
+      <p *ngIf="prediccion.timestamp" class="last-updated">
+        <span class="update-icon">🕐</span>
+        Actualizado: {{ prediccion.timestamp | date:'medium':'es-ES' }}
+      </p>
+    </footer>
+
+  </div>
+</div>
