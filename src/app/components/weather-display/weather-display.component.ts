@@ -147,27 +147,78 @@ export class WeatherDisplayComponent implements OnChanges {
   getHorasCombinadas(dia: Dia): HoraCombinada[] {
     const horas: HoraCombinada[] = [];
 
-    // Asumimos que todos los arrays tienen la misma estructura de periodos
+    // Log para depuración
+    console.log('Datos del día para predicción horaria:', {
+      fecha: dia.fecha,
+      temperatura: dia.temperatura,
+      estadoCielo: dia.estadoCielo,
+      probPrecipitacion: dia.probPrecipitacion
+    });
+
+    // Verificar que tengamos datos
     if (!dia.estadoCielo || dia.estadoCielo.length === 0) {
+      console.warn('No hay datos de estado del cielo');
       return [];
     }
 
+    // Si no hay temperatura.dato, usar valores estimados basados en max/min
+    const tieneDatosTemperatura = dia.temperatura?.dato && dia.temperatura.dato.length > 0;
+    
     for (const estadoCieloHora of dia.estadoCielo) {
       const periodo = estadoCieloHora.periodo;
-      if (parseInt(periodo) > new Date().getHours() || !this.isToday(dia.fecha)) {
-        horas.push({
-          periodo: periodo,
-          estadoCielo: estadoCieloHora.value,
-          temperatura: this.findMatchingValue(dia.temperatura.dato, periodo),
-          probPrecipitacion: parseInt(this.findMatchingValue(dia.probPrecipitacion, periodo)) || 0
-        });
+      const periodoNum = parseInt(periodo);
+      const horaActual = new Date().getHours();
+      
+      // Filtrar horas pasadas solo para hoy
+      if (this.isToday(dia.fecha) && periodoNum <= horaActual) {
+        continue;
       }
+
+      let temperatura: string;
+      
+      if (tieneDatosTemperatura) {
+        // Si hay datos horarios de temperatura, usarlos
+        temperatura = this.findMatchingValue(dia.temperatura.dato, periodo);
+      } else {
+        // Si no hay datos horarios, interpolar entre min y max
+        temperatura = this.estimarTemperatura(periodoNum, dia.temperatura.minima, dia.temperatura.maxima);
+      }
+
+      horas.push({
+        periodo: periodo,
+        estadoCielo: estadoCieloHora.value,
+        temperatura: temperatura,
+        probPrecipitacion: parseInt(this.findMatchingValue(dia.probPrecipitacion, periodo)) || 0
+      });
     }
+    
+    console.log('Horas combinadas generadas:', horas);
     return horas;
   }
 
+  private estimarTemperatura(hora: number, min: number, max: number): string {
+    // Estimación simple: asumimos que el mínimo es a las 6am y el máximo a las 14pm
+    if (hora >= 0 && hora < 6) {
+      return min.toString();
+    } else if (hora >= 14 && hora <= 16) {
+      return max.toString();
+    } else if (hora < 14) {
+      // Subiendo hacia el máximo
+      const ratio = (hora - 6) / 8; // De 6 a 14 horas
+      const temp = min + (max - min) * ratio;
+      return Math.round(temp).toString();
+    } else {
+      // Bajando hacia el mínimo
+      const ratio = (hora - 16) / 14; // De 16 a 6 (del día siguiente)
+      const temp = max - (max - min) * ratio;
+      return Math.round(temp).toString();
+    }
+  }
+
   private findMatchingValue(array: Hora[] | undefined, periodo: string): string {
-    if (!array) return '--';
+    if (!array || array.length === 0) {
+      return '--';
+    }
     const match = array.find(item => item.periodo === periodo);
     return match ? match.value.toString() : '--';
   }
