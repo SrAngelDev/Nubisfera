@@ -1,0 +1,19 @@
+# Configuración de Netlify para Nubisfera
+
+[build]
+  publish = "dist/nubisfera/browser"
+  command = "npm run build"
+
+# Proxy para evitar CORS con la API de AEMET
+[[redirects]]
+  from = "/api/aemet/*"
+  to = "https://opendata.aemet.es/opendata/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+# Configuración para SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

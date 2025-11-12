@@ -10,24 +10,42 @@ import { PrediccionResponse, PrediccionDiaria } from '../models/prediccion.model
 export class AemetService {
   private readonly API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbmdlbHNhbmdhczFAZ21haWwuY29tIiwianRpIjoiZDRmZmZmOTEtODk5OS00OTNiLTk5NmYtYzcyZDVlY2Q0YmMyIiwiaXNzIjoiQUVNRVQiLCJpYXQiOjE3NTc1NDQyODYsInVzZXJJZCI6ImQ0ZmZmZjkxLTg5OTktNDkzYi05OTZmLWM3MmQ1ZWNkNGJjMiIsInJvbGUiOiIifQ.wmp9WUL5ILsusgnnJqgNEWppAzpv8tiPH8CkiNtESgs';
   private readonly BASE_URL = 'https://opendata.aemet.es/opendata';
+  
+  // Proxy CORS para desarrollo local (comentar en producción con Netlify)
+  private readonly CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+  
+  // Para producción en Netlify, usar:
+  // private readonly CORS_PROXY = '';
 
   constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'api_key': this.API_KEY
+      'api_key': this.API_KEY,
+      'Accept': 'application/json'
     });
   }
 
+  private buildUrl(endpoint: string): string {
+    // Si hay proxy, usarlo. Si no, URL directa
+    if (this.CORS_PROXY) {
+      return `${this.CORS_PROXY}${encodeURIComponent(this.BASE_URL + endpoint)}`;
+    }
+    return `${this.BASE_URL}${endpoint}`;
+  }
+
   private makeRequest<T>(endpoint: string): Observable<T> {
-    return this.http.get<any>(`${this.BASE_URL}${endpoint}`, { 
+    return this.http.get<any>(this.buildUrl(endpoint), { 
       headers: this.getHeaders(),
       responseType: 'json'
     }).pipe(
       switchMap(response => {
         if (response.datos) {
           // Segunda petición para obtener los datos reales
-          return this.http.get<T>(response.datos, {
+          const datosUrl = this.CORS_PROXY 
+            ? `${this.CORS_PROXY}${encodeURIComponent(response.datos)}`
+            : response.datos;
+          return this.http.get<T>(datosUrl, {
             responseType: 'json'
           });
         }
