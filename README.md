@@ -1,59 +1,361 @@
-# Nubisfera
+# 🌦️ Nubisfera
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.4.
+> **Aplicación web de previsión meteorológica para España**
 
-## Development server
+![Angular](https://img.shields.io/badge/Angular-20.3-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![AEMET](https://img.shields.io/badge/AEMET-API-00A1E0?style=for-the-badge)
 
-To start a local development server, run:
+**Nubisfera** es una aplicación web moderna que proporciona información meteorológica detallada de cualquier municipio español, utilizando los datos oficiales de la **Agencia Estatal de Meteorología (AEMET)**.
 
+---
+
+## 📋 Tabla de Contenidos
+
+- [Características](#-características)
+- [Capturas de Pantalla](#-capturas-de-pantalla)
+- [Tecnologías](#️-tecnologías)
+- [Instalación](#-instalación)
+- [Uso](#-uso)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [API AEMET](#-api-aemet)
+- [Características Técnicas](#-características-técnicas)
+- [Propósito Educativo](#-propósito-educativo)
+- [Contribuir](#-contribuir)
+- [Licencia](#-licencia)
+
+---
+
+## ✨ Características
+
+### 🔍 Búsqueda Inteligente
+- Búsqueda de municipios españoles con autocompletado
+- Base de datos completa de **8,122 municipios**
+- Resultados instantáneos mientras escribes
+
+### 🌡️ Información Meteorológica Completa
+- **Predicción diaria**: Hasta 7 días vista
+- **Predicción por rangos horarios**: Detalle de cada franja del día
+- **Temperaturas**: Máximas, mínimas y por hora
+- **Estado del cielo**: 35+ condiciones meteorológicas con emojis
+- **Probabilidad de precipitación**: Porcentaje de lluvia prevista
+- **Datos en tiempo real**: Actualización cada 3 horas
+
+### 🎨 Interfaz Moderna
+- Diseño **dark mode** profesional
+- Tarjetas animadas y responsivas
+- Iconos meteorológicos intuitivos con emojis
+- Experiencia de usuario fluida
+
+### ⚡ Rendimiento Optimizado
+- **Sistema de caché inteligente** con 3 niveles de expiración:
+  - Municipios: 24 horas
+  - Predicción diaria: 3 horas
+  - Predicción horaria: 1 hora
+- Invalidación automática de caché al cambiar versiones
+- Carga instantánea de datos previamente consultados
+
+### 🔄 Doble Modo de Visualización
+- **Vista Semanal**: Resumen de 7 días con temperaturas máx/mín
+- **Vista Detallada**: Rangos horarios específicos (madrugada, mañana, tarde, noche)
+
+---
+
+## 📸 Capturas de Pantalla
+
+> _Próximamente: Capturas de la aplicación en funcionamiento_
+
+---
+
+## 🛠️ Tecnologías
+
+### Frontend
+- **Angular 20.3** - Framework principal
+- **TypeScript 5.9** - Lenguaje de programación
+- **RxJS 7.8** - Programación reactiva
+- **Standalone Components** - Arquitectura moderna de Angular
+
+### Estilos
+- **CSS3** - Variables CSS, Flexbox, Grid
+- **Dark Theme** - Diseño oscuro profesional
+- **Responsive Design** - Adaptado a todos los dispositivos
+
+### API y Datos
+- **AEMET OpenData API** - Datos meteorológicos oficiales
+- **LocalStorage** - Sistema de caché persistente
+- **HttpClient** - Comunicación con la API
+
+---
+
+## 🚀 Instalación
+
+### Requisitos Previos
+- **Node.js** (v18 o superior)
+- **npm** (v9 o superior)
+- **Angular CLI** (v20 o superior)
+
+### Pasos de Instalación
+
+1. **Clonar el repositorio**
 ```bash
-ng serve
+git clone https://github.com/SrAngelDev/Nubisfera.git
+cd Nubisfera
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+2. **Instalar dependencias**
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+3. **Configurar API Key de AEMET**
+   
+   Obtén tu API Key gratuita en: [AEMET OpenData](https://opendata.aemet.es/)
+   
+   Edita `src/app/services/aemet.service.ts`:
+   ```typescript
+   private API_KEY = 'TU_API_KEY_AQUI';
+   ```
 
+4. **Iniciar servidor de desarrollo**
 ```bash
-ng generate --help
+npm start
 ```
 
-## Building
+5. **Abrir en el navegador**
+   
+   Navega a `http://localhost:4200/`
 
-To build the project run:
+---
 
-```bash
-ng build
+## 💻 Uso
+
+### Buscar un Municipio
+1. Escribe el nombre del municipio en la barra de búsqueda
+2. Selecciona el municipio deseado de los resultados
+3. Visualiza la predicción meteorológica
+
+### Cambiar Tipo de Predicción
+- **Botón "Diaria"**: Muestra predicción de 7 días
+- **Botón "Por Horas"**: Muestra rangos horarios detallados
+
+### Limpiar Búsqueda
+- Click en el botón **✕** para limpiar y buscar otro municipio
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+Nubisfera/
+├── src/
+│   ├── app/
+│   │   ├── components/           # Componentes de la aplicación
+│   │   │   ├── header/           # Cabecera de la app
+│   │   │   ├── search-bar/       # Barra de búsqueda
+│   │   │   ├── weather-display/  # Visualización del clima
+│   │   │   └── weather-card/     # Tarjeta individual de clima
+│   │   ├── services/             # Servicios
+│   │   │   ├── aemet.service.ts  # Comunicación con API AEMET
+│   │   │   └── weather-icon.service.ts  # Mapeo de códigos a iconos
+│   │   ├── models/               # Modelos de datos
+│   │   │   ├── municipio.model.ts
+│   │   │   └── prediccion.model.ts
+│   │   ├── app.ts                # Componente principal
+│   │   ├── app.config.ts         # Configuración de la app
+│   │   └── app.routes.ts         # Rutas
+│   ├── styles.css                # Estilos globales
+│   └── index.html                # HTML principal
+├── angular.json                  # Configuración de Angular
+├── package.json                  # Dependencias del proyecto
+├── tsconfig.json                 # Configuración de TypeScript
+└── README.md                     # Este archivo
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## 🌐 API AEMET
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Esta aplicación utiliza la **API OpenData de AEMET**, que proporciona:
 
-```bash
-ng test
+- ✅ Datos meteorológicos oficiales de España
+- ✅ Predicción municipal por días y horaria
+- ✅ Actualización continua (cada 3h aprox.)
+- ✅ Acceso gratuito con registro
+
+### Endpoints Utilizados
+
+```typescript
+// Listado de municipios
+GET https://opendata.aemet.es/opendata/api/maestro/municipios
+
+// Predicción diaria por municipio
+GET https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/{codigo}
+
+// Predicción horaria por municipio
+GET https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/horaria/{codigo}
 ```
 
-## Running end-to-end tests
+### Códigos de Estado del Cielo
 
-For end-to-end (e2e) testing, run:
+La aplicación soporta **35+ códigos** de AEMET:
 
-```bash
-ng e2e
+| Código | Descripción | Emoji |
+|--------|-------------|-------|
+| 11/11n | Despejado | ☀️/🌙 |
+| 12/12n | Poco nuboso | 🌤️/🌙☁️ |
+| 13/13n | Intervalos nubosos | ⛅ |
+| 26/26n | Tormenta con lluvia | ⛈️ |
+| 45/45n | Niebla | 🌁 |
+| 54/54n | Lluvia muy fuerte | 🌧️ |
+| ... | ... | ... |
+
+---
+
+## 🔧 Características Técnicas
+
+### Sistema de Caché Multinivel
+
+```typescript
+- Municipios: 24 horas de validez
+- Predicción Diaria: 3 horas de validez
+- Predicción Horaria: 1 hora de validez
+- Versión de caché: v3 (invalidación automática)
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Gestión de Rangos Horarios
 
-## Additional Resources
+La aplicación procesa inteligentemente los rangos horarios de AEMET:
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```typescript
+Rangos soportados:
+- "00-06" → 00:00 - 06:00 (Madrugada)
+- "06-12" → 06:00 - 12:00 (Mañana)
+- "12-18" → 12:00 - 18:00 (Tarde)
+- "18-24" → 18:00 - 24:00 (Noche)
+- "00-24" → Todo el día
+```
+
+**Algoritmo de ordenación**:
+1. Rangos más específicos primero (menor duración)
+2. Por hora de inicio si tienen misma duración
+
+### Filtrado de Datos
+
+- ❌ Filtra automáticamente fechas pasadas
+- ❌ Omite rangos sin datos meteorológicos
+- ✅ Deduplica rangos mediante Map
+- ✅ Valida códigos de estado del cielo
+
+---
+
+## 📚 Propósito Educativo
+
+> ⚠️ **Proyecto con Fines Educativos**
+
+Este proyecto ha sido desarrollado con **propósitos exclusivamente educativos** para:
+
+### Objetivos de Aprendizaje
+
+- 📖 **Aprender Angular 20** y sus características más recientes
+- 🧩 **Practicar Standalone Components** y la arquitectura moderna
+- 🔄 **Dominar RxJS** y programación reactiva
+- 🎨 **Implementar diseño responsive** y dark mode
+- 🌐 **Integrar APIs REST** externas (AEMET)
+- 💾 **Gestionar caché** y optimización de rendimiento
+- 📦 **Modelar datos complejos** con TypeScript
+
+### Conceptos Implementados
+
+✅ Componentes standalone de Angular  
+✅ Servicios con inyección de dependencias  
+✅ Observables y operadores RxJS  
+✅ HttpClient y manejo de APIs  
+✅ LocalStorage y persistencia  
+✅ Pipes de Angular  
+✅ Directivas estructurales  
+✅ CSS variables y theming  
+✅ TypeScript avanzado (interfaces, tipos, genéricos)  
+
+### No Apto para Producción
+
+Este proyecto **NO** está diseñado para uso en producción debido a:
+
+- Falta de testing completo
+- No incluye autenticación robusta
+- Sin manejo exhaustivo de errores de red
+- No optimizado para SEO
+- Sin analytics ni monitorización
+
+### Uso Permitido
+
+✅ Uso personal y aprendizaje  
+✅ Modificación y experimentación  
+✅ Compartir con fines educativos  
+✅ Base para proyectos académicos  
+
+---
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas, especialmente si estás aprendiendo Angular:
+
+1. **Fork** el proyecto
+2. Crea una **rama** para tu feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un **Pull Request**
+
+### Ideas para Contribuir
+
+- 🐛 Reportar bugs o problemas
+- 💡 Sugerir nuevas características
+- 📝 Mejorar la documentación
+- 🎨 Mejorar el diseño UI/UX
+- ⚡ Optimizar el rendimiento
+- 🧪 Añadir tests unitarios
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 👤 Autor
+
+**SrAngelDev**
+
+- GitHub: [@SrAngelDev](https://github.com/SrAngelDev)
+- Proyecto: [Nubisfera](https://github.com/SrAngelDev/Nubisfera)
+
+---
+
+## 🙏 Agradecimientos
+
+- **AEMET** por proporcionar la API OpenData gratuita
+- **Angular Team** por el increíble framework
+- **Comunidad de desarrolladores** por la inspiración y recursos
+
+---
+
+## 📝 Notas de Versión
+
+### v1.0.0 (Actual)
+- ✨ Búsqueda de 8,122 municipios españoles
+- 🌡️ Predicción diaria (7 días)
+- ⏰ Predicción por rangos horarios
+- 💾 Sistema de caché inteligente (v3)
+- 🎨 Interfaz dark mode completa
+- 📱 Diseño responsive
+- ⚡ 35+ códigos meteorológicos soportados
+
+---
+
+<div align="center">
+
+**Hecho con ❤️ usando Angular y TypeScript**
+
+⭐ Si este proyecto te ayudó a aprender, considera darle una estrella
+
+</div>
