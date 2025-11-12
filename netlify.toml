@@ -13,7 +13,9 @@
   headers = {X-From = "Netlify"}
 
 # Configuración para SPA (Single Page Application)
+# Importante: No redirigir archivos estáticos
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  conditions = {paths = ["!/*.json", "!/*.js", "!/*.css", "!/*.png", "!/*.jpg", "!/*.svg", "!/*.ico"]}
