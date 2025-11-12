@@ -52,12 +52,58 @@ export class AemetService {
    * Obtiene la lista de todos los municipios de España
    */
   getMunicipios(): Observable<Municipio[]> {
+    // Intentar cargar desde caché primero
+    const cached = this.getCachedMunicipios();
+    if (cached) {
+      console.log('Cargando municipios desde caché local');
+      return of(cached);
+    }
+
+    // Si no hay caché, llamar a la API
+    console.log('Cargando municipios desde la API de AEMET');
     return this.makeRequest<Municipio[]>('/maestro/municipios').pipe(
       map(municipios => {
         console.log('Municipios recibidos de la API:', municipios.slice(0, 5));
+        // Guardar en caché
+        this.cacheMunicipios(municipios);
         return municipios;
       })
     );
+  }
+
+  private getCachedMunicipios(): Municipio[] | null {
+    try {
+      const cached = localStorage.getItem('aemet_municipios');
+      const timestamp = localStorage.getItem('aemet_municipios_timestamp');
+      
+      if (!cached || !timestamp) {
+        return null;
+      }
+
+      // Verificar si el caché tiene menos de 24 horas
+      const cacheAge = Date.now() - parseInt(timestamp);
+      const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 horas
+      
+      if (cacheAge > CACHE_DURATION) {
+        console.log('Caché expirado, se necesita actualizar');
+        return null;
+      }
+
+      return JSON.parse(cached);
+    } catch (error) {
+      console.error('Error al leer caché:', error);
+      return null;
+    }
+  }
+
+  private cacheMunicipios(municipios: Municipio[]): void {
+    try {
+      localStorage.setItem('aemet_municipios', JSON.stringify(municipios));
+      localStorage.setItem('aemet_municipios_timestamp', Date.now().toString());
+      console.log('Municipios guardados en caché');
+    } catch (error) {
+      console.error('Error al guardar caché:', error);
+    }
   }
 
   /**
@@ -113,15 +159,63 @@ export class AemetService {
    */
   getPrediccionDiaria(municipioId: string): Observable<PrediccionDiaria> {
     const cleanId = municipioId.replace(/^id/, '');
+    
+    // Intentar cargar desde caché primero
+    const cached = this.getCachedPrediccion(cleanId);
+    if (cached) {
+      console.log(`Cargando predicción diaria de ${cleanId} desde caché local`);
+      return of(cached);
+    }
+
+    // Si no hay caché, llamar a la API
+    console.log(`Cargando predicción diaria de ${cleanId} desde la API de AEMET`);
     return this.makeRequest<PrediccionDiaria[]>(`/prediccion/especifica/municipio/diaria/${cleanId}`)
       .pipe(
         map(response => {
           if (Array.isArray(response) && response.length > 0) {
-            return response[0];
+            const prediccion = response[0];
+            // Guardar en caché
+            this.cachePrediccion(cleanId, prediccion);
+            return prediccion;
           }
           throw new Error('No se encontraron datos de predicción diaria');
         })
       );
+  }
+
+  private getCachedPrediccion(municipioId: string): PrediccionDiaria | null {
+    try {
+      const cached = localStorage.getItem(`aemet_prediccion_${municipioId}`);
+      const timestamp = localStorage.getItem(`aemet_prediccion_${municipioId}_timestamp`);
+      
+      if (!cached || !timestamp) {
+        return null;
+      }
+
+      // Verificar si el caché tiene menos de 3 horas (las predicciones cambian más frecuentemente)
+      const cacheAge = Date.now() - parseInt(timestamp);
+      const CACHE_DURATION = 3 * 60 * 60 * 1000; // 3 horas
+      
+      if (cacheAge > CACHE_DURATION) {
+        console.log(`Caché de predicción para ${municipioId} expirado`);
+        return null;
+      }
+
+      return JSON.parse(cached);
+    } catch (error) {
+      console.error('Error al leer caché de predicción:', error);
+      return null;
+    }
+  }
+
+  private cachePrediccion(municipioId: string, prediccion: PrediccionDiaria): void {
+    try {
+      localStorage.setItem(`aemet_prediccion_${municipioId}`, JSON.stringify(prediccion));
+      localStorage.setItem(`aemet_prediccion_${municipioId}_timestamp`, Date.now().toString());
+      console.log(`Predicción para ${municipioId} guardada en caché`);
+    } catch (error) {
+      console.error('Error al guardar caché de predicción:', error);
+    }
   }
 
   /**
@@ -129,15 +223,63 @@ export class AemetService {
    */
   getPrediccionHoraria(municipioId: string): Observable<PrediccionDiaria> {
     const cleanId = municipioId.replace(/^id/, '');
+    
+    // Intentar cargar desde caché primero
+    const cachedHoraria = this.getCachedPrediccionHoraria(cleanId);
+    if (cachedHoraria) {
+      console.log(`Cargando predicción horaria de ${cleanId} desde caché local`);
+      return of(cachedHoraria);
+    }
+
+    // Si no hay caché, llamar a la API
+    console.log(`Cargando predicción horaria de ${cleanId} desde la API de AEMET`);
     return this.makeRequest<PrediccionDiaria[]>(`/prediccion/especifica/municipio/horaria/${cleanId}`)
       .pipe(
         map(response => {
           if (Array.isArray(response) && response.length > 0) {
-            return response[0];
+            const prediccion = response[0];
+            // Guardar en caché
+            this.cachePrediccionHoraria(cleanId, prediccion);
+            return prediccion;
           }
           throw new Error('No se encontraron datos de predicción horaria');
         })
       );
+  }
+
+  private getCachedPrediccionHoraria(municipioId: string): PrediccionDiaria | null {
+    try {
+      const cached = localStorage.getItem(`aemet_prediccion_horaria_${municipioId}`);
+      const timestamp = localStorage.getItem(`aemet_prediccion_horaria_${municipioId}_timestamp`);
+      
+      if (!cached || !timestamp) {
+        return null;
+      }
+
+      // Verificar si el caché tiene menos de 1 hora (las predicciones horarias se actualizan más frecuentemente)
+      const cacheAge = Date.now() - parseInt(timestamp);
+      const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hora
+      
+      if (cacheAge > CACHE_DURATION) {
+        console.log(`Caché de predicción horaria para ${municipioId} expirado`);
+        return null;
+      }
+
+      return JSON.parse(cached);
+    } catch (error) {
+      console.error('Error al leer caché de predicción horaria:', error);
+      return null;
+    }
+  }
+
+  private cachePrediccionHoraria(municipioId: string, prediccion: PrediccionDiaria): void {
+    try {
+      localStorage.setItem(`aemet_prediccion_horaria_${municipioId}`, JSON.stringify(prediccion));
+      localStorage.setItem(`aemet_prediccion_horaria_${municipioId}_timestamp`, Date.now().toString());
+      console.log(`Predicción horaria para ${municipioId} guardada en caché`);
+    } catch (error) {
+      console.error('Error al guardar caché de predicción horaria:', error);
+    }
   }
 
   /**
