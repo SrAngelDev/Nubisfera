@@ -69,21 +69,49 @@
     <!-- Predicción Horaria -->
     <ng-container *ngIf="tipoPrecision === 'horaria'">
       <div class="hourly-forecast">
-        <div *ngFor="let dia of prediccion.prediccion.dia.slice(0, 2)" class="hourly-day-section">
-          <h3 class="hourly-day-title">{{ getDayName(dia.fecha) }} - {{ formatDate(dia.fecha, 'EEEE d') }}</h3>
-          <div class="hourly-scroll-container">
-            <div class="hourly-grid">
-              <div *ngFor="let hora of getHorasCombinadas(dia); let i = index" class="hour-card" [@slideIn]="i">
-                <p class="hour-time">{{ hora.periodo }}:00</p>
-                <div class="hour-icon" [innerHTML]="getWeatherIcon(hora.estadoCielo) | safeHtml"></div>
-                <p class="hour-temp">{{ hora.temperatura }}°</p>
-                <div class="hour-precip">
-                  <span class="precip-icon">💧</span>
-                  <span>{{ hora.probPrecipitacion }}%</span>
+        <div *ngFor="let dia of prediccion.prediccion.dia.slice(0, 2); let diaIndex = index" class="hourly-day-section">
+          <ng-container *ngIf="dia.temperatura && getHorasCombinadas(dia).length > 0">
+            <div class="hourly-day-header">
+              <h3 class="hourly-day-title">
+                <span class="day-badge">{{ getDayName(dia.fecha) }}</span>
+                <span class="day-date-detail">{{ formatDate(dia.fecha, 'd MMM') }}</span>
+              </h3>
+              <div class="day-temp-range">
+                <span class="temp-range-label">Rango:</span>
+                <span class="temp-max-badge">{{ dia.temperatura.maxima || 'N/A' }}°</span>
+                <span class="temp-separator">/</span>
+                <span class="temp-min-badge">{{ dia.temperatura.minima || 'N/A' }}°</span>
+              </div>
+            </div>
+            <div class="hourly-scroll-container">
+              <div class="hourly-grid">
+                <div *ngFor="let hora of getHorasCombinadas(dia); let i = index" 
+                     class="hour-card" 
+                     [@slideIn]="i"
+                     [class.no-data]="hora.temperatura === '--'">
+                  <div class="hour-header">
+                    <p class="hour-time">{{ formatHora(hora.periodo) }}</p>
+                  </div>
+                  <div class="hour-body">
+                    <div class="hour-icon" [innerHTML]="getWeatherIcon(hora.estadoCielo) | safeHtml"></div>
+                    <p class="weather-desc-mini">{{ getWeatherDescription(hora.estadoCielo) }}</p>
+                  </div>
+                  <div class="hour-footer">
+                    <div class="hour-temp-container">
+                      <span class="temp-icon">🌡️</span>
+                      <span class="hour-temp" [class.estimated]="!hora.esReal">
+                        {{ hora.temperatura }}°
+                      </span>
+                    </div>
+                    <div class="hour-precip">
+                      <span class="precip-icon">💧</span>
+                      <span class="precip-value">{{ hora.probPrecipitacion }}%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
     </ng-container>

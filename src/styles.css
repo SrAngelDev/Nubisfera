@@ -3,43 +3,49 @@
 /* Importamos la fuente Poppins que definimos en index.html */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Variables CSS para el tema "Cielo Etéreo" */
+/* Variables CSS para el tema "Noche Nubosa" (Dark Mode) */
 :root {
-  /* Paleta de colores "Cielo" */
-  --primary-blue: #4a76c0; /* Azul pizarra sofisticado */
-  --secondary-blue: #82a4d9; /* Azul cielo claro */
-  --accent-sunrise: #ff8c6b; /* Coral cálido para acentos */
-  --accent-sunset: #ffc857; /* Dorado suave */
+  /* Paleta de colores oscuros */
+  --primary-blue: #6495ed; /* Azul más brillante para contraste */
+  --secondary-blue: #82b1ff; /* Azul cielo luminoso */
+  --accent-sunrise: #ff9a76; /* Coral brillante */
+  --accent-sunset: #ffd97d; /* Dorado luminoso */
+  --primary-blue-light: #89a8e8;
   
   /* Colores funcionales */
-  --success-green: #28a745;
-  --warning-yellow: #ffc107;
-  --error-red: #dc3545;
-  --info-cyan: #17a2b8;
+  --success-green: #4ade80;
+  --warning-yellow: #fbbf24;
+  --error-red: #f87171;
+  --info-cyan: #22d3ee;
   
-  /* Fondos y Superficies */
-  --background-light: #f9faff; /* Blanco con tinte azulado sutil */
-  --surface-light: #ffffff;
+  /* Fondos y Superficies (Oscuros) */
+  --background-dark: #0f1419; /* Fondo principal muy oscuro */
+  --background-light: #1a1f2e; /* Fondo secundario */
+  --surface-dark: #242b3d; /* Superficies elevadas */
+  --surface-light: #2d3548; /* Superficies más elevadas */
   
   /* Colores de Texto */
-  --text-primary: #212529; /* Carbón oscuro, más suave que el negro */
-  --text-secondary: #6c757d; /* Gris para texto secundario */
-  --text-inverse: #f8f9fa;
+  --text-primary: #e8edf4; /* Texto principal claro */
+  --text-secondary: #9ca3af; /* Texto secundario gris */
+  --text-tertiary: #6b7280; /* Texto terciario más oscuro */
+  --text-inverse: #1a1f2e; /* Para texto sobre fondos claros */
   
   /* Bordes */
-  --border-light: #eef2f7; /* Borde muy claro y suave */
-  --border-medium: #dee2e6;
+  --border-light: #2d3548;
+  --border-medium: #3d4758;
   
-  /* Sombras "Etéreas" */
-  --shadow-sm: 0 2px 4px 0 rgb(60 80 120 / 0.04);
-  --shadow-md: 0 6px 12px -2px rgb(60 80 120 / 0.1);
-  --shadow-lg: 0 12px 24px -4px rgb(60 80 120 / 0.12);
-  --shadow-xl: 0 25px 50px -10px rgb(60 80 120 / 0.18);
+  /* Sombras para tema oscuro */
+  --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl: 0 25px 50px -10px rgb(0 0 0 / 0.6);
   
-  /* Degradados "Atmosféricos" */
-  --gradient-sky: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
-  --gradient-horizon: linear-gradient(135deg, var(--accent-sunrise), var(--accent-sunset));
-  --gradient-ethereal: linear-gradient(145deg, #e0f2fe 0%, #f0f9ff 50%, #fff7e6 100%);
+  /* Degradados "Nocturnos" */
+  --gradient-sky: linear-gradient(135deg, #2d3548, #1e2433);
+  --gradient-sky-diagonal: linear-gradient(145deg, #3d4f6d, #2d3a52);
+  --gradient-horizon: linear-gradient(135deg, #ff9a76, #ffd97d);
+  --gradient-ethereal: linear-gradient(145deg, #1a1f2e 0%, #242b3d 50%, #2d3548 100%);
+  --gradient-ethereal-alt: linear-gradient(145deg, #0f1419 0%, #1a1f2e 50%, #242b3d 100%);
 }
 
 /* Reset y estilos base */
@@ -55,7 +61,7 @@ html {
 
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: var(--background-light);
+  background: var(--background-dark);
   color: var(--text-primary);
   line-height: 1.7;
   min-height: 100vh;

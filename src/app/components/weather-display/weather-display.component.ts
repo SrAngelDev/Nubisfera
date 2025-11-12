@@ -25,6 +25,7 @@ interface HoraCombinada {
   temperatura: string;
   estadoCielo: string;
   probPrecipitacion: number;
+  esReal: boolean; // Indica si la temperatura es real o estimada
 }
 
 @Component({
@@ -142,53 +143,80 @@ export class WeatherDisplayComponent implements OnChanges {
     this.cargarPrediccion();
   }
 
+  formatHora(periodo: string): string {
+    const hora = parseInt(periodo);
+    if (hora === 0) return '00:00';
+    if (hora < 10) return `0${hora}:00`;
+    return `${hora}:00`;
+  }
+
   // --- Nuevos Métodos para Predicción Horaria Combinada ---
 
   getHorasCombinadas(dia: Dia): HoraCombinada[] {
     const horas: HoraCombinada[] = [];
 
-    // Log para depuración
-    console.log('Datos del día para predicción horaria:', {
-      fecha: dia.fecha,
-      temperatura: dia.temperatura,
-      estadoCielo: dia.estadoCielo,
-      probPrecipitacion: dia.probPrecipitacion
-    });
-
-    // Verificar que tengamos datos
+    // Verificar que tengamos datos básicos
     if (!dia.estadoCielo || dia.estadoCielo.length === 0) {
-      console.warn('No hay datos de estado del cielo');
+      console.warn('No hay datos de estado del cielo para', dia.fecha);
       return [];
     }
 
+    // Verificar que tengamos temperaturas
+    if (!dia.temperatura) {
+      console.warn('No hay datos de temperatura para', dia.fecha);
+      return [];
+    }
+
+    // Validar temperaturas mín/máx
+    const tempMin = dia.temperatura.minima ?? 10; // Valor por defecto razonable
+    const tempMax = dia.temperatura.maxima ?? 20; // Valor por defecto razonable
+    
     // Si no hay temperatura.dato, usar valores estimados basados en max/min
-    const tieneDatosTemperatura = dia.temperatura?.dato && dia.temperatura.dato.length > 0;
+    const tieneDatosTemperatura = dia.temperatura.dato && dia.temperatura.dato.length > 0;
+    
+    console.log('Procesando día:', dia.fecha, {
+      tieneDatosTemperatura,
+      tempMin,
+      tempMax,
+      numeroPeriodos: dia.estadoCielo.length
+    });
     
     for (const estadoCieloHora of dia.estadoCielo) {
       const periodo = estadoCieloHora.periodo;
       const periodoNum = parseInt(periodo);
       const horaActual = new Date().getHours();
       
-      // Filtrar horas pasadas solo para hoy
-      if (this.isToday(dia.fecha) && periodoNum <= horaActual) {
+      // Filtrar solo horas pasadas (no la actual) para hoy
+      if (this.isToday(dia.fecha) && periodoNum < horaActual) {
         continue;
       }
 
       let temperatura: string;
+      let esReal: boolean;
       
       if (tieneDatosTemperatura) {
         // Si hay datos horarios de temperatura, usarlos
-        temperatura = this.findMatchingValue(dia.temperatura.dato, periodo);
+        const tempValue = this.findMatchingValue(dia.temperatura.dato, periodo);
+        if (tempValue !== '--') {
+          temperatura = tempValue;
+          esReal = true;
+        } else {
+          // Si no hay dato para este periodo específico, estimar
+          temperatura = this.estimarTemperatura(periodoNum, tempMin, tempMax);
+          esReal = false;
+        }
       } else {
         // Si no hay datos horarios, interpolar entre min y max
-        temperatura = this.estimarTemperatura(periodoNum, dia.temperatura.minima, dia.temperatura.maxima);
+        temperatura = this.estimarTemperatura(periodoNum, tempMin, tempMax);
+        esReal = false; // Temperatura estimada
       }
 
       horas.push({
         periodo: periodo,
         estadoCielo: estadoCieloHora.value,
         temperatura: temperatura,
-        probPrecipitacion: parseInt(this.findMatchingValue(dia.probPrecipitacion, periodo)) || 0
+        probPrecipitacion: parseInt(this.findMatchingValue(dia.probPrecipitacion, periodo)) || 0,
+        esReal: esReal
       });
     }
     
@@ -197,20 +225,32 @@ export class WeatherDisplayComponent implements OnChanges {
   }
 
   private estimarTemperatura(hora: number, min: number, max: number): string {
-    // Estimación simple: asumimos que el mínimo es a las 6am y el máximo a las 14pm
+    // Asegurar valores por defecto si son inválidos
+    const tempMin = (min != null && !isNaN(min)) ? min : 10;
+    const tempMax = (max != null && !isNaN(max)) ? max : 20;
+    
+    // Asegurar que max >= min
+    const minFinal = Math.min(tempMin, tempMax);
+    const maxFinal = Math.max(tempMin, tempMax);
+
+    // Estimación basada en patrón diario típico
     if (hora >= 0 && hora < 6) {
-      return min.toString();
+      // Noche/Madrugada: temperatura mínima
+      return Math.round(minFinal).toString();
     } else if (hora >= 14 && hora <= 16) {
-      return max.toString();
-    } else if (hora < 14) {
-      // Subiendo hacia el máximo
-      const ratio = (hora - 6) / 8; // De 6 a 14 horas
-      const temp = min + (max - min) * ratio;
+      // Media tarde: temperatura máxima
+      return Math.round(maxFinal).toString();
+    } else if (hora >= 6 && hora < 14) {
+      // Mañana: sube de min a max (6am a 2pm)
+      const ratio = (hora - 6) / 8;
+      const temp = minFinal + (maxFinal - minFinal) * ratio;
       return Math.round(temp).toString();
     } else {
-      // Bajando hacia el mínimo
-      const ratio = (hora - 16) / 14; // De 16 a 6 (del día siguiente)
-      const temp = max - (max - min) * ratio;
+      // Tarde/Noche: baja de max a min (4pm a 6am)
+      const horasHastaMin = hora < 6 ? 6 - hora : 30 - hora; // 24h - hora + 6
+      const horasDeDescenso = 14; // De 16 a 6 (siguiente día)
+      const ratio = 1 - (horasHastaMin / horasDeDescenso);
+      const temp = minFinal + (maxFinal - minFinal) * Math.max(0, ratio);
       return Math.round(temp).toString();
     }
   }
