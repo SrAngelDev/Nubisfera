@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, map, switchMap, of } from 'rxjs';
 import { Municipio, MunicipioResponse } from '../models/municipio.model';
 import { PrediccionResponse, PrediccionDiaria } from '../models/prediccion.model';
@@ -10,6 +10,7 @@ import { PrediccionResponse, PrediccionDiaria } from '../models/prediccion.model
 export class AemetService {
   private readonly API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbmdlbHNhbmdhczFAZ21haWwuY29tIiwianRpIjoiZDRmZmZmOTEtODk5OS00OTNiLTk5NmYtYzcyZDVlY2Q0YmMyIiwiaXNzIjoiQUVNRVQiLCJpYXQiOjE3NTc1NDQyODYsInVzZXJJZCI6ImQ0ZmZmZjkxLTg5OTktNDkzYi05OTZmLWM3MmQ1ZWNkNGJjMiIsInJvbGUiOiIifQ.wmp9WUL5ILsusgnnJqgNEWppAzpv8tiPH8CkiNtESgs';
   
+  // Detectar si estamos en desarrollo o producción
   private readonly isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
   private readonly AEMET_BASE_URL = 'https://opendata.aemet.es/opendata';
@@ -18,32 +19,28 @@ export class AemetService {
 
   constructor(private http: HttpClient) { }
 
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'api_key': this.API_KEY,
-      'Accept': 'application/json'
-    });
-  }
-
   private buildUrl(endpoint: string): string {
+    // La API key va en la URL como parámetro de consulta según la documentación de AEMET
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const urlWithKey = `${endpoint}${separator}api_key=${this.API_KEY}`;
+    
     if (this.isDevelopment) {
-      const fullUrl = this.AEMET_BASE_URL + endpoint;
+      const fullUrl = this.AEMET_BASE_URL + urlWithKey;
       return `${this.DEV_CORS_PROXY}${encodeURIComponent(fullUrl)}`;
     }
     // En producción, añadimos el prefijo del proxy de Netlify a la ruta.
-    return this.PROD_PROXY_PREFIX + endpoint;
+    return this.PROD_PROXY_PREFIX + urlWithKey;
   }
 
   private makeRequest<T>(endpoint: string): Observable<T> {
     const requestUrl = this.buildUrl(endpoint);
     
     return this.http.get<any>(requestUrl, { 
-      headers: this.getHeaders(),
       responseType: 'json'
     }).pipe(
       switchMap(response => {
         if (response.datos) {
-          // La URL de 'datos' es absoluta. Hay que transformarla para cada entorno.
+          // La URL de 'datos' es absoluta y ya incluye la API key
           let datosUrl = response.datos;
           if (this.isDevelopment) {
             // En desarrollo, la envolvemos en el proxy CORS.
