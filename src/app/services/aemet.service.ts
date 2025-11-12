@@ -9,13 +9,19 @@ import { PrediccionResponse, PrediccionDiaria } from '../models/prediccion.model
 })
 export class AemetService {
   private readonly API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbmdlbHNhbmdhczFAZ21haWwuY29tIiwianRpIjoiZDRmZmZmOTEtODk5OS00OTNiLTk5NmYtYzcyZDVlY2Q0YmMyIiwiaXNzIjoiQUVNRVQiLCJpYXQiOjE3NTc1NDQyODYsInVzZXJJZCI6ImQ0ZmZmZjkxLTg5OTktNDkzYi05OTZmLWM3MmQ1ZWNkNGJjMiIsInJvbGUiOiIifQ.wmp9WUL5ILsusgnnJqgNEWppAzpv8tiPH8CkiNtESgs';
-  private readonly BASE_URL = 'https://opendata.aemet.es/opendata';
   
-  // Proxy CORS para desarrollo local (comentar en producción con Netlify)
-  private readonly CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+  // Detectar si estamos en desarrollo o producción
+  private readonly isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
-  // Para producción en Netlify, usar:
-  // private readonly CORS_PROXY = '';
+  // URLs base según el entorno
+  private readonly BASE_URL = this.isDevelopment 
+    ? 'https://opendata.aemet.es/opendata'
+    : '/api/aemet';
+  
+  // Proxy CORS solo para desarrollo local
+  private readonly CORS_PROXY = this.isDevelopment 
+    ? 'https://api.allorigins.win/raw?url='
+    : '';
 
   constructor(private http: HttpClient) { }
 
@@ -27,7 +33,7 @@ export class AemetService {
   }
 
   private buildUrl(endpoint: string): string {
-    // Si hay proxy, usarlo. Si no, URL directa
+    // Si hay proxy (desarrollo), usarlo. Si no (producción), URL directa
     if (this.CORS_PROXY) {
       return `${this.CORS_PROXY}${encodeURIComponent(this.BASE_URL + endpoint)}`;
     }
@@ -44,7 +50,7 @@ export class AemetService {
           // Segunda petición para obtener los datos reales
           const datosUrl = this.CORS_PROXY 
             ? `${this.CORS_PROXY}${encodeURIComponent(response.datos)}`
-            : response.datos;
+            : response.datos.replace('https://opendata.aemet.es/opendata', this.BASE_URL);
           return this.http.get<T>(datosUrl, {
             responseType: 'json'
           });
