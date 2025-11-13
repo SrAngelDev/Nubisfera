@@ -30,7 +30,7 @@
 
 ### 🔍 Búsqueda Inteligente
 - Búsqueda de municipios españoles con autocompletado
-- Base de datos completa de **8,122 municipios**
+- Base de datos completa con mas de  **6,000 municipios**
 - Resultados instantáneos mientras escribes
 
 ### 🌡️ Información Meteorológica Completa
