@@ -294,20 +294,20 @@ button { font-family: inherit; }
   list-style: none;
   max-height: 300px;
   overflow-y: auto;
-  background: white;
+  background: #1e293b;
   border-radius: 16px;
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.2);
   padding: 0.5rem;
 }
 
 .list-header {
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   margin-bottom: 0.5rem;
 }
 
@@ -326,18 +326,18 @@ button { font-family: inherit; }
 }
 
 .result-item:hover {
-  background: #f3f4f6;
+  background: rgba(255,255,255,0.1);
 }
 
 .item-name {
   display: block;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #f1f5f9;
 }
 
 .item-meta {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #94a3b8;
 }
 
 .item-action {
@@ -464,7 +464,7 @@ button { font-family: inherit; }
 
 .btn-primary {
   background: var(--gradient-horizon);
-  color: white;
+  color: rgb(0, 0, 0);
   border: none;
   padding: 1rem 2rem;
   border-radius: 50px;
@@ -501,19 +501,19 @@ button { font-family: inherit; }
 }
 
 .city-chip {
-  background: white;
+  background: var(--gradient-sky);
   border: 1px solid var(--border-light);
   padding: 0.5rem 1.25rem;
   border-radius: 20px;
   cursor: pointer;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: white;
   transition: all 0.2s;
 }
 
 .city-chip:hover {
+  color: black;
   border-color: var(--primary-blue);
-  color: var(--primary-blue);
 }
 
 /* ===== FOOTER ===== */

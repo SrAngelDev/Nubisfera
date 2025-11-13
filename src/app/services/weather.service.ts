@@ -89,7 +89,7 @@ export class WeatherService {
         
         console.log('🌡️ Procesando datos actuales...');
         const currentData = {
-          time: new Date((Number(current.time()) + Number(response.utcOffsetSeconds())) * 1000),
+          time: new Date(), // Usar la hora actual del sistema
           temperature: current.variables(0)?.value() ?? 0,
           humidity: current.variables(1)?.value() ?? 0,
           apparentTemperature: current.variables(2)?.value() ?? 0,
