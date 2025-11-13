@@ -41,3 +41,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Generated datasets (opcional - descomentar si el JSON es muy grande)
+# src/assets/municipios-espana.json

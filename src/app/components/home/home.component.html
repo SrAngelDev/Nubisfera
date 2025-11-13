@@ -1,0 +1,233 @@
+<!-- Hero Section: El corazón visual de la aplicación -->
+<section class="hero-section">
+  <div class="hero-content container">
+    <div class="hero-text">
+      <h1 class="hero-title">
+        <span class="gradient-text">{{ title() }}</span>
+      </h1>
+      <p class="hero-subtitle">
+        Tu ventana al tiempo. La forma más moderna de consultar la meteorología en España.
+      </p>
+      <div class="hero-features">
+        <div class="feature-badge">
+          <span class="badge-icon">📅</span>
+          <span>Predicción 7 días</span>
+        </div>
+        <div class="feature-badge">
+          <span class="badge-icon">⏰</span>
+          <span>Datos por horas</span>
+        </div>
+        <div class="feature-badge">
+          <span class="badge-icon">🎯</span>
+          <span>Datos oficiales AEMET</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tarjeta de Búsqueda: El centro de la interacción -->
+    <div class="search-card">
+      <div class="search-card-header">
+        <h2>🔍 Busca tu municipio</h2>
+        <p>Escribe el nombre de cualquier ciudad o pueblo de España.</p>
+        @if (isLoadingMunicipios) {
+          <div class="loading-badge">
+            <span class="spinner-small"></span>
+            <span>Cargando municipios...</span>
+          </div>
+        } @else {
+          <div class="ready-badge">
+            <span>✅</span>
+            <span>Municipios listos</span>
+          </div>
+        }
+      </div>
+      <div class="search-input-container">
+        <span class="search-icon"></span>
+        <input 
+          type="text" 
+          class="search-input"
+          placeholder="Ej: Madrid, Barcelona, Sevilla..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+          (focus)="onSearchFocus()"
+          (blur)="onSearchBlur()"
+          [disabled]="isLoadingMunicipios"
+          #searchInput
+        />
+        @if (searchQuery) {
+          <button class="clear-button" (click)="clearSearch()" aria-label="Limpiar búsqueda">×</button>
+        }
+      </div>
+      
+      <!-- Resultados de Búsqueda -->
+      @if (showSearchResults && municipiosFiltrados.length > 0) {
+        <div class="search-results" role="listbox">
+          <div class="results-count">
+            {{ municipiosFiltrados.length }} resultado{{ municipiosFiltrados.length !== 1 ? 's' : '' }}
+          </div>
+          @for (municipio of municipiosFiltrados; track municipio.id) {
+            <button 
+              class="search-result-item"
+              (click)="seleccionarMunicipio(municipio)"
+              role="option"
+            >
+              <span class="result-icon">📍</span>
+              <div class="result-info">
+                <span class="result-name">{{ municipio.nombre }}</span>
+                <span class="result-province">{{ municipio.capital || 'España' }}</span>
+              </div>
+              <span class="result-arrow">→</span>
+            </button>
+          }
+        </div>
+      }
+      
+      @if (showSearchResults && searchQuery && municipiosFiltrados.length === 0) {
+        <div class="no-results">
+          <span class="no-results-icon">🤷‍♀️</span>
+          <p>No se han encontrado municipios</p>
+          <small>Prueba con otro término de búsqueda.</small>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Contenido Principal -->
+<main class="main-content container">
+  
+  <!-- Controles de Visualización -->
+  @if (municipioActual) {
+    <div class="view-controls">
+      <button 
+        class="control-btn"
+        [class.active]="tipoPrecisionActual === 'diaria'"
+        (click)="cambiarTipoPrecision('diaria')"
+      >
+        <span class="control-icon">📅</span>
+        <span>7 Días</span>
+      </button>
+      <button 
+        class="control-btn"
+        [class.active]="tipoPrecisionActual === 'horaria'"
+        (click)="cambiarTipoPrecision('horaria')"
+      >
+        <span class="control-icon">⏰</span>
+        <span>Por Horas</span>
+      </button>
+      <button 
+        class="control-btn secondary"
+        (click)="onAccionEspecial('actualizar')"
+        title="Actualizar datos"
+      >
+        <span class="control-icon">🔄</span>
+      </button>
+      <button 
+        class="control-btn secondary"
+        (click)="onAccionEspecial('compartir')"
+        title="Compartir predicción"
+      >
+        <span class="control-icon">📤</span>
+      </button>
+    </div>
+  }
+  
+  <!-- Visualización del Tiempo -->
+  @if (municipioActual) {
+    <app-weather-display 
+      [municipio]="municipioActual"
+      [tipoPrecision]="tipoPrecisionActual"
+    ></app-weather-display>
+  } @else {
+    <!-- Estado Vacío Mejorado -->
+    <div class="empty-state">
+      <div class="empty-state-content">
+        <div class="empty-state-animation">
+          <div class="floating-icon">🌤️</div>
+          <div class="floating-icon delay-1">☁️</div>
+          <div class="floating-icon delay-2">🌡️</div>
+        </div>
+        <h2 class="empty-state-title">¡Bienvenido a Nubisfera!</h2>
+        <p class="empty-state-text">
+          Usa el buscador para encontrar la predicción meteorológica de cualquier rincón de España.
+        </p>
+        <div class="quick-actions">
+          <button class="quick-action-btn" (click)="onAccionEspecial('ubicacion')">
+            <span class="action-icon">📍</span>
+            <span>Usar mi ubicación</span>
+          </button>
+        </div>
+        
+        <!-- Municipios Populares -->
+        <div class="popular-cities">
+          <p class="popular-title">O prueba con estas ciudades:</p>
+          <div class="popular-grid">
+            <button class="city-chip" (click)="buscarMunicipioPorNombre('Madrid')">Madrid</button>
+            <button class="city-chip" (click)="buscarMunicipioPorNombre('Barcelona')">Barcelona</button>
+            <button class="city-chip" (click)="buscarMunicipioPorNombre('Valencia')">Valencia</button>
+            <button class="city-chip" (click)="buscarMunicipioPorNombre('Sevilla')">Sevilla</button>
+            <button class="city-chip" (click)="buscarMunicipioPorNombre('Zaragoza')">Zaragoza</button>
+            <button class="city-chip" (click)="buscarMunicipioPorNombre('Málaga')">Málaga</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+  
+</main>
+
+<!-- Footer con diseño mejorado -->
+<footer class="app-footer">
+  <div class="footer-content container">
+    <div class="footer-section">
+      <h3 class="footer-title">🌤️ {{ title() }}</h3>
+      <p class="footer-description">
+        Tu fuente moderna y fiable para consultar el tiempo en España.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4 class="footer-subtitle">Enlaces</h4>
+      <ul class="footer-links">
+        <li><a href="https://www.aemet.es" target="_blank" rel="noopener noreferrer">🌐 AEMET Oficial</a></li>
+        <li><a href="https://github.com/SrAngelDev/Nubisfera" target="_blank" rel="noopener noreferrer">💻 Código Fuente</a></li>
+        <li><a href="#" (click)="$event.preventDefault(); showNotification('info', 'ℹ️ Nubisfera v1.0. Creado con Angular.')">ℹ️ Acerca de</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4 class="footer-subtitle">Información</h4>
+      <p class="footer-info">
+        <small>© {{ currentYear }} Nubisfera</small><br>
+        <small>Datos meteorológicos oficiales.</small><br>
+        <small>Actualización continua 24/7.</small>
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>Hecho con ❤️ y ☕ por Angel Sanchez Gasanz</p>
+  </div>
+</footer>
+
+<!-- Overlay de Carga Global -->
+@if (isLoadingGlobal) {
+  <div class="global-loading" aria-live="assertive" role="alert">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+        <div class="spinner-icon">🌤️</div>
+      </div>
+      <h3>Cargando datos...</h3>
+      <p>Conectando con los servidores de Open Meteo.</p>
+    </div>
+  </div>
+}
+
+<!-- Sistema de Notificaciones -->
+@if (notification) {
+  <div class="notification" [class]="notification.type" role="alert">
+    <div class="notification-content">
+      <span class="notification-icon">{{ getNotificationIcon(notification.type) }}</span>
+      <p class="notification-message">{{ notification.message }}</p>
+      <button class="notification-close" (click)="closeNotification()" aria-label="Cerrar notificación">×</button>
+    </div>
+  </div>
+}

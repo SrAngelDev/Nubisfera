@@ -5,100 +5,99 @@ import { Injectable } from '@angular/core';
 })
 export class WeatherIconService {
 
-  private readonly iconos: { [key: string]: string } = {
-    '11': '☀️', '11n': '🌙',   // Despejado
-    '12': '🌤️', '12n': '🌙☁️', // Poco nuboso
-    '13': '⛅', '13n': '🌙☁️',   // Intervalos nubosos
-    '14': '☁️', '14n': '☁️',   // Nuboso
-    '15': '☁️', '15n': '☁️',   // Muy nuboso
-    '16': '☁️', '16n': '☁️',   // Cubierto
-    '17': '🌦️', '17n': '🌦️', // Nubes altas
-    '23': '🌧️', '23n': '🌧️', // Lluvia
-    '24': '🌧️', '24n': '🌧️', // Lluvia
-    '25': '⛈️', '25n': '⛈️',   // Tormenta
-    '26': '⛈️', '26n': '⛈️',   // Tormenta con lluvia
-    '27': '❄️', '27n': '❄️',   // Nieve
-    '33': '🌧️☀️', '33n': '🌧️🌙', // Intervalos nubosos con lluvia
-    '34': '🌧️☁️', '34n': '🌧️☁️', // Nuboso con lluvia
-    '43': '😶‍🌫️', '43n': '😶‍🌫️', // Bruma
-    '44': '🌁', '44n': '🌁', // Niebla baja
-    '45': '🌁', '45n': '🌁', // Niebla
-    '46': '🌁❄️', '46n': '🌁❄️', // Niebla depositando escarcha
-    '51': '🌧️', '51n': '🌧️', // Lluvia débil
-    '52': '🌧️', '52n': '🌧️', // Lluvia moderada
-    '53': '🌧️', '53n': '🌧️', // Lluvia fuerte
-    '54': '🌧️', '54n': '🌧️', // Lluvia muy fuerte
-    '61': '⛈️', '61n': '⛈️',   // Tormenta
-    '62': '⛈️', '62n': '⛈️',   // Tormenta fuerte
-    '63': '❄️', '63n': '❄️',   // Nieve débil
-    '64': '❄️', '64n': '❄️',   // Nieve moderada
-    '65': '❄️', '65n': '❄️',   // Nieve fuerte
-    '71': '🌁', '71n': '🌁', // Niebla
-    '81': '🌦️', '81n': '🌦️', // Chubascos débiles
-    '82': '🌧️', '82n': '🌧️', // Chubascos moderados
-    '83': '🌧️', '83n': '🌧️', // Chubascos fuertes
-    'default': '🌡️'
-  };
-
   constructor() { }
 
-  getWeatherIcon(codigo: string): string {
-    if (!codigo || codigo === '' || codigo === 'undefined') {
-      console.warn('Código de estado del cielo vacío o inválido:', codigo);
-      return this.iconos['default'];
-    }
-    // Convertir a string y limpiar cualquier tipo extraño
-    const codigoStr = String(codigo).trim();
-    return this.iconos[codigoStr] || this.iconos['default'];
+  /**
+   * Determina si es de día según la hora
+   * Considera día entre las 7:00 y las 20:00
+   */
+  private isDaytime(date: Date): boolean {
+    const hour = date.getHours();
+    return hour >= 7 && hour < 20;
   }
 
-  getWeatherDescription(codigo: string): string {
-    if (!codigo || codigo === '' || codigo === 'undefined') {
-      return 'Información no disponible';
-    }
+  /**
+   * Obtiene el emoji del clima según el código WMO y la hora
+   */
+  getWeatherIcon(codigo: number, fecha?: Date): string {
+    const isDaytime = fecha ? this.isDaytime(fecha) : true;
     
-    // Convertir a string y limpiar cualquier tipo extraño (BigInt, etc)
-    const codigoStr = String(codigo).trim();
-    // Eliminar sufijo 'n' (noche) para obtener descripción base
-    const codigoBase = codigoStr.replace(/n$/, '');
-    
-    const descriptions: { [key: string]: string } = {
-      '11': 'Despejado',
-      '12': 'Poco nuboso',
-      '13': 'Intervalos nubosos',
-      '14': 'Nuboso',
-      '15': 'Muy nuboso',
-      '16': 'Cubierto',
-      '17': 'Nubes altas',
-      '23': 'Lluvia',
-      '24': 'Lluvia',
-      '25': 'Tormenta',
-      '26': 'Tormenta con lluvia',
-      '27': 'Nieve',
-      '33': 'Intervalos nubosos con lluvia',
-      '34': 'Nuboso con lluvia',
-      '43': 'Bruma',
-      '44': 'Niebla baja',
-      '45': 'Niebla',
-      '46': 'Niebla con escarcha',
-      '51': 'Lluvia débil',
-      '52': 'Lluvia moderada',
-      '53': 'Lluvia fuerte',
-      '54': 'Lluvia muy fuerte',
-      '61': 'Tormenta',
-      '62': 'Tormenta fuerte',
-      '63': 'Nieve débil',
-      '64': 'Nieve moderada',
-      '65': 'Nieve fuerte',
-      '71': 'Niebla',
-      '81': 'Chubascos débiles',
-      '82': 'Chubascos moderados',
-      '83': 'Chubascos fuertes'
+    // Mapeo de códigos WMO a emojis (día/noche)
+    const iconMap: { [key: number]: { day: string; night: string } } = {
+      0: { day: '☀️', night: '🌙' },          // Despejado
+      1: { day: '🌤️', night: '🌙☁️' },       // Principalmente despejado
+      2: { day: '⛅', night: '☁️' },          // Parcialmente nublado
+      3: { day: '☁️', night: '☁️' },          // Nublado
+      45: { day: '🌫️', night: '🌫️' },        // Niebla
+      48: { day: '🌫️', night: '🌫️' },        // Niebla con escarcha
+      51: { day: '🌦️', night: '🌧️' },        // Llovizna ligera
+      53: { day: '🌦️', night: '🌧️' },        // Llovizna moderada
+      55: { day: '🌧️', night: '🌧️' },        // Llovizna densa
+      56: { day: '🌧️', night: '🌧️' },        // Llovizna helada ligera
+      57: { day: '🌧️', night: '🌧️' },        // Llovizna helada densa
+      61: { day: '🌧️', night: '🌧️' },        // Lluvia ligera
+      63: { day: '🌧️', night: '🌧️' },        // Lluvia moderada
+      65: { day: '⛈️', night: '⛈️' },         // Lluvia intensa
+      66: { day: '🌧️', night: '🌧️' },        // Lluvia helada ligera
+      67: { day: '⛈️', night: '⛈️' },         // Lluvia helada intensa
+      71: { day: '🌨️', night: '🌨️' },        // Nieve ligera
+      73: { day: '🌨️', night: '🌨️' },        // Nieve moderada
+      75: { day: '❄️', night: '❄️' },         // Nieve intensa
+      77: { day: '🌨️', night: '🌨️' },        // Granos de nieve
+      80: { day: '🌦️', night: '🌧️' },        // Chubascos ligeros
+      81: { day: '🌧️', night: '🌧️' },        // Chubascos moderados
+      82: { day: '⛈️', night: '⛈️' },         // Chubascos violentos
+      85: { day: '🌨️', night: '🌨️' },        // Chubascos de nieve ligeros
+      86: { day: '❄️', night: '❄️' },         // Chubascos de nieve intensos
+      95: { day: '⛈️', night: '⛈️' },         // Tormenta
+      96: { day: '⛈️', night: '⛈️' },         // Tormenta con granizo ligero
+      99: { day: '⛈️', night: '⛈️' }          // Tormenta con granizo intenso
     };
-    
-    const description = descriptions[codigoBase];
+
+    const icons = iconMap[codigo];
+    if (!icons) {
+      console.warn('Código WMO desconocido:', codigo);
+      return '🌡️';
+    }
+
+    return isDaytime ? icons.day : icons.night;
+  }
+
+  getWeatherDescription(codigo: number): string {
+    const descriptions: { [key: number]: string } = {
+      0: 'Despejado',
+      1: 'Principalmente despejado',
+      2: 'Parcialmente nublado',
+      3: 'Nublado',
+      45: 'Niebla',
+      48: 'Niebla con escarcha',
+      51: 'Llovizna ligera',
+      53: 'Llovizna moderada',
+      55: 'Llovizna densa',
+      56: 'Llovizna helada ligera',
+      57: 'Llovizna helada densa',
+      61: 'Lluvia ligera',
+      63: 'Lluvia moderada',
+      65: 'Lluvia intensa',
+      66: 'Lluvia helada ligera',
+      67: 'Lluvia helada intensa',
+      71: 'Nieve ligera',
+      73: 'Nieve moderada',
+      75: 'Nieve intensa',
+      77: 'Granos de nieve',
+      80: 'Chubascos ligeros',
+      81: 'Chubascos moderados',
+      82: 'Chubascos violentos',
+      85: 'Chubascos de nieve ligeros',
+      86: 'Chubascos de nieve intensos',
+      95: 'Tormenta',
+      96: 'Tormenta con granizo ligero',
+      99: 'Tormenta con granizo intenso'
+    };
+
+    const description = descriptions[codigo];
     if (!description) {
-      console.warn('Código de estado del cielo desconocido:', codigoStr, '(base:', codigoBase + ')');
+      console.warn('Código WMO desconocido:', codigo);
       return 'Información no disponible';
     }
     return description;

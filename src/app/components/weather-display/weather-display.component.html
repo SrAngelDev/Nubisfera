@@ -21,13 +21,13 @@
   </div>
 
   <!-- Contenido de la Predicción -->
-  <div *ngIf="prediccion && !isLoading && !error" class="prediction-content">
+  <div *ngIf="weatherData && !isLoading && !error" class="prediction-content">
 
     <!-- Cabecera de la Predicción -->
     <header class="prediction-header">
       <div class="location-info">
-        <h2 class="municipio-name">{{ prediccion.nombre }}</h2>
-        <p class="provincia-name">{{ prediccion.provincia }}</p>
+        <h2 class="municipio-name">{{ weatherData.municipio.nombre }}</h2>
+        <p class="provincia-name">{{ weatherData.municipio.provincia }}</p>
       </div>
       <div class="prediction-badge">
         <span class="badge-icon">{{ tipoPrecision === 'diaria' ? '📅' : '⏰' }}</span>
@@ -35,31 +35,54 @@
       </div>
     </header>
 
+    <!-- Tiempo Actual -->
+    <div class="current-weather" *ngIf="weatherData.current">
+      <div class="current-icon-container">
+        <div class="current-icon">{{ getWeatherIcon(weatherData.current.weatherCode, weatherData.current.time) }}</div>
+        <p class="current-description">{{ getWeatherDescription(weatherData.current.weatherCode) }}</p>
+      </div>
+      <div class="current-temp-container">
+        <span class="current-temp">{{ weatherData.current.temperature | number:'1.0-0' }}°</span>
+        <span class="feels-like">Sensación: {{ weatherData.current.apparentTemperature | number:'1.0-0' }}°</span>
+      </div>
+      <div class="current-details">
+        <div class="detail-item">
+          <span class="detail-icon">💧</span>
+          <span>{{ weatherData.current.humidity }}%</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon">💨</span>
+          <span>{{ weatherData.current.windSpeed | number:'1.0-0' }} km/h</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Predicción Diaria -->
     <ng-container *ngIf="tipoPrecision === 'diaria'">
       <div class="daily-grid">
         <div 
           *ngFor="let dia of getDiasFuturos(); let i = index"
           class="day-card"
-          [class.is-today]="isToday(dia.fecha)"
+          [class.is-today]="isToday(dia.date)"
           [@slideIn]="i"
         >
           <div class="day-card-header">
-            <p class="day-name">{{ getDayName(dia.fecha) }}</p>
-            <p class="day-date">{{ formatDate(dia.fecha, 'd MMM') }}</p>
+            <p class="day-name">{{ getDayName(dia.date) }}</p>
+            <p class="day-date">{{ formatDate(dia.date, 'd MMM') }}</p>
           </div>
           <div class="day-card-body">
-            <div class="weather-icon" [innerHTML]="getWeatherIcon(dia.estadoCielo[0]?.value || '') | safeHtml"></div>
-            <p class="weather-description">{{ getWeatherDescription(dia.estadoCielo[0]?.value || '') }}</p>
+            <div class="weather-icon-large">{{ getWeatherIcon(dia.weatherCode, dia.date) }}</div>
+            <p class="weather-description">{{ getWeatherDescription(dia.weatherCode) }}</p>
           </div>
           <div class="day-card-footer">
             <div class="temperature">
-              <span class="temp-max">{{ dia.temperatura.maxima }}°</span>
-              <span class="temp-min">{{ dia.temperatura.minima }}°</span>
+              <span class="temp-max">{{ dia.temperatureMax | number:'1.0-0' }}°</span>
+              <span class="temp-separator">/</span>
+              <span class="temp-min">{{ dia.temperatureMin | number:'1.0-0' }}°</span>
             </div>
             <div class="precipitation">
               <span class="precip-icon">💧</span>
-              <span>{{ dia.probPrecipitacion[0]?.value || 0 }}%</span>
+              <span>{{ dia.precipitationProbabilityMax | number:'1.0-0' }}%</span>
             </div>
           </div>
         </div>
@@ -69,49 +92,38 @@
     <!-- Predicción Horaria -->
     <ng-container *ngIf="tipoPrecision === 'horaria'">
       <div class="hourly-forecast">
-        <div *ngFor="let dia of getDiasConHoras(); let diaIndex = index" class="hourly-day-section">
-          <ng-container>
-            <div class="hourly-day-header">
-              <h3 class="hourly-day-title">
-                <span class="day-badge">{{ getDayName(dia.fecha) }}</span>
-                <span class="day-date-detail">{{ formatDate(dia.fecha, 'd MMM') }}</span>
-              </h3>
-              <div class="day-temp-range">
-                <span class="temp-range-label">Rango:</span>
-                <span class="temp-max-badge">{{ dia.temperatura.maxima || 'N/A' }}°</span>
-                <span class="temp-separator">/</span>
-                <span class="temp-min-badge">{{ dia.temperatura.minima || 'N/A' }}°</span>
-              </div>
-            </div>
-            <div class="hourly-scroll-container">
-              <div class="hourly-grid">
-                <div *ngFor="let hora of getHorasCombinadas(dia); let i = index" 
-                     class="hour-card" 
-                     [@slideIn]="i"
-                     [class.no-data]="hora.temperatura === '--'">
-                  <div class="hour-header">
-                    <p class="hour-time">{{ formatHora(hora.periodo) }}</p>
+        <div *ngFor="let diaConHoras of getDiasConHoras(); let diaIndex = index" class="hourly-day-section">
+          <div class="hourly-day-header">
+            <h3 class="hourly-day-title">
+              <span class="day-badge">{{ getDayName(diaConHoras.date) }}</span>
+              <span class="day-date-detail">{{ formatDate(diaConHoras.date, 'd MMM') }}</span>
+            </h3>
+          </div>
+          <div class="hourly-scroll-container">
+            <div class="hourly-grid">
+              <div *ngFor="let hora of diaConHoras.horas; let i = index" 
+                   class="hour-card" 
+                   [@slideIn]="i">
+                <div class="hour-header">
+                  <p class="hour-time">{{ formatHora(hora.time) }}</p>
+                </div>
+                <div class="hour-body">
+                  <div class="hour-icon-large">{{ getWeatherIcon(hora.weatherCode, hora.time) }}</div>
+                  <p class="weather-desc-mini">{{ getWeatherDescription(hora.weatherCode) }}</p>
+                </div>
+                <div class="hour-footer">
+                  <div class="hour-temp-container">
+                    <span class="temp-icon">🌡️</span>
+                    <span class="hour-temp">{{ hora.temperature | number:'1.0-0' }}°</span>
                   </div>
-                  <div class="hour-body">
-                    <div class="hour-icon" [innerHTML]="getWeatherIcon(hora.estadoCielo) | safeHtml"></div>
-                    <p class="weather-desc-mini">{{ getWeatherDescription(hora.estadoCielo) }}</p>
-                  </div>
-                  <div class="hour-footer">
-                    <div class="hour-temp-container">
-                      <span class="temp-icon">🌡️</span>
-                      <span class="hour-temp" [class.estimated]="!hora.esReal">
-                        {{ hora.temperatura }}°
-                      </span>
-                    </div>
-                    <div class="hour-precip">
-                      <span class="precip-icon">💧</span>
-                      <span class="precip-value">{{ hora.probPrecipitacion }}%</span>
-                    </div>
+                  <div class="hour-precip">
+                    <span class="precip-icon">💧</span>
+                    <span class="precip-value">{{ hora.precipitationProbability | number:'1.0-0' }}%</span>
                   </div>
                 </div>
               </div>
             </div>
-          </ng-container>
+          </div>
         </div>
       </div>
     </ng-container>
@@ -120,11 +132,11 @@
     <footer class="prediction-footer">
       <p class="data-source">
         <span class="source-icon">📡</span>
-        Datos proporcionados por <strong>AEMET</strong>
+        Datos proporcionados por <strong>Open-Meteo</strong>
       </p>
-      <p *ngIf="prediccion.timestamp" class="last-updated">
+      <p class="last-updated">
         <span class="update-icon">🕐</span>
-        Actualizado: {{ prediccion.timestamp | date:'medium':'es-ES' }}
+        Actualizado: {{ weatherData.current.time | date:'medium':'es-ES' }}
       </p>
     </footer>
 

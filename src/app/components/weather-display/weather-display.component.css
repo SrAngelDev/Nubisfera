@@ -97,6 +97,12 @@
 
 
 /* --- Contenido de la Predicción --- */
+.prediction-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .prediction-header {
   padding: 2rem 2.5rem;
   background: var(--gradient-sky-diagonal);
@@ -547,4 +553,99 @@
     align-items: flex-start;
     padding: 1.5rem;
   }
+}
+/* --- Tiempo Actual --- */
+.current-weather {
+  padding: 2rem 2.5rem;
+  background: var(--gradient-sky);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2rem;
+  align-items: center;
+  border-radius: 24px;
+  margin: 0 2.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.current-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-icon {
+  font-size: 5rem;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+}
+
+.current-description {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  text-align: center;
+}
+
+.current-temp-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.current-temp {
+  font-size: 4rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.feels-like {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.current-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.detail-icon {
+  font-size: 1.5rem;
+}
+
+.weather-icon-large {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin: 0.5rem 0;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.hour-icon-large {
+  font-size: 2.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.temp-separator {
+  margin: 0 0.25rem;
+  opacity: 0.5;
 }
