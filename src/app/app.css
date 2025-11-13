@@ -8,6 +8,19 @@
   background: var(--gradient-ethereal);
   position: relative;
   overflow-x: hidden;
+  padding-top: 70px;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding-top: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding-top: 55px;
+  }
 }
 
 /* Hero Section */
