@@ -72,13 +72,20 @@
   font-weight: 300;
 }
 
+/* Contenedor principal con layout flex */
+.map-content-wrapper {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
 /* Contenedor del mapa */
 .spain-map-container {
+  flex: 1;
   background: white;
   border-radius: 15px;
   padding: 1rem;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  margin-bottom: 2rem;
   min-height: 600px;
   overflow: hidden;
   position: relative;
@@ -105,10 +112,14 @@
 
 /* Panel de información */
 .map-info-panel {
+  flex: 0 0 380px;
   background: white;
   border-radius: 15px;
   padding: 2rem;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  max-height: 750px;
+  display: flex;
+  flex-direction: column;
 }
 
 .info-header {
@@ -131,7 +142,7 @@
 
 /* Lista de provincias */
 .provincias-list {
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
   margin-bottom: 2rem;
 }
@@ -279,6 +290,14 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
+  .map-content-wrapper {
+    gap: 1.5rem;
+  }
+
+  .map-info-panel {
+    flex: 0 0 340px;
+  }
+
   .spain-map-container {
     padding: 1rem;
   }
@@ -294,13 +313,28 @@
     margin: 1rem 0;
   }
 
+  .map-content-wrapper {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .spain-map-container {
+    width: 100%;
+  }
+
+  .map-info-panel {
+    flex: none;
+    width: 100%;
+    max-height: none;
+  }
+
   .map-chart {
     height: 500px;
     min-height: 450px;
   }
 
-  .map-info-panel {
-    margin-top: 1.5rem;
+  .provincias-list {
+    max-height: 350px;
   }
 }
 
@@ -309,6 +343,10 @@
     padding: 1rem;
     margin: 1rem 0;
     border-radius: 15px;
+  }
+
+  .map-content-wrapper {
+    gap: 1.5rem;
   }
 
   .map-header {
@@ -336,7 +374,6 @@
 
   .map-info-panel {
     padding: 1rem;
-    margin-top: 1rem;
   }
 
   .info-header h3 {
@@ -374,6 +411,10 @@
   .spain-map-wrapper {
     padding: 0.75rem;
     border-radius: 12px;
+  }
+
+  .map-content-wrapper {
+    gap: 1rem;
   }
 
   .map-title {

@@ -16,16 +16,17 @@
   </div>
   }
 
-  <!-- Contenedor del mapa -->
+  <!-- Contenedor principal con mapa y panel -->
   @if (!isLoading) {
-  <div class="spain-map-container">
-    <div id="spain_map" class="map-chart"></div>
-  </div>
-  }
+  <div class="map-content-wrapper">
+    <!-- Contenedor del mapa -->
+    <div class="spain-map-container">
+      <div id="spain_map" class="map-chart"></div>
+    </div>
 
-  <!-- Panel lateral con información -->
-  @if (!isLoading && provinciasData.length > 0) {
-  <div class="map-info-panel">
+    <!-- Panel lateral con información -->
+    @if (provinciasData.length > 0) {
+    <div class="map-info-panel">
     <div class="info-header">
       <h3>📊 Ranking de Temperaturas</h3>
       <p class="info-subtitle">{{ provinciasData.length }} provincias monitorizadas</p>
@@ -86,6 +87,8 @@
         </div>
       </div>
     </div>
+    </div>
+    }
   </div>
   }
 </div>

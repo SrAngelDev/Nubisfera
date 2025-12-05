@@ -17,47 +17,47 @@ export class WeatherIconService {
   }
 
   /**
-   * Obtiene el emoji del clima según el código WMO y la hora
+   * Obtiene el icono de Weather Icons según el código WMO y la hora
    */
   getWeatherIcon(codigo: number, fecha?: Date): string {
     const isDaytime = fecha ? this.isDaytime(fecha) : true;
     
-    // Mapeo de códigos WMO a emojis (día/noche)
+    // Mapeo de códigos WMO a Weather Icons (día/noche)
     const iconMap: { [key: number]: { day: string; night: string } } = {
-      0: { day: '☀️', night: '🌙' },          // Despejado
-      1: { day: '🌤️', night: '🌙☁️' },       // Principalmente despejado
-      2: { day: '⛅', night: '☁️' },          // Parcialmente nublado
-      3: { day: '☁️', night: '☁️' },          // Nublado
-      45: { day: '🌫️', night: '🌫️' },        // Niebla
-      48: { day: '🌫️', night: '🌫️' },        // Niebla con escarcha
-      51: { day: '🌦️', night: '🌧️' },        // Llovizna ligera
-      53: { day: '🌦️', night: '🌧️' },        // Llovizna moderada
-      55: { day: '🌧️', night: '🌧️' },        // Llovizna densa
-      56: { day: '🌧️', night: '🌧️' },        // Llovizna helada ligera
-      57: { day: '🌧️', night: '🌧️' },        // Llovizna helada densa
-      61: { day: '🌧️', night: '🌧️' },        // Lluvia ligera
-      63: { day: '🌧️', night: '🌧️' },        // Lluvia moderada
-      65: { day: '⛈️', night: '⛈️' },         // Lluvia intensa
-      66: { day: '🌧️', night: '🌧️' },        // Lluvia helada ligera
-      67: { day: '⛈️', night: '⛈️' },         // Lluvia helada intensa
-      71: { day: '🌨️', night: '🌨️' },        // Nieve ligera
-      73: { day: '🌨️', night: '🌨️' },        // Nieve moderada
-      75: { day: '❄️', night: '❄️' },         // Nieve intensa
-      77: { day: '🌨️', night: '🌨️' },        // Granos de nieve
-      80: { day: '🌦️', night: '🌧️' },        // Chubascos ligeros
-      81: { day: '🌧️', night: '🌧️' },        // Chubascos moderados
-      82: { day: '⛈️', night: '⛈️' },         // Chubascos violentos
-      85: { day: '🌨️', night: '🌨️' },        // Chubascos de nieve ligeros
-      86: { day: '❄️', night: '❄️' },         // Chubascos de nieve intensos
-      95: { day: '⛈️', night: '⛈️' },         // Tormenta
-      96: { day: '⛈️', night: '⛈️' },         // Tormenta con granizo ligero
-      99: { day: '⛈️', night: '⛈️' }          // Tormenta con granizo intenso
+      0: { day: 'wi-day-sunny', night: 'wi-night-clear' },                    // Despejado
+      1: { day: 'wi-day-sunny-overcast', night: 'wi-night-alt-partly-cloudy' }, // Principalmente despejado
+      2: { day: 'wi-day-cloudy', night: 'wi-night-alt-cloudy' },              // Parcialmente nublado
+      3: { day: 'wi-cloudy', night: 'wi-cloudy' },                            // Nublado
+      45: { day: 'wi-day-fog', night: 'wi-night-fog' },                       // Niebla
+      48: { day: 'wi-day-fog', night: 'wi-night-fog' },                       // Niebla con escarcha
+      51: { day: 'wi-day-sprinkle', night: 'wi-night-alt-sprinkle' },        // Llovizna ligera
+      53: { day: 'wi-day-sprinkle', night: 'wi-night-alt-sprinkle' },        // Llovizna moderada
+      55: { day: 'wi-day-rain', night: 'wi-night-alt-rain' },                // Llovizna densa
+      56: { day: 'wi-day-rain-mix', night: 'wi-night-alt-rain-mix' },        // Llovizna helada ligera
+      57: { day: 'wi-day-rain-mix', night: 'wi-night-alt-rain-mix' },        // Llovizna helada densa
+      61: { day: 'wi-day-rain', night: 'wi-night-alt-rain' },                // Lluvia ligera
+      63: { day: 'wi-day-rain', night: 'wi-night-alt-rain' },                // Lluvia moderada
+      65: { day: 'wi-day-rain-wind', night: 'wi-night-alt-rain-wind' },      // Lluvia intensa
+      66: { day: 'wi-day-sleet', night: 'wi-night-alt-sleet' },              // Lluvia helada ligera
+      67: { day: 'wi-day-sleet', night: 'wi-night-alt-sleet' },              // Lluvia helada intensa
+      71: { day: 'wi-day-snow', night: 'wi-night-alt-snow' },                // Nieve ligera
+      73: { day: 'wi-day-snow', night: 'wi-night-alt-snow' },                // Nieve moderada
+      75: { day: 'wi-day-snow-wind', night: 'wi-night-alt-snow-wind' },      // Nieve intensa
+      77: { day: 'wi-day-snow', night: 'wi-night-alt-snow' },                // Granos de nieve
+      80: { day: 'wi-day-showers', night: 'wi-night-alt-showers' },          // Chubascos ligeros
+      81: { day: 'wi-day-showers', night: 'wi-night-alt-showers' },          // Chubascos moderados
+      82: { day: 'wi-day-storm-showers', night: 'wi-night-alt-storm-showers' }, // Chubascos violentos
+      85: { day: 'wi-day-snow', night: 'wi-night-alt-snow' },                // Chubascos de nieve ligeros
+      86: { day: 'wi-day-snow-wind', night: 'wi-night-alt-snow-wind' },      // Chubascos de nieve intensos
+      95: { day: 'wi-day-thunderstorm', night: 'wi-night-alt-thunderstorm' }, // Tormenta
+      96: { day: 'wi-day-hail', night: 'wi-night-alt-hail' },                // Tormenta con granizo ligero
+      99: { day: 'wi-day-hail', night: 'wi-night-alt-hail' }                 // Tormenta con granizo intenso
     };
 
     const icons = iconMap[codigo];
     if (!icons) {
       console.warn('Código WMO desconocido:', codigo);
-      return '🌡️';
+      return 'wi-thermometer';
     }
 
     return isDaytime ? icons.day : icons.night;

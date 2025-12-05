@@ -17,7 +17,7 @@
         <h3 class="error-title">¡Vaya! Hubo un problema</h3>
         <p class="error-message">{{ error }}</p>
         <button class="retry-btn" (click)="retryLoad()">
-          <span class="retry-icon">🔄</span>
+          <span class="retry-icon"><i class="fas fa-redo"></i></span>
           <span>Reintentar</span>
         </button>
       </div>
@@ -32,7 +32,7 @@
             <p class="provincia-name">{{ weatherData.municipio.provincia }}</p>
           </div>
           <div class="prediction-badge">
-            <span class="badge-icon">{{ tipoPrecision === 'diaria' ? '📅' : '⏰' }}</span>
+            <span class="badge-icon"><i [class]="tipoPrecision === 'diaria' ? 'fas fa-calendar-day' : 'fas fa-clock'"></i></span>
             <span>{{ tipoPrecision === 'diaria' ? 'Predicción Semanal' : 'Predicción por Horas' }}</span>
           </div>
         </header>
@@ -40,7 +40,7 @@
         @if (weatherData.current) {
           <div class="current-weather">
             <div class="current-icon-container">
-              <div class="current-icon">{{ getWeatherIcon(weatherData.current.weatherCode, weatherData.current.time) }}</div>
+              <div class="current-icon"><i class="wi" [ngClass]="getWeatherIcon(weatherData.current.weatherCode, weatherData.current.time)"></i></div>
               <p class="current-description">{{ getWeatherDescription(weatherData.current.weatherCode) }}</p>
             </div>
             <div class="current-temp-container">
@@ -62,7 +62,7 @@
         <!-- Predicción Diaria -->
         @if (tipoPrecision === 'diaria') {
           <div class="daily-grid">
-            @for (dia of getDiasFuturos(); track dia; let i = $index) {
+            @for (dia of getDiasFuturos(); track dia.date.getTime(); let i = $index) {
               <div
                 class="day-card"
                 [class.is-today]="isToday(dia.date)"
@@ -73,7 +73,7 @@
                   <p class="day-date">{{ formatDate(dia.date, 'd MMM') }}</p>
                 </div>
                 <div class="day-card-body">
-                  <div class="weather-icon-large">{{ getWeatherIcon(dia.weatherCode, dia.date) }}</div>
+                  <div class="weather-icon-large"><i class="wi" [ngClass]="getWeatherIcon(dia.weatherCode, dia.date)"></i></div>
                   <p class="weather-description">{{ getWeatherDescription(dia.weatherCode) }}</p>
                 </div>
                 <div class="day-card-footer">
@@ -94,7 +94,7 @@
         <!-- Predicción Horaria -->
         @if (tipoPrecision === 'horaria') {
           <div class="hourly-forecast">
-            @for (diaConHoras of getDiasConHoras(); track diaConHoras; let diaIndex = $index) {
+            @for (diaConHoras of getDiasConHoras(); track diaConHoras.date.getTime(); let diaIndex = $index) {
               <div class="hourly-day-section">
                 <div class="hourly-day-header">
                   <h3 class="hourly-day-title">
@@ -104,7 +104,7 @@
                 </div>
                 <div class="hourly-scroll-container">
                   <div class="hourly-grid">
-                    @for (hora of diaConHoras.horas; track hora; let i = $index) {
+                    @for (hora of diaConHoras.horas; track hora.time.getTime(); let i = $index) {
                       <div
                         class="hour-card"
                         [@slideIn]="i">
@@ -112,7 +112,7 @@
                           <p class="hour-time">{{ formatHora(hora.time) }}</p>
                         </div>
                         <div class="hour-body">
-                          <div class="hour-icon-large">{{ getWeatherIcon(hora.weatherCode, hora.time) }}</div>
+                          <div class="hour-icon-large"><i class="wi" [ngClass]="getWeatherIcon(hora.weatherCode, hora.time)"></i></div>
                           <p class="weather-desc-mini">{{ getWeatherDescription(hora.weatherCode) }}</p>
                         </div>
                         <div class="hour-footer">

@@ -31,6 +31,19 @@
 body { font-family: 'Inter', system-ui, sans-serif; color: var(--text-primary); }
 button { font-family: inherit; }
 
+/* Font Awesome Icons */
+.fas, .far, .fab {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+}
+
+i.fas, i.far, i.fab {
+  vertical-align: middle;
+}
+
 /* Layout Principal */
 .app-layout {
   min-height: 100vh;
@@ -474,6 +487,13 @@ button { font-family: inherit; }
 .welcome-card p {
   color: var(--text-secondary);
   margin-bottom: 2rem;
+}
+
+.location-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+  margin-top: 1rem;
 }
 
 .btn-primary {

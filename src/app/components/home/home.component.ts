@@ -1,5 +1,5 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 // Importar componentes
@@ -24,6 +24,7 @@ interface Notification {
   selector: 'app-home',
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     WeatherDisplayComponent,
     SpainMapComponent
@@ -75,7 +76,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Cargar lista de municipios
   private cargarMunicipios() {
     this.isLoadingMunicipios = true;
-    this.showNotification('info', '📥 Descargando dataset completo de municipios...');
+    this.showNotification('info', 'Descargando dataset completo de municipios...');
     
     this.weatherService.getMunicipios().subscribe({
       next: (municipios) => {
@@ -84,15 +85,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         console.log(`✅ ${municipios.length} municipios cargados`);
         
         const mensaje = municipios.length > 1000 
-          ? `✅ ${municipios.length} municipios disponibles (cargado desde caché)`
-          : `✅ ${municipios.length} municipios cargados. Búsqueda en tiempo real disponible`;
+          ? `${municipios.length} municipios disponibles (cargado desde caché)`
+          : `${municipios.length} municipios cargados. Búsqueda en tiempo real disponible`;
         
         this.showNotification('success', mensaje);
       },
       error: (error) => {
         console.error('Error cargando municipios:', error);
         this.isLoadingMunicipios = false;
-        this.showNotification('error', '❌ Error al cargar la lista de municipios. Intenta recargar la página.');
+        this.showNotification('error', 'Error al cargar la lista de municipios. Intenta recargar la página.');
       }
     });
   }
@@ -161,12 +162,12 @@ export class HomeComponent implements OnInit, OnDestroy {
         next: (municipios) => {
           this.municipiosFiltrados = municipios.slice(0, 10);
           if (municipios.length === 0) {
-            this.showNotification('info', '🔍 No se encontraron municipios con ese nombre');
+            this.showNotification('info', 'No se encontraron municipios con ese nombre');
           }
         },
         error: (error) => {
           console.error('Error buscando municipios:', error);
-          this.showNotification('warning', '⚠️ Error en la búsqueda. Intenta de nuevo.');
+          this.showNotification('warning', 'Error en la búsqueda. Intenta de nuevo.');
         }
       });
     }
@@ -176,7 +177,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.municipioActual = municipio;
     this.searchQuery = municipio.nombre;
     this.showSearchResults = false;
-    this.showNotification('success', `📍 Mostrando el tiempo para ${municipio.nombre}`);
+    this.showNotification('success', `Mostrando el tiempo para ${municipio.nombre}`);
+    this.scrollToWeather();
   }
   
   clearSearch() {
@@ -197,8 +199,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   cambiarTipoPrecision(tipo: 'diaria' | 'horaria') {
     this.tipoPrecisionActual = tipo;
     const mensaje = tipo === 'diaria' 
-      ? '📅 Mostrando predicción diaria' 
-      : '🕐 Mostrando predicción horaria';
+      ? 'Mostrando predicción diaria' 
+      : 'Mostrando predicción horaria';
     this.showNotification('info', mensaje);
   }
   
@@ -220,8 +222,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   private showWelcomeMessage() {
     setTimeout(() => {
-      this.showNotification('success', '🌤️ ¡Bienvenido a Nubisfera! Busca tu municipio para comenzar');
+      this.showNotification('success', '¡Bienvenido a Nubisfera! Busca tu municipio para comenzar');
     }, 1000);
+  }
+  
+  private scrollToWeather() {
+    setTimeout(() => {
+      const weatherSection = document.getElementById('weather-section');
+      if (weatherSection) {
+        weatherSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
   
   onProvinciaSeleccionada(provincia: string) {
@@ -234,7 +245,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     if (municipioCapital) {
       this.seleccionarMunicipio(municipioCapital);
-      this.showNotification('success', `📍 Mostrando el tiempo en ${provincia}`);
+      this.showNotification('success', `Mostrando el tiempo en ${provincia}`);
     } else {
       // Si no encuentra la capital exacta, buscar el municipio más poblado de esa provincia
       const municipiosProvincia = this.todosLosMunicipios.filter(m => 
@@ -248,7 +259,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           return poblacionCurrent > poblacionPrev ? current : prev;
         });
         this.seleccionarMunicipio(municipioMasPoblado);
-        this.showNotification('success', `📍 Mostrando el tiempo en ${municipioMasPoblado.nombre}, ${provincia}`);
+        this.showNotification('success', `Mostrando el tiempo en ${municipioMasPoblado.nombre}, ${provincia}`);
       } else {
         this.showNotification('warning', `No se encontraron datos para ${provincia}`);
       }
@@ -265,7 +276,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           text: shareText,
           url: window.location.href
         }).then(() => {
-          this.showNotification('success', '📤 Compartido correctamente');
+          this.showNotification('success', 'Compartido correctamente');
         }).catch(() => {
           this.fallbackShare(shareText);
         });
@@ -279,7 +290,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   private fallbackShare(text: string) {
     navigator.clipboard.writeText(text).then(() => {
-      this.showNotification('success', '📋 Enlace copiado al portapapeles');
+      this.showNotification('success', 'Enlace copiado al portapapeles');
     }).catch(() => {
       this.showNotification('error', 'No se pudo copiar el enlace');
     });
@@ -288,11 +299,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   private refreshWeather() {
     if (this.municipioActual) {
       this.isLoadingGlobal = true;
-      this.showNotification('info', '🔄 Actualizando datos meteorológicos...');
+      this.showNotification('info', 'Actualizando datos meteorológicos...');
       
       setTimeout(() => {
         this.isLoadingGlobal = false;
-        this.showNotification('success', '✅ Datos actualizados correctamente');
+        this.showNotification('success', 'Datos actualizados correctamente');
       }, 2000);
     } else {
       this.showNotification('warning', 'Selecciona un municipio primero para actualizar');
@@ -318,7 +329,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private detectLocation() {
-    this.showNotification('info', '📍 Detectando tu ubicación...');
+    this.showNotification('info', 'Detectando tu ubicación...');
     
     if ('geolocation' in navigator) {
       this.isLoadingGlobal = true;
@@ -352,11 +363,12 @@ export class HomeComponent implements OnInit, OnDestroy {
             this.municipioActual = municipioCercano;
             this.searchQuery = municipioCercano.nombre;
             this.showNotification('success', 
-              `📍 Municipio más cercano: ${municipioCercano.nombre} (a ${distanciaMinima.toFixed(1)} km)`
+              `Municipio más cercano: ${municipioCercano.nombre} (a ${distanciaMinima.toFixed(1)} km)`
             );
+            this.scrollToWeather();
           } else {
             this.showNotification('warning', 
-              '📍 No se pudo encontrar un municipio cercano con coordenadas válidas'
+              'No se pudo encontrar un municipio cercano con coordenadas válidas'
             );
           }
         },
@@ -375,7 +387,7 @@ export class HomeComponent implements OnInit, OnDestroy {
               break;
           }
           
-          this.showNotification('warning', `📍 ${mensaje}`);
+          this.showNotification('warning', mensaje);
         },
         {
           enableHighAccuracy: true,
@@ -402,10 +414,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   getNotificationIcon(type: Notification['type']): string {
     const icons = {
-      success: '✅',
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️'
+      success: 'fa-check-circle',
+      error: 'fa-times-circle',
+      warning: 'fa-exclamation-triangle',
+      info: 'fa-info-circle'
     };
     return icons[type];
   }

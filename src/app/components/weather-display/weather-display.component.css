@@ -684,6 +684,13 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
 }
 
+.current-icon .wi {
+  font-size: inherit;
+  line-height: 1;
+  display: inline-block;
+  color: white;
+}
+
 .current-description {
   font-size: clamp(0.85rem, 2vw, 1rem);
   font-weight: 600;
@@ -755,10 +762,24 @@
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
+.weather-icon-large .wi {
+  font-size: inherit;
+  line-height: 1;
+  display: inline-block;
+  color: white;
+}
+
 .hour-icon-large {
   font-size: 2.5rem;
   line-height: 1;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.hour-icon-large .wi {
+  font-size: inherit;
+  line-height: 1;
+  display: inline-block;
+  color: white;
 }
 
 .temp-separator {

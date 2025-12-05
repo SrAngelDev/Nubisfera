@@ -90,19 +90,33 @@ export class WeatherDisplayComponent implements OnChanges {
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' });
   }
 
+  private _todayCache?: { date: string; tomorrow: string };
+  
   getDayName(date: Date): string {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Cachear los valores de hoy y mañana para evitar cambios en cada ciclo de detección
+    const todayKey = new Date().toDateString();
+    
+    if (!this._todayCache || this._todayCache.date !== todayKey) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      
+      this._todayCache = {
+        date: today.toDateString(),
+        tomorrow: tomorrow.toDateString()
+      };
+    }
+    
     const dateToCheck = new Date(date);
     dateToCheck.setHours(0, 0, 0, 0);
+    const dateStr = dateToCheck.toDateString();
 
-    if (dateToCheck.getTime() === today.getTime()) {
+    if (dateStr === this._todayCache.date) {
       return 'Hoy';
     }
     
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    if (dateToCheck.getTime() === tomorrow.getTime()) {
+    if (dateStr === this._todayCache.tomorrow) {
       return 'Mañana';
     }
 

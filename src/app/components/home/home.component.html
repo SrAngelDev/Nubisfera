@@ -17,15 +17,15 @@
         
         <div class="features-row">
           <div class="feature-pill">
-            <span class="icon">📅</span> 7 Días
+            <span class="icon"><i class="fas fa-calendar-week"></i></span> 7 Días
           </div>
           <div class="divider"></div>
           <div class="feature-pill">
-            <span class="icon">⚡</span> Tiempo Real
+            <span class="icon"><i class="fas fa-bolt"></i></span> Tiempo Real
           </div>
           <div class="divider"></div>
           <div class="feature-pill">
-            <span class="icon">🏛️</span> AEMET
+            <span class="icon"><i class="fas fa-landmark"></i></span> AEMET
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
       <div class="hero-search-wrapper">
         <div class="search-card glass-panel">
           <div class="card-header">
-            <div class="header-icon-bg">🔍</div>
+            <div class="header-icon-bg"><i class="fas fa-search"></i></div>
             <div class="header-text">
               <h2>Explora</h2>
               <p>El tiempo en tu municipio</p>
@@ -53,7 +53,7 @@
           <form class="search-form" (submit)="$event.preventDefault()">
             <label for="city-search" class="sr-only">Buscar municipio</label>
             <div class="input-group">
-              <span class="input-icon">📍</span>
+              <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
               <input 
                 id="city-search"
                 type="text" 
@@ -104,6 +104,12 @@
             </div>
           }
         </div>
+        
+        <div class="location-btn-wrapper">
+          <button class="btn-primary pulse" (click)="onAccionEspecial('ubicacion')">
+            <i class="fas fa-location-arrow"></i> Usar mi ubicación actual
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -118,7 +124,7 @@
     </section>
     
     @if (municipioActual) {
-      <section class="weather-dashboard fade-in">
+      <section id="weather-section" class="weather-dashboard fade-in">
         
         <div class="weather-toolbar glass-panel">
           <div class="view-toggles">
@@ -140,10 +146,10 @@
           
           <div class="action-buttons">
             <button class="icon-btn" (click)="onAccionEspecial('actualizar')" title="Refrescar datos">
-              🔄
+              <i class="fas fa-sync-alt"></i>
             </button>
             <button class="icon-btn" (click)="onAccionEspecial('compartir')" title="Compartir">
-              📤
+              <i class="fas fa-share-alt"></i>
             </button>
           </div>
         </div>
@@ -157,33 +163,6 @@
 
       </section>
 
-    } @else {
-      <section class="welcome-state">
-        <div class="welcome-card glass-panel">
-          <div class="welcome-visuals">
-            <span class="floating-emoji e1">☀️</span>
-            <span class="floating-emoji e2">🌧️</span>
-          </div>
-          
-          <h2>Bienvenido a Nubisfera</h2>
-          <p>Selecciona un municipio arriba o usa tu ubicación para comenzar.</p>
-          
-          <button class="btn-primary pulse" (click)="onAccionEspecial('ubicacion')">
-            📍 Usar mi ubicación actual
-          </button>
-          
-          <div class="quick-suggestions">
-            <p class="suggestions-label">Ciudades tendencia:</p>
-            <div class="chip-grid">
-              @for (city of ['Madrid', 'Barcelona', 'Valencia', 'Sevilla']; track city) {
-                <button class="city-chip" (click)="buscarMunicipioPorNombre(city)">
-                  {{ city }}
-                </button>
-              }
-            </div>
-          </div>
-        </div>
-      </section>
     }
     
   </main>
@@ -199,7 +178,7 @@
         <a href="#" (click)="$event.preventDefault(); showNotification('info', 'Nubisfera v1.0')">Versión</a>
       </nav>
       <div class="footer-credits">
-        <p>Desarrollado con ❤️ por Angel Sanchez</p>
+        <p>Desarrollado con <i class="fas fa-heart"></i> por Angel Sanchez</p>
       </div>
     </div>
   </footer>
@@ -217,8 +196,8 @@
 
 @if (notification) {
   <div class="toast-notification" [class]="notification.type">
-    <div class="toast-icon">{{ getNotificationIcon(notification.type) }}</div>
+    <div class="toast-icon"><i class="fas" [ngClass]="getNotificationIcon(notification.type)"></i></div>
     <div class="toast-body">{{ notification.message }}</div>
-    <button class="toast-close" (click)="closeNotification()">✕</button>
+    <button class="toast-close" (click)="closeNotification()"><i class="fas fa-times"></i></button>
   </div>
 }
