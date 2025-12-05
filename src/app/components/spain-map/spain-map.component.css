@@ -76,16 +76,31 @@
 .spain-map-container {
   background: white;
   border-radius: 15px;
-  padding: 2rem;
+  padding: 1rem;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
   margin-bottom: 2rem;
-  min-height: 500px;
+  min-height: 600px;
+  overflow: hidden;
+  position: relative;
 }
 
 .map-chart {
   width: 100%;
-  height: 600px;
-  min-height: 500px;
+  height: 650px;
+  min-height: 600px;
+  position: relative;
+}
+
+.map-chart svg {
+  max-width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.map-chart > div {
+  overflow: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* Panel de información */
@@ -263,40 +278,77 @@
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .spain-map-container {
+    padding: 1rem;
+  }
+  
+  .map-chart {
+    height: 550px;
+  }
+}
+
 @media (max-width: 1024px) {
+  .spain-map-wrapper {
+    padding: 1.5rem;
+    margin: 1rem 0;
+  }
+
   .map-chart {
     height: 500px;
+    min-height: 450px;
+  }
+
+  .map-info-panel {
+    margin-top: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .spain-map-wrapper {
     padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 15px;
+  }
+
+  .map-header {
+    margin-bottom: 1.5rem;
   }
 
   .map-title {
     font-size: 1.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .map-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .spain-map-container {
-    padding: 1rem;
+    padding: 0.5rem;
+    min-height: 450px;
   }
 
   .map-chart {
-    height: 400px;
+    height: 450px;
     min-height: 400px;
   }
 
   .map-info-panel {
     padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .info-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .info-subtitle {
+    font-size: 0.9rem;
   }
 
   .provincias-list {
-    max-height: 300px;
+    max-height: 350px;
   }
 
   .provincia-item {
@@ -304,24 +356,131 @@
   }
 
   .provincia-rank {
+    min-width: 40px;
+    height: 40px;
+    font-size: 0.95rem;
+  }
+
+  .provincia-name {
+    font-size: 0.95rem;
+  }
+
+  .provincia-temp {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .spain-map-wrapper {
+    padding: 0.75rem;
+    border-radius: 12px;
+  }
+
+  .map-title {
+    font-size: 1.3rem;
+  }
+
+  .map-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .spain-map-container {
+    padding: 0.25rem;
+    min-height: 380px;
+  }
+
+  .map-chart {
+    height: 380px;
+    min-height: 350px;
+  }
+
+  .map-info-panel {
+    padding: 0.75rem;
+  }
+
+  .provincia-item {
+    padding: 0.6rem;
+  }
+
+  .provincia-rank {
     min-width: 35px;
     height: 35px;
+    font-size: 0.85rem;
+  }
+
+  .provincia-name {
     font-size: 0.9rem;
+  }
+
+  .provincia-temp {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
+  .spain-map-wrapper {
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+  }
+
+  .map-header {
+    margin-bottom: 1rem;
+  }
+
+  .map-title {
+    font-size: 1.2rem;
+  }
+
+  .map-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .spain-map-container {
+    padding: 0.25rem;
+    min-height: 320px;
+    border-radius: 10px;
+  }
+
   .map-chart {
-    height: 350px;
-    min-height: 350px;
+    height: 320px;
+    min-height: 300px;
+  }
+
+  .map-info-panel {
+    padding: 0.5rem;
+  }
+
+  .info-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .info-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .provincias-list {
+    max-height: 250px;
   }
 
   .provincia-item {
-    flex-wrap: wrap;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .provincia-rank {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .provincia-name {
+    font-size: 0.85rem;
+    flex: 1;
   }
 
   .provincia-temp {
-    width: 100%;
+    font-size: 0.95rem;
+    min-width: 55px;
     margin-top: 0.5rem;
     text-align: left;
   }

@@ -1,5 +1,5 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 // Importar componentes
@@ -24,11 +24,10 @@ interface Notification {
   selector: 'app-home',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     WeatherDisplayComponent,
     SpainMapComponent
-  ],
+],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })

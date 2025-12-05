@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, Output, EventEmitter, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
@@ -28,61 +28,57 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
   provinciasData: ProvinciaData[] = [];
   selectedProvincia: string | null = null;
 
-  // Mapa de nombres de provincias para Google Charts
-  private readonly PROVINCIA_MAPPING: { [key: string]: string } = {
-    'A Coruña': 'ES-C',
-    'Álava': 'ES-VI',
-    'Albacete': 'ES-AB',
-    'Alicante': 'ES-A',
-    'Almería': 'ES-AL',
-    'Asturias': 'ES-O',
-    'Ávila': 'ES-AV',
-    'Badajoz': 'ES-BA',
-    'Barcelona': 'ES-B',
-    'Burgos': 'ES-BU',
-    'Cáceres': 'ES-CC',
-    'Cádiz': 'ES-CA',
-    'Cantabria': 'ES-S',
-    'Castellón': 'ES-CS',
-    'Ciudad Real': 'ES-CR',
-    'Córdoba': 'ES-CO',
-    'Cuenca': 'ES-CU',
-    'Gerona': 'ES-GI',
-    'Granada': 'ES-GR',
-    'Guadalajara': 'ES-GU',
-    'Guipúzcoa': 'ES-SS',
-    'Huelva': 'ES-H',
-    'Huesca': 'ES-HU',
-    'Islas Baleares': 'ES-PM',
-    'Jaén': 'ES-J',
-    'La Rioja': 'ES-LO',
-    'Las Palmas': 'ES-GC',
-    'León': 'ES-LE',
-    'Lérida': 'ES-L',
-    'Lugo': 'ES-LU',
-    'Madrid': 'ES-M',
-    'Málaga': 'ES-MA',
-    'Murcia': 'ES-MU',
-    'Navarra': 'ES-NA',
-    'Orense': 'ES-OR',
-    'Palencia': 'ES-P',
-    'Pontevedra': 'ES-PO',
-    'Salamanca': 'ES-SA',
-    'Santa Cruz de Tenerife': 'ES-TF',
-    'Segovia': 'ES-SG',
-    'Sevilla': 'ES-SE',
-    'Soria': 'ES-SO',
-    'Tarragona': 'ES-T',
-    'Teruel': 'ES-TE',
-    'Toledo': 'ES-TO',
-    'Valencia': 'ES-V',
-    'Valladolid': 'ES-VA',
-    'Vizcaya': 'ES-BI',
-    'Zamora': 'ES-ZA',
-    'Zaragoza': 'ES-Z'
+  // Mapa de provincias a comunidades autónomas (códigos ISO 3166-2)
+  private readonly PROVINCIA_TO_CCAA: { [key: string]: string } = {
+    // Andalucía
+    'Almería': 'ES-AN', 'Cádiz': 'ES-AN', 'Córdoba': 'ES-AN', 'Granada': 'ES-AN',
+    'Huelva': 'ES-AN', 'Jaén': 'ES-AN', 'Málaga': 'ES-AN', 'Sevilla': 'ES-AN',
+    // Aragón
+    'Huesca': 'ES-AR', 'Teruel': 'ES-AR', 'Zaragoza': 'ES-AR',
+    // Asturias
+    'Asturias': 'ES-AS',
+    // Baleares
+    'Baleares': 'ES-IB', 'Islas Baleares': 'ES-IB',
+    // Canarias
+    'Las Palmas': 'ES-CN', 'Santa Cruz de Tenerife': 'ES-CN',
+    // Cantabria
+    'Cantabria': 'ES-CB',
+    // Castilla-La Mancha
+    'Albacete': 'ES-CM', 'Ciudad Real': 'ES-CM', 'Cuenca': 'ES-CM',
+    'Guadalajara': 'ES-CM', 'Toledo': 'ES-CM',
+    // Castilla y León
+    'Ávila': 'ES-CL', 'Burgos': 'ES-CL', 'León': 'ES-CL', 'Palencia': 'ES-CL',
+    'Salamanca': 'ES-CL', 'Segovia': 'ES-CL', 'Soria': 'ES-CL', 'Valladolid': 'ES-CL', 'Zamora': 'ES-CL',
+    // Cataluña
+    'Barcelona': 'ES-CT', 'Gerona': 'ES-CT', 'Lérida': 'ES-CT', 'Tarragona': 'ES-CT',
+    // Extremadura
+    'Badajoz': 'ES-EX', 'Cáceres': 'ES-EX',
+    // Galicia
+    'A Coruña': 'ES-GA', 'La Coruña': 'ES-GA', 'Lugo': 'ES-GA', 'Orense': 'ES-GA', 'Pontevedra': 'ES-GA',
+    // La Rioja
+    'La Rioja': 'ES-RI',
+    // Madrid
+    'Madrid': 'ES-MD',
+    // Murcia
+    'Murcia': 'ES-MC',
+    // Navarra
+    'Navarra': 'ES-NC',
+    // País Vasco
+    'Álava': 'ES-PV', 'Guipúzcoa': 'ES-PV', 'Vizcaya': 'ES-PV',
+    // Comunidad Valenciana
+    'Alicante': 'ES-VC', 'Castellón': 'ES-VC', 'Valencia': 'ES-VC'
   };
 
-  constructor(private http: HttpClient) {}
+  private readonly CCAA_NOMBRES: { [key: string]: string } = {
+    'ES-AN': 'Andalucía', 'ES-AR': 'Aragón', 'ES-AS': 'Asturias',
+    'ES-IB': 'Islas Baleares', 'ES-CN': 'Canarias', 'ES-CB': 'Cantabria',
+    'ES-CM': 'Castilla-La Mancha', 'ES-CL': 'Castilla y León', 'ES-CT': 'Cataluña',
+    'ES-EX': 'Extremadura', 'ES-GA': 'Galicia', 'ES-RI': 'La Rioja',
+    'ES-MD': 'Madrid', 'ES-MC': 'Murcia', 'ES-NC': 'Navarra',
+    'ES-PV': 'País Vasco', 'ES-VC': 'Comunidad Valenciana'
+  };
+
+  constructor(private http: HttpClient, private zone: NgZone) {}
 
   ngOnInit() {
     this.cargarDatosProvincias();
@@ -101,14 +97,19 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadGoogleCharts() {
     if (typeof google !== 'undefined' && google.charts) {
+      console.log('📦 Cargando Google Charts...');
       google.charts.load('current', {
         'packages': ['geochart'],
         'mapsApiKey': 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY'
       });
       google.charts.setOnLoadCallback(() => {
+        console.log('✅ Google Charts cargado correctamente');
         this.chartsLoaded = true;
         if (this.provinciasData.length > 0) {
-          this.drawMap();
+          console.log('🗺️ Datos ya disponibles, dibujando mapa inmediatamente...');
+          setTimeout(() => this.drawMap(), 100);
+        } else {
+          console.log('⏳ Esperando a que se carguen los datos de provincias...');
         }
       });
     }
@@ -201,13 +202,18 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.provinciasData = resultados;
+      console.log('✅ Datos de provincias cargados:', this.provinciasData.length);
+      console.log('📊 Primeras 3 provincias:', this.provinciasData.slice(0, 3));
       this.isLoading = false;
 
       if (this.chartsLoaded) {
+        console.log('🗺️ Google Charts ya cargado, dibujando mapa...');
         // Esperar a que Angular actualice el DOM para que el contenedor exista
         setTimeout(() => {
           this.drawMap();
-        }, 0);
+        }, 100);
+      } else {
+        console.log('⏳ Esperando a que Google Charts se cargue...');
       }
 
     } catch (error) {
@@ -238,92 +244,161 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private drawMap() {
-    if (!this.provinciasData || this.provinciasData.length === 0) return;
+    console.log('🎨 drawMap() llamado');
+    console.log('📍 provinciasData disponibles:', this.provinciasData?.length || 0);
+    
+    if (!this.provinciasData || this.provinciasData.length === 0) {
+      console.warn('⚠️ No hay datos de provincias para dibujar');
+      return;
+    }
 
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Provincia');
-    data.addColumn('number', 'Temperatura');
-    data.addColumn({type: 'string', role: 'tooltip'});
+    const mapContainer = document.getElementById('spain_map');
+    if (!mapContainer) {
+      console.error('❌ No se encontró el contenedor del mapa #spain_map');
+      return;
+    }
+    console.log('✅ Contenedor del mapa encontrado');
 
-    const rows = this.provinciasData
-      .filter(pd => this.PROVINCIA_MAPPING[pd.provincia])
-      .map(pd => {
-        const tooltip = `${pd.provincia}\n${pd.temperaturaMedia.toFixed(1)}°C`;
-        return [
-          this.PROVINCIA_MAPPING[pd.provincia],
-          pd.temperaturaMedia,
-          tooltip
-        ];
-      });
+    // Agrupar provincias por comunidad autónoma y calcular temperatura media
+    const ccaaTemps = new Map<string, { suma: number; count: number; provincias: string[] }>();
+    
+    this.provinciasData.forEach(pd => {
+      const ccaaCode = this.PROVINCIA_TO_CCAA[pd.provincia];
+      if (ccaaCode) {
+        if (!ccaaTemps.has(ccaaCode)) {
+          ccaaTemps.set(ccaaCode, { suma: 0, count: 0, provincias: [] });
+        }
+        const data = ccaaTemps.get(ccaaCode)!;
+        data.suma += pd.temperaturaMedia;
+        data.count++;
+        data.provincias.push(pd.provincia);
+      } else {
+        console.warn(`⚠️ No hay código CCAA para la provincia: ${pd.provincia}`);
+      }
+    });
 
-    data.addRows(rows);
+    // Crear array de datos para el mapa
+    const mapData: [string, number][] = [];
+    ccaaTemps.forEach((data, ccaaCode) => {
+      const tempMedia = data.suma / data.count;
+      mapData.push([ccaaCode, tempMedia]);
+      console.log(`📍 ${this.CCAA_NOMBRES[ccaaCode]}: ${tempMedia.toFixed(1)}°C (${data.count} provincias)`);
+    });
 
-    const options = {
+    const data = google.visualization.arrayToDataTable([
+      ['Comunidad Autónoma', 'Temperatura'],
+      ...mapData
+    ]);
+
+    console.log(`📊 Comunidades autónomas procesadas: ${data.getNumberOfRows()}`);
+
+    // Calcular rango de temperaturas desde el DataTable
+    const temperaturas: number[] = [];
+    for (let i = 0; i < data.getNumberOfRows(); i++) {
+      temperaturas.push(data.getValue(i, 1));
+    }
+    const minTemp = Math.min(...temperaturas);
+    const maxTemp = Math.max(...temperaturas);
+    console.log(`🌡️ Rango de temperaturas: ${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C`);
+
+    // Ajustar altura según tamaño de pantalla
+    const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+    let chartHeight = 650;
+    
+    if (isMobile) {
+      chartHeight = window.innerWidth < 480 ? 320 : 450;
+    } else if (isTablet) {
+      chartHeight = 500;
+    }
+
+    const options: any = {
       region: 'ES',
       displayMode: 'regions',
       resolution: 'provinces',
-      backgroundColor: '#f5f5f5',
-      datalessRegionColor: '#e0e0e0',
+      width: '100%',
+      height: chartHeight,
+      magnifyingGlass: { enable: false },
+      keepAspectRatio: true,
       colorAxis: {
-        colors: ['#4A90E2', '#50C878', '#FFD700', '#FF6B6B', '#C41E3A'],
-        minValue: -5,
-        maxValue: 35,
-        values: [-5, 5, 15, 25, 35]
+        minValue: 0,
+        maxValue: 30,
+        colors: ['#0d47a1', '#2196f3', '#4caf50', '#ffeb3b', '#ff9800', '#f44336', '#b71c1c']
       },
-      legend: {
-        textStyle: {
-          fontSize: 12,
-          fontName: 'Poppins'
-        }
+      backgroundColor: {
+        fill: '#f5f5f5',
+        stroke: '#dddddd',
+        strokeWidth: 1
       },
+      datalessRegionColor: '#eeeeee',
+      defaultColor: '#f5f5f5',
       tooltip: {
+        isHtml: false,
+        trigger: isMobile ? 'none' : 'focus',
         textStyle: {
-          fontSize: 14,
-          fontName: 'Poppins'
-        },
-        trigger: 'focus'
-      },
-      enableRegionInteractivity: true
+          fontSize: isMobile ? 11 : 14
+        }
+      }
     };
 
-    const chart = new google.visualization.GeoChart(
-      document.getElementById('spain_map')
-    );
+    console.log('⚙️ Opciones del mapa configuradas');
+
+    const chart = new google.visualization.GeoChart(mapContainer);
+    console.log('📈 GeoChart creado');
 
     // Evento de selección
     google.visualization.events.addListener(chart, 'select', () => {
       const selection = chart.getSelection();
-      console.log('Mapa clickeado, selección:', selection);
-      
-      if (selection.length > 0) {
-        const row = selection[0].row;
-        // Si row es null, significa que se seleccionó toda la región o algo genérico
-        if (row === null) return;
+      console.log('🖱️ Mapa clickeado, selección:', selection);
 
-        const provinciaCode = data.getValue(row, 0);
-        console.log('Código de provincia seleccionado:', provinciaCode);
+      if (!selection || selection.length === 0) {
+        console.log('⚠️ Selección vacía');
+        return;
+      }
+
+      const sel = selection[0];
+      console.log('📋 Datos de selección:', sel);
+      
+      // La selección devuelve {row: número}
+      if (sel.row !== null && sel.row !== undefined) {
+        const ccaaCode = data.getValue(sel.row, 0);
+        const temperatura = data.getValue(sel.row, 1);
+        const ccaaNombre = this.CCAA_NOMBRES[ccaaCode] || ccaaCode;
         
-        // Buscar el nombre de la provincia
-        const provinciaEntry = Object.entries(this.PROVINCIA_MAPPING).find(
-          ([_, code]) => code === provinciaCode
+        console.log('🎯 CCAA seleccionada:', ccaaNombre, '(' + ccaaCode + ')', 'Temp:', temperatura);
+
+        // Buscar una provincia capital de esa CCAA para mostrar su tiempo
+        const provinciaDeLaCCAA = this.provinciasData.find(pd => 
+          this.PROVINCIA_TO_CCAA[pd.provincia] === ccaaCode
         );
-        
-        if (provinciaEntry) {
-          const nombreProvincia = provinciaEntry[0];
-          console.log('Provincia encontrada:', nombreProvincia);
+
+        if (provinciaDeLaCCAA) {
+          console.log('✅ Emitiendo provincia:', provinciaDeLaCCAA.provincia);
           
-          // Forzar la detección de cambios
           this.zone.run(() => {
-            this.selectedProvincia = nombreProvincia;
-            this.provinciaSeleccionada.emit(nombreProvincia);
+            this.selectedProvincia = ccaaNombre;
+            this.provinciaSeleccionada.emit(provinciaDeLaCCAA.provincia);
           });
-        } else {
-          console.warn('No se encontró mapping para el código:', provinciaCode);
         }
+      } else {
+        console.warn('⚠️ sel.row es null o undefined');
       }
     });
 
-    chart.draw(data, options);
+    console.log('🎨 Dibujando mapa...');
+    console.log('📋 Opciones finales:', JSON.stringify(options, null, 2));
+    
+    try {
+      chart.draw(data, options);
+      console.log('✅ Mapa dibujado correctamente');
+      
+      // Verificar si hay errores después de dibujar
+      setTimeout(() => {
+        console.log('🔍 Verificando estado del mapa después de 1 segundo...');
+      }, 1000);
+    } catch (error) {
+      console.error('❌ Error al dibujar el mapa:', error);
+    }
   }
 
   getProvinciasOrdenadas(): ProvinciaData[] {

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, AfterViewInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { WeatherData } from '../../models/weather.model';
 
 declare const google: any;
@@ -7,7 +7,7 @@ declare const google: any;
 @Component({
   selector: 'app-weather-charts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './weather-charts.component.html',
   styleUrls: ['./weather-charts.component.css']
 })

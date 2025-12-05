@@ -1,11 +1,11 @@
 import { Component, HostBinding, HostListener } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
