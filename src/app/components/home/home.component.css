@@ -47,6 +47,20 @@ button { font-family: inherit; }
   padding: 0 1.5rem;
 }
 
+/* Sección del Mapa */
+.map-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .map-section {
+    padding: 0 1rem;
+  }
+}
+
 /* Utilidad Glassmorphism (Clave del rediseño) */
 .glass-panel {
   background: var(--surface-glass);

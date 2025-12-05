@@ -1,0 +1,32 @@
+@if (weatherData) {
+<div class="charts-container">
+  <div class="charts-header">
+    <h2>📊 Análisis Gráfico del Tiempo</h2>
+    <p class="charts-subtitle">Visualización de datos meteorológicos para {{ weatherData.municipio.nombre }}</p>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-wrapper">
+      <div id="temperature_chart" class="chart"></div>
+    </div>
+
+    <div class="chart-wrapper">
+      <div id="precipitation_chart" class="chart"></div>
+    </div>
+
+    <div class="chart-wrapper">
+      <div id="humidity_chart" class="chart"></div>
+    </div>
+
+    <div class="chart-wrapper">
+      <div id="wind_speed_chart" class="chart"></div>
+    </div>
+  </div>
+</div>
+}
+
+@if (!weatherData) {
+<div class="no-data">
+  <p>📊 Selecciona un municipio para ver los gráficos meteorológicos</p>
+</div>
+}

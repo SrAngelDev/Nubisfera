@@ -1,0 +1,91 @@
+<div class="spain-map-wrapper">
+  <div class="map-header">
+    <h2 class="map-title">🗺️ Mapa Meteorológico de España</h2>
+    <p class="map-subtitle">Temperatura actual por provincias - Haz clic para explorar</p>
+  </div>
+
+  <!-- Estado de carga -->
+  @if (isLoading) {
+  <div class="map-loading">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <p>Cargando datos meteorológicos de España...</p>
+  </div>
+  }
+
+  <!-- Contenedor del mapa -->
+  @if (!isLoading) {
+  <div class="spain-map-container">
+    <div id="spain_map" class="map-chart"></div>
+  </div>
+  }
+
+  <!-- Panel lateral con información -->
+  @if (!isLoading && provinciasData.length > 0) {
+  <div class="map-info-panel">
+    <div class="info-header">
+      <h3>📊 Ranking de Temperaturas</h3>
+      <p class="info-subtitle">{{ provinciasData.length }} provincias monitorizadas</p>
+    </div>
+    
+    <div class="provincias-list custom-scrollbar">
+      @for (provincia of getProvinciasOrdenadas(); track provincia.provincia; let i = $index) {
+      <div 
+        class="provincia-item"
+        [class.selected]="selectedProvincia === provincia.provincia"
+        (click)="seleccionarProvincia(provincia.provincia)"
+      >
+        <div class="provincia-rank">
+          <span class="rank-number">{{ i + 1 }}</span>
+        </div>
+        <div class="provincia-info">
+          <span class="provincia-nombre">{{ provincia.provincia }}</span>
+          @if (provincia.municipiosCapitales[0]) {
+          <span class="provincia-capital">
+            {{ provincia.municipiosCapitales[0].nombre }}
+          </span>
+          }
+        </div>
+        <div class="provincia-temp">
+          <span 
+            class="temp-badge" 
+            [style.background-color]="getTemperaturaColor(provincia.temperaturaMedia)"
+          >
+            {{ provincia.temperaturaMedia | number:'1.1-1' }}°C
+          </span>
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="legend-info">
+      <h4>🌡️ Escala de Temperatura</h4>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="legend-color" style="background: #4A90E2;"></span>
+          <span>Muy Frío (&lt; 5°C)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #50C878;"></span>
+          <span>Fresco (5-15°C)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #FFD700;"></span>
+          <span>Templado (15-25°C)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #FF6B6B;"></span>
+          <span>Cálido (25-30°C)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #C41E3A;"></span>
+          <span>Muy Cálido (&gt; 30°C)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

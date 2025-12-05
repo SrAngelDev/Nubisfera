@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 // Importar componentes
 import { WeatherDisplayComponent } from '../weather-display/weather-display.component';
+import { SpainMapComponent } from '../spain-map/spain-map.component';
 
 // Importar modelos
 import { Municipio } from '../../models/municipio.model';
@@ -25,7 +26,8 @@ interface Notification {
   imports: [
     CommonModule,
     FormsModule,
-    WeatherDisplayComponent
+    WeatherDisplayComponent,
+    SpainMapComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -221,6 +223,37 @@ export class HomeComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showNotification('success', '🌤️ ¡Bienvenido a Nubisfera! Busca tu municipio para comenzar');
     }, 1000);
+  }
+  
+  onProvinciaSeleccionada(provincia: string) {
+    // Buscar el municipio capital de la provincia
+    const municipioCapital = this.todosLosMunicipios.find(m => 
+      m.nombre.toLowerCase() === provincia.toLowerCase() ||
+      (m.provincia && m.provincia.toLowerCase() === provincia.toLowerCase()) ||
+      (m.capital && m.capital.toLowerCase() === provincia.toLowerCase())
+    );
+    
+    if (municipioCapital) {
+      this.seleccionarMunicipio(municipioCapital);
+      this.showNotification('success', `📍 Mostrando el tiempo en ${provincia}`);
+    } else {
+      // Si no encuentra la capital exacta, buscar el municipio más poblado de esa provincia
+      const municipiosProvincia = this.todosLosMunicipios.filter(m => 
+        m.provincia && m.provincia.toLowerCase() === provincia.toLowerCase()
+      );
+      
+      if (municipiosProvincia.length > 0) {
+        const municipioMasPoblado = municipiosProvincia.reduce((prev, current) => {
+          const poblacionCurrent = current.poblacion || parseInt(current.num_hab || '0') || 0;
+          const poblacionPrev = prev.poblacion || parseInt(prev.num_hab || '0') || 0;
+          return poblacionCurrent > poblacionPrev ? current : prev;
+        });
+        this.seleccionarMunicipio(municipioMasPoblado);
+        this.showNotification('success', `📍 Mostrando el tiempo en ${municipioMasPoblado.nombre}, ${provincia}`);
+      } else {
+        this.showNotification('warning', `No se encontraron datos para ${provincia}`);
+      }
+    }
   }
   
   private shareWeather() {

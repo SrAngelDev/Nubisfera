@@ -10,6 +10,7 @@ export interface Municipio {
   url?: string;
   id_old?: string;
   num_hab?: string;
+  poblacion?: number; // Para ordenamiento por población
   zona_comarcal?: string;
   destacada?: string;
   latitud?: string;

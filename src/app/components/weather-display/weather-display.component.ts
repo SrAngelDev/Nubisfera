@@ -5,11 +5,12 @@ import { WeatherIconService } from '../../services/weather-icon.service';
 import { Municipio } from '../../models/municipio.model';
 import { WeatherData, DailyForecast, HourlyForecast, WMO_WEATHER_CODES } from '../../models/weather.model';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+import { WeatherChartsComponent } from '../weather-charts/weather-charts.component';
 
 @Component({
   selector: 'app-weather-display',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WeatherChartsComponent],
   templateUrl: './weather-display.component.html',
   styleUrls: ['./weather-display.component.css'],
   animations: [

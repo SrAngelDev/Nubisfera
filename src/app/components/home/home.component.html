@@ -110,6 +110,13 @@
 
   <main class="main-content container">
     
+    <!-- Mapa de España -->
+    <section class="map-section">
+      <app-spain-map 
+        (provinciaSeleccionada)="onProvinciaSeleccionada($event)"
+      ></app-spain-map>
+    </section>
+    
     @if (municipioActual) {
       <section class="weather-dashboard fade-in">
         
