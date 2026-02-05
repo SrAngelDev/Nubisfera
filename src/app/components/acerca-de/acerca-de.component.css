@@ -1,6 +1,6 @@
 .acerca-de-container {
   min-height: calc(100vh - 80px);
-  background: linear-gradient(135deg, #1e1e2e 0%, #2d1e3e 100%);
+  background: linear-gradient(135deg, #2e51db 0%, #5b7aed 100%);
   padding: 2rem 1rem;
   padding-top: clamp(2rem, 5vw, 3rem);
 }
@@ -15,7 +15,7 @@ h1 {
   font-size: clamp(2rem, 5vw, 3rem);
   margin-bottom: 0.5rem;
   margin-top: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #87ceeb 0%, #ffffff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -31,7 +31,7 @@ h1 {
 
 .tagline {
   font-size: clamp(1.1rem, 3vw, 1.5rem);
-  color: var(--text-secondary, #b0b0b0);
+  color: #a5d8ff;
   font-weight: 300;
   line-height: 1.6;
 }
@@ -39,16 +39,16 @@ h1 {
 .info-section {
   margin-bottom: 2rem;
   padding: clamp(1rem, 3vw, 2rem);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .info-section:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 8px 24px rgba(76, 110, 245, 0.3);
 }
 
 .info-section h2 {
@@ -60,7 +60,7 @@ h1 {
 .info-section p {
   font-size: clamp(1rem, 2.5vw, 1.1rem);
   line-height: 1.8;
-  color: var(--text-secondary, #b0b0b0);
+  color: #e0f0ff;
 }
 
 .features-section {
@@ -83,20 +83,20 @@ h1 {
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   padding: clamp(1.25rem, 3vw, 2rem);
   border-radius: 16px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 
 .feature-card:hover {
   transform: translateY(-8px) scale(1.02);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(102, 126, 234, 0.5);
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(135, 206, 235, 0.6);
+  box-shadow: 0 12px 32px rgba(76, 110, 245, 0.3);
 }
 
 .feature-card:active {
@@ -134,7 +134,7 @@ h1 {
 }
 
 .feature-card p {
-  color: var(--text-secondary, #b0b0b0);
+  color: #a5d8ff;
   line-height: 1.6;
   font-size: clamp(0.9rem, 2vw, 1rem);
 }
@@ -142,10 +142,10 @@ h1 {
 .tech-section {
   margin-bottom: 2rem;
   padding: clamp(1rem, 3vw, 2rem);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .tech-section h2 {
@@ -163,7 +163,7 @@ h1 {
 }
 
 .tech-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4c6ef5 0%, #87ceeb 100%);
   color: white;
   padding: clamp(0.6rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
   border-radius: 25px;
@@ -171,20 +171,20 @@ h1 {
   font-size: clamp(0.85rem, 2vw, 1rem);
   white-space: nowrap;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(76, 110, 245, 0.3);
 }
 
 .tech-badge:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 20px rgba(76, 110, 245, 0.5);
 }
 
 .footer-section {
   text-align: center;
   padding: clamp(1rem, 3vw, 2rem);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .footer-section h2 {
@@ -196,13 +196,13 @@ h1 {
 .footer-section p {
   font-size: clamp(0.95rem, 2.5vw, 1.1rem);
   line-height: 1.8;
-  color: var(--text-secondary, #b0b0b0);
+  color: #a5d8ff;
   margin-bottom: 1rem;
   padding: 0 1rem;
 }
 
 .footer-section a {
-  color: #667eea;
+  color: #87ceeb;
   text-decoration: none;
   transition: all 0.3s ease;
   display: inline-block;
@@ -211,8 +211,8 @@ h1 {
 }
 
 .footer-section a:hover {
-  color: #764ba2;
-  background: rgba(102, 126, 234, 0.1);
+  color: #ffffff;
+  background: rgba(135, 206, 235, 0.2);
   transform: translateX(4px);
 }
 

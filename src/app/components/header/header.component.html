@@ -2,31 +2,8 @@
   <div class="container">
     <div class="brand-logo">
       <a routerLink="/" class="brand-link" aria-label="Página de inicio de Nubisfera">
-        <span class="logo-icon">🌤️</span>
         <span class="logo-text">Nubisfera</span>
       </a>
     </div>
-
-    <!-- Botón hamburguesa para móvil -->
-    <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menú">
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
-
-    <!-- Navegación -->
-    <nav class="main-nav" [class.mobile-open]="isMobileMenuOpen">
-      <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" class="nav-link" (click)="closeMobileMenu()">
-        Open Meteo
-      </a>
-      <a routerLink="/acerca-de" class="nav-link" (click)="closeMobileMenu()">
-        Acerca de
-      </a>
-    </nav>
   </div>
-
-  <!-- Overlay para cerrar menú móvil -->
-  @if (isMobileMenuOpen) {
-    <div class="mobile-overlay" (click)="closeMobileMenu()"></div>
-  }
 </header>

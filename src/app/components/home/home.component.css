@@ -1,24 +1,24 @@
 /* ===== NUBISFERA - REDISEÑO "CIELO ETÉREO" (ADAPTADO) ===== */
 
 :root {
-  /* Paleta Etérea (Inferida de tu diseño) */
-  --gradient-ethereal: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  --gradient-sky: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
-  --gradient-horizon: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  /* Paleta basada en el logo Nubisfera */
+  --gradient-ethereal: linear-gradient(135deg, #2e51db 0%, #5b7aed 100%);
+  --gradient-sky: linear-gradient(120deg, #4c6ef5 0%, #87ceeb 100%);
+  --gradient-horizon: linear-gradient(to right, #3b5bdb 0%, #a5d8ff 100%);
   
-  --primary-blue: #007bff; /* Ajusta según tu preferencia */
-  --secondary-blue: #66a6ff;
-  --surface-light: rgba(255, 255, 255, 0.9);
-  --surface-glass: rgba(255, 255, 255, 0.7);
-  --surface-dark: #ffffff; /* En modo claro suele ser blanco, ajusta si usas dark mode */
+  --primary-blue: #3b5bdb;
+  --secondary-blue: #4c6ef5;
+  --surface-light: rgba(255, 255, 255, 0.95);
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --surface-dark: #2a3a5e;
   
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
+  --text-primary: #ffffff;
+  --text-secondary: #a5d8ff;
   
-  --border-light: rgba(255, 255, 255, 0.6);
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  --border-light: rgba(255, 255, 255, 0.3);
+  --shadow-sm: 0 2px 8px rgba(46, 81, 219, 0.15);
+  --shadow-lg: 0 10px 30px rgba(46, 81, 219, 0.25);
+  --shadow-xl: 0 20px 40px rgba(46, 81, 219, 0.35);
   
   --success-green: #10b981;
   --warning-yellow: #f59e0b;
@@ -49,7 +49,7 @@ i.fas, i.far, i.fab {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--gradient-ethereal);
+  background: linear-gradient(135deg, #2e51db 0%, #5b7aed 100%);
   overflow-x: hidden;
 }
 
@@ -76,18 +76,18 @@ i.fas, i.far, i.fab {
 
 /* Utilidad Glassmorphism (Clave del rediseño) */
 .glass-panel {
-  background: var(--surface-glass);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(46, 81, 219, 0.2);
   border-radius: 24px;
 }
 
 /* ===== HERO SECTION & GRID ===== */
 .hero-section {
   padding: 2rem 0 4rem;
-  background: var(--gradient-sky);
+  background: linear-gradient(135deg, #3b5bdb 0%, #4c6ef5 100%);
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   /* Máscara para que la onda quede abajo */
@@ -300,7 +300,7 @@ i.fas, i.far, i.fab {
 .search-input:focus {
   background: white;
   border-color: var(--primary-blue);
-  box-shadow: 0 0 0 4px rgba(100, 149, 237, 0.15);
+  box-shadow: 0 0 0 4px rgba(76, 110, 245, 0.2);
   outline: none;
 }
 
@@ -321,20 +321,21 @@ i.fas, i.far, i.fab {
   list-style: none;
   max-height: 300px;
   overflow-y: auto;
-  background: #1e293b;
+  background: rgba(42, 58, 94, 0.95);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0,0,0,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 0.5rem;
 }
 
 .list-header {
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #a5d8ff;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
   margin-bottom: 0.5rem;
 }
 
@@ -353,23 +354,23 @@ i.fas, i.far, i.fab {
 }
 
 .result-item:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(76, 110, 245, 0.2);
 }
 
 .item-name {
   display: block;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #ffffff;
 }
 
 .item-meta {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #a5d8ff;
 }
 
 .item-action {
   font-size: 0.8rem;
-  color: var(--primary-blue);
+  color: #87ceeb;
   font-weight: 600;
   opacity: 0;
   transform: translateX(-5px);
@@ -552,10 +553,11 @@ i.fas, i.far, i.fab {
 
 /* ===== FOOTER ===== */
 .app-footer {
-  background: #0f1419;
+  background: rgba(26, 35, 68, 0.95);
   color: white;
   padding: 3rem 0 1.5rem;
   margin-top: auto; /* Sticky bottom */
+  border-top: 1px solid rgba(135, 206, 235, 0.2);
 }
 
 .footer-grid {
@@ -573,8 +575,14 @@ i.fas, i.far, i.fab {
   .footer-credits { text-align: right; }
 }
 
-.footer-brand h3 { color: var(--secondary-blue); margin-bottom: 0.25rem; }
-.footer-brand p { opacity: 0.6; font-size: 0.85rem; }
+.footer-brand h3 { 
+  background: linear-gradient(135deg, #4c6ef5 0%, #87ceeb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem; 
+}
+.footer-brand p { opacity: 0.7; font-size: 0.85rem; }
 
 .footer-nav a {
   color: white;

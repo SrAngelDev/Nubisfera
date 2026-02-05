@@ -2,9 +2,9 @@
   width: 100%;
   margin: 2rem 0;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b5bdb 0%, #4c6ef5 100%);
   border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(46, 81, 219, 0.3);
 }
 
 .map-header {
@@ -85,7 +85,7 @@
   background: white;
   border-radius: 15px;
   padding: 1rem;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 5px 20px rgba(46, 81, 219, 0.2);
   min-height: 600px;
   overflow: hidden;
   position: relative;

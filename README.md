@@ -5,8 +5,9 @@
 ![Angular](https://img.shields.io/badge/Angular-20.3-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Open-Meteo](https://img.shields.io/badge/Open--Meteo-API-00A1E0?style=for-the-badge)
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
 
-**Nubisfera** es una aplicación web moderna que proporciona información meteorológica detallada de cualquier municipio español, utilizando los datos de **Open-Meteo**, una API meteorológica gratuita y de código abierto.
+**Nubisfera** es una **Progressive Web App (PWA)** que proporciona información meteorológica detallada de cualquier municipio español, utilizando los datos de **Open-Meteo**, una API meteorológica gratuita y de código abierto. Se puede instalar como aplicación nativa en cualquier dispositivo.
 
 ---
 
@@ -48,6 +49,17 @@
 - Experiencia de usuario fluida
 
 ### ⚡ Rendimiento Optimizado
+- Carga rápida con lazy loading
+- Cache inteligente de datos
+- Optimización de imágenes y assets
+
+### 📱 Progressive Web App (PWA)
+- ✅ **Instalable**: Instala la app en tu dispositivo (móvil, tablet, PC)
+- ✅ **Funciona offline**: Cache de recursos y datos meteorológicos
+- ✅ **Actualizaciones automáticas**: La app se actualiza en segundo plano
+- ✅ **Experiencia nativa**: Pantalla completa sin barra del navegador
+- ✅ **Iconos optimizados**: Múltiples tamaños para todos los dispositivos
+- 📖 **Guía completa**: Ver [PWA-GUIDE.md](./PWA-GUIDE.md) para más información
 - **Sistema de caché inteligente** con 3 niveles de expiración:
   - Municipios: 24 horas
   - Predicción diaria: 3 horas
@@ -146,6 +158,34 @@ npm start
 
 ### Limpiar Búsqueda
 - Click en el botón **✕** para limpiar y buscar otro municipio
+
+---
+
+## 📱 Instalar como PWA
+
+### En Producción (Netlify u otro hosting)
+1. **Visita la app** desde tu navegador (Chrome, Edge, Safari)
+2. **Busca la opción de instalar**:
+   - En móvil: Aparecerá un banner o en el menú
+   - En escritorio: Icono en la barra de direcciones
+3. **Toca "Instalar"** y la app se agregará como aplicación nativa
+
+### Probar PWA Localmente
+```bash
+# 1. Compilar la aplicación
+npm run build
+
+# 2. Instalar servidor HTTP (solo la primera vez)
+npm install -g http-server
+
+# 3. Servir la aplicación
+cd dist/Nubisfera/browser
+http-server -p 8080
+```
+
+Abre `http://localhost:8080` y podrás instalar la PWA.
+
+📖 **Guía completa de PWA**: Ver [PWA-GUIDE.md](./PWA-GUIDE.md)
 
 ---
 
