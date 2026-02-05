@@ -41,6 +41,12 @@
 - **Probabilidad de precipitación**: Porcentaje de lluvia prevista
 - **Datos en tiempo real**: Actualización cada 3 horas
 
+### 📊 Visualización Avanzada
+- **Gráficos interactivos**: Temperatura, precipitación, humedad y velocidad del viento (48h)
+- **Mapa de España**: Visualización de temperaturas por comunidad autónoma
+- **Selección por mapa**: Click en el mapa para ver el tiempo de cualquier región
+- **Animaciones fluidas**: Transiciones suaves entre vistas
+
 ### 🎨 Interfaz Moderna
 - Diseño **dark mode** profesional
 - Tarjetas animadas y responsivas
@@ -70,10 +76,14 @@
 ## 🛠️ Tecnologías
 
 ### Frontend
-- **Angular 20.3** - Framework principal
+- **Angular 21.0** - Framework principal
 - **TypeScript 5.9** - Lenguaje de programación
 - **RxJS 7.8** - Programación reactiva
 - **Standalone Components** - Arquitectura moderna de Angular
+
+### Visualización de Datos
+- **Google Charts** - Gráficos interactivos de temperatura, precipitación, humedad y viento
+- **Google GeoChart** - Mapa interactivo de España con temperaturas por comunidad autónoma
 
 ### Estilos
 - **CSS3** - Variables CSS, Flexbox, Grid
@@ -91,8 +101,8 @@
 
 ### Requisitos Previos
 - **Node.js** (v18 o superior)
-- **npm** (v9 o superior)
-- **Angular CLI** (v20 o superior)
+- **npm** (v9 o superior)  
+- **Angular CLI** (v21 o superior)
 
 ### Pasos de Instalación
 
@@ -352,6 +362,8 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - ✨ Búsqueda de 8,122 municipios españoles
 - 🌡️ Predicción diaria (7 días)
 - ⏰ Predicción por rangos horarios
+- 📊 Gráficos interactivos con Google Charts (4 tipos)
+- 🗺️ Mapa interactivo de España con temperaturas en tiempo real
 - 💾 Sistema de caché inteligente (v3)
 - 🎨 Interfaz dark mode completa
 - 📱 Diseño responsive
