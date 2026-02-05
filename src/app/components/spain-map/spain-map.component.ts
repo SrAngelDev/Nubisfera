@@ -97,19 +97,11 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadGoogleCharts() {
     if (typeof google !== 'undefined' && google.charts) {
-      console.log('📦 Cargando Google Charts...');
-      google.charts.load('current', {
-        'packages': ['geochart'],
-        'mapsApiKey': 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY'
-      });
+      google.charts.load('current', { 'packages': ['geochart'] });
       google.charts.setOnLoadCallback(() => {
-        console.log('✅ Google Charts cargado correctamente');
         this.chartsLoaded = true;
         if (this.provinciasData.length > 0) {
-          console.log('🗺️ Datos ya disponibles, dibujando mapa inmediatamente...');
           setTimeout(() => this.drawMap(), 100);
-        } else {
-          console.log('⏳ Esperando a que se carguen los datos de provincias...');
         }
       });
     }
@@ -202,18 +194,12 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.provinciasData = resultados;
-      console.log('✅ Datos de provincias cargados:', this.provinciasData.length);
-      console.log('📊 Primeras 3 provincias:', this.provinciasData.slice(0, 3));
       this.isLoading = false;
 
       if (this.chartsLoaded) {
-        console.log('🗺️ Google Charts ya cargado, dibujando mapa...');
-        // Esperar a que Angular actualice el DOM para que el contenedor exista
         setTimeout(() => {
           this.drawMap();
         }, 100);
-      } else {
-        console.log('⏳ Esperando a que Google Charts se cargue...');
       }
 
     } catch (error) {
@@ -244,22 +230,16 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private drawMap() {
-    console.log('🎨 drawMap() llamado');
-    console.log('📍 provinciasData disponibles:', this.provinciasData?.length || 0);
-    
     if (!this.provinciasData || this.provinciasData.length === 0) {
-      console.warn('⚠️ No hay datos de provincias para dibujar');
       return;
     }
 
     const mapContainer = document.getElementById('spain_map');
     if (!mapContainer) {
-      console.error('❌ No se encontró el contenedor del mapa #spain_map');
+      console.error('Map container not found');
       return;
     }
-    console.log('✅ Contenedor del mapa encontrado');
 
-    // Agrupar provincias por comunidad autónoma y calcular temperatura media
     const ccaaTemps = new Map<string, { suma: number; count: number; provincias: string[] }>();
     
     this.provinciasData.forEach(pd => {
@@ -272,34 +252,19 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
         data.suma += pd.temperaturaMedia;
         data.count++;
         data.provincias.push(pd.provincia);
-      } else {
-        console.warn(`⚠️ No hay código CCAA para la provincia: ${pd.provincia}`);
       }
     });
 
-    // Crear array de datos para el mapa
     const mapData: [string, number][] = [];
     ccaaTemps.forEach((data, ccaaCode) => {
       const tempMedia = data.suma / data.count;
       mapData.push([ccaaCode, tempMedia]);
-      console.log(`📍 ${this.CCAA_NOMBRES[ccaaCode]}: ${tempMedia.toFixed(1)}°C (${data.count} provincias)`);
     });
 
     const data = google.visualization.arrayToDataTable([
       ['Comunidad Autónoma', 'Temperatura'],
       ...mapData
     ]);
-
-    console.log(`📊 Comunidades autónomas procesadas: ${data.getNumberOfRows()}`);
-
-    // Calcular rango de temperaturas desde el DataTable
-    const temperaturas: number[] = [];
-    for (let i = 0; i < data.getNumberOfRows(); i++) {
-      temperaturas.push(data.getValue(i, 1));
-    }
-    const minTemp = Math.min(...temperaturas);
-    const maxTemp = Math.max(...temperaturas);
-    console.log(`🌡️ Rango de temperaturas: ${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C`);
 
     // Ajustar altura según tamaño de pantalla
     const isMobile = window.innerWidth < 768;
@@ -346,58 +311,36 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
     const chart = new google.visualization.GeoChart(mapContainer);
     console.log('📈 GeoChart creado');
 
-    // Evento de selección
     google.visualization.events.addListener(chart, 'select', () => {
       const selection = chart.getSelection();
-      console.log('🖱️ Mapa clickeado, selección:', selection);
 
       if (!selection || selection.length === 0) {
-        console.log('⚠️ Selección vacía');
         return;
       }
 
       const sel = selection[0];
-      console.log('📋 Datos de selección:', sel);
       
-      // La selección devuelve {row: número}
       if (sel.row !== null && sel.row !== undefined) {
         const ccaaCode = data.getValue(sel.row, 0);
-        const temperatura = data.getValue(sel.row, 1);
         const ccaaNombre = this.CCAA_NOMBRES[ccaaCode] || ccaaCode;
-        
-        console.log('🎯 CCAA seleccionada:', ccaaNombre, '(' + ccaaCode + ')', 'Temp:', temperatura);
 
-        // Buscar una provincia capital de esa CCAA para mostrar su tiempo
         const provinciaDeLaCCAA = this.provinciasData.find(pd => 
           this.PROVINCIA_TO_CCAA[pd.provincia] === ccaaCode
         );
 
         if (provinciaDeLaCCAA) {
-          console.log('✅ Emitiendo provincia:', provinciaDeLaCCAA.provincia);
-          
           this.zone.run(() => {
             this.selectedProvincia = ccaaNombre;
             this.provinciaSeleccionada.emit(provinciaDeLaCCAA.provincia);
           });
         }
-      } else {
-        console.warn('⚠️ sel.row es null o undefined');
       }
     });
-
-    console.log('🎨 Dibujando mapa...');
-    console.log('📋 Opciones finales:', JSON.stringify(options, null, 2));
     
     try {
       chart.draw(data, options);
-      console.log('✅ Mapa dibujado correctamente');
-      
-      // Verificar si hay errores después de dibujar
-      setTimeout(() => {
-        console.log('🔍 Verificando estado del mapa después de 1 segundo...');
-      }, 1000);
     } catch (error) {
-      console.error('❌ Error al dibujar el mapa:', error);
+      console.error('Error drawing map:', error);
     }
   }
 
