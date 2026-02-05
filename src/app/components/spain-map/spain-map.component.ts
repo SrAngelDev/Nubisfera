@@ -306,10 +306,7 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     };
 
-    console.log('⚙️ Opciones del mapa configuradas');
-
     const chart = new google.visualization.GeoChart(mapContainer);
-    console.log('📈 GeoChart creado');
 
     google.visualization.events.addListener(chart, 'select', () => {
       const selection = chart.getSelection();
