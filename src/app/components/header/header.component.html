@@ -1,11 +1,14 @@
 <header class="app-header-bar">
-  <div class="container">
-    <div class="brand-logo">
-      <a routerLink="/" class="brand-link" aria-label="Página de inicio de Nubisfera">
-        <span class="logo-icon">🌤️</span>
-        <span class="logo-text">Nubisfera</span>
-      </a>
-    </div>
+  <div class="header-glow"></div>
+  <div class="header-line"></div>
+  
+  <div class="header-container">
+    <a routerLink="/" class="brand-link" aria-label="Página de inicio de Nubisfera">
+      <div class="brand-icon">
+        <i class="fas fa-cloud-sun"></i>
+      </div>
+      <span class="brand-name">Nubisfera</span>
+    </a>
 
     <!-- Botón hamburguesa para móvil -->
     <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menú">
@@ -16,13 +19,43 @@
 
     <!-- Navegación -->
     <nav class="main-nav" [class.mobile-open]="isMobileMenuOpen">
-      <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" class="nav-link" (click)="closeMobileMenu()">
-        Open Meteo
+      <a routerLink="/dashboard" class="nav-link" (click)="closeMobileMenu()">
+        <i class="fas fa-th-large"></i>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/comparar" class="nav-link" (click)="closeMobileMenu()">
+        <i class="fas fa-columns"></i>
+        <span>Comparar</span>
+      </a>
+      <a routerLink="/timeline" class="nav-link" (click)="closeMobileMenu()">
+        <i class="fas fa-clock"></i>
+        <span>Timeline</span>
       </a>
       <a routerLink="/acerca-de" class="nav-link" (click)="closeMobileMenu()">
-        Acerca de
+        <i class="fas fa-info-circle"></i>
+        <span>Acerca de</span>
       </a>
+      @if (canInstall()) {
+        <button class="nav-link install-btn-mobile" (click)="installPwa(); closeMobileMenu()">
+          <i class="fas fa-download"></i>
+          <span>Instalar App</span>
+        </button>
+      }
     </nav>
+
+    <!-- Stats -->
+    <div class="header-actions">
+      @if (canInstall()) {
+        <button class="install-btn" (click)="installPwa()" title="Instalar Nubisfera">
+          <i class="fas fa-download"></i>
+          <span>Instalar</span>
+        </button>
+      }
+      <a routerLink="/logros" class="stats-link" title="Ver mis logros">
+        <i class="fas fa-trophy"></i>
+        <span class="level-badge">Nv.{{ currentLevel() }}</span>
+      </a>
+    </div>
   </div>
 
   <!-- Overlay para cerrar menú móvil -->

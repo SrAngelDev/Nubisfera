@@ -1,12 +1,12 @@
 # 🌦️ Nubisfera
 
-> **Aplicación web de previsión meteorológica para España**
+> **Aplicación web de previsión meteorológica global**
 
 ![Angular](https://img.shields.io/badge/Angular-20.3-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Open-Meteo](https://img.shields.io/badge/Open--Meteo-API-00A1E0?style=for-the-badge)
 
-**Nubisfera** es una aplicación web moderna que proporciona información meteorológica detallada de cualquier municipio español, utilizando los datos de **Open-Meteo**, una API meteorológica gratuita y de código abierto.
+**Nubisfera** es una aplicación web moderna que proporciona información meteorológica detallada de cualquier ciudad del mundo, utilizando los datos de **Open-Meteo**, una API meteorológica gratuita y de código abierto con cobertura internacional.
 
 ---
 
@@ -28,18 +28,26 @@
 
 ## ✨ Características
 
-### 🔍 Búsqueda Inteligente
-- Búsqueda de municipios españoles con autocompletado
-- Base de datos completa con mas de  **6,000 municipios**
+### 🔍 Búsqueda Global
+- Búsqueda de ciudades en todo el mundo con autocompletado
+- Base de datos global con millones de ubicaciones
 - Resultados instantáneos mientras escribes
+- Información detallada: ciudad, región y país
 
 ### 🌡️ Información Meteorológica Completa
-- **Predicción diaria**: Hasta 7 días vista
-- **Predicción por rangos horarios**: Detalle de cada franja del día
+- **Predicción extendida**: Hasta 16 días vista
+- **Predicción horaria**: Detalle hora por hora
 - **Temperaturas**: Máximas, mínimas y por hora
-- **Estado del cielo**: 35+ condiciones meteorológicas con emojis
+- **Estado del cielo**: 35+ condiciones meteorológicas con iconos animados
 - **Probabilidad de precipitación**: Porcentaje de lluvia prevista
-- **Datos en tiempo real**: Actualización cada 3 horas
+- **Datos en tiempo real**: Actualización constante
+- **Zona horaria automática**: Datos adaptados a la zona horaria local
+
+### 📊 Visualización Avanzada
+- **Gráficos interactivos**: Temperatura, precipitación, humedad y velocidad del viento (48h)
+- **Mapa de España**: Visualización de temperaturas por comunidad autónoma
+- **Selección por mapa**: Click en el mapa para ver el tiempo de cualquier región
+- **Animaciones fluidas**: Transiciones suaves entre vistas
 
 ### 🎨 Interfaz Moderna
 - Diseño **dark mode** profesional
@@ -70,10 +78,14 @@
 ## 🛠️ Tecnologías
 
 ### Frontend
-- **Angular 20.3** - Framework principal
+- **Angular 21.0** - Framework principal
 - **TypeScript 5.9** - Lenguaje de programación
 - **RxJS 7.8** - Programación reactiva
 - **Standalone Components** - Arquitectura moderna de Angular
+
+### Visualización de Datos
+- **Google Charts** - Gráficos interactivos de temperatura, precipitación, humedad y viento
+- **Google GeoChart** - Mapa interactivo de España con temperaturas por comunidad autónoma
 
 ### Estilos
 - **CSS3** - Variables CSS, Flexbox, Grid
@@ -91,8 +103,8 @@
 
 ### Requisitos Previos
 - **Node.js** (v18 o superior)
-- **npm** (v9 o superior)
-- **Angular CLI** (v20 o superior)
+- **npm** (v9 o superior)  
+- **Angular CLI** (v21 o superior)
 
 ### Pasos de Instalación
 
@@ -348,14 +360,25 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 📝 Notas de Versión
 
-### v1.0.0 (Actual)
-- ✨ Búsqueda de 8,122 municipios españoles
-- 🌡️ Predicción diaria (7 días)
-- ⏰ Predicción por rangos horarios
-- 💾 Sistema de caché inteligente (v3)
+### v2.0.0 (Actual) - Expansión Global
+- 🌍 **Búsqueda global**: Cualquier ciudad del mundo
+- 🌐 **Cobertura internacional**: Millones de ubicaciones disponibles
+- 🕐 **Timezone automático**: Datos adaptados a la zona horaria local
+- 📅 **Predicción extendida**: Hasta 16 días
+- ⏰ **Predicción horaria mejorada**: Pronóstico hora por hora
+- 📊 Gráficos interactivos con Google Charts (4 tipos)
+- 💾 Sistema de caché inteligente optimizado
 - 🎨 Interfaz dark mode completa
 - 📱 Diseño responsive
 - ⚡ 35+ códigos meteorológicos soportados
+
+### v1.0.0 - Versión España
+- ✨ Búsqueda de 8,122 municipios españoles
+- 🌡️ Predicción diaria (7 días)
+- ⏰ Predicción por rangos horarios
+- 📊 Gráficos interactivos básicos
+- 🗺️ Mapa interactivo de España
+- 💾 Sistema de caché v3
 
 ---
 

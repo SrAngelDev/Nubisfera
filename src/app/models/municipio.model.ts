@@ -1,9 +1,9 @@
 export interface Municipio {
   id: string;
   nombre: string;
-  capital?: string;
-  provincia?: string; // Mantenemos para retrocompatibilidad
-  ccaa?: string;
+  capital?: string; // País o capital (para compatibilidad)
+  provincia?: string; // Región, provincia o estado
+  ccaa?: string; // País o Comunidad Autónoma
   longitud_dec?: string;
   latitud_dec?: string;
   altitud?: string;
@@ -15,6 +15,9 @@ export interface Municipio {
   destacada?: string;
   latitud?: string;
   longitud?: string;
+  // Nuevos campos para soporte global
+  pais?: string; // Nombre del país explícito
+  country_code?: string; // Código ISO del país (ES, FR, US, etc.)
 }
 
 export interface MunicipioResponse {

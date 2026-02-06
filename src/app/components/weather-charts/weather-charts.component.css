@@ -1,7 +1,7 @@
 .charts-container {
   width: 100%;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2E4DEE 0%, #5DDFFF 100%);
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   margin-top: 2rem;
@@ -54,7 +54,7 @@
 .no-data {
   text-align: center;
   padding: 3rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2E4DEE 0%, #5DDFFF 100%);
   border-radius: 20px;
   color: white;
   font-size: 1.2rem;

@@ -6,11 +6,20 @@ import { Municipio } from '../../models/municipio.model';
 import { WeatherData, DailyForecast, HourlyForecast, WMO_WEATHER_CODES } from '../../models/weather.model';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { WeatherChartsComponent } from '../weather-charts/weather-charts.component';
+import { AnimatedWeatherIconComponent } from '../animated-weather-icon/animated-weather-icon.component';
+import { SparklineComponent } from '../sparkline/sparkline.component';
+import { CircularGaugeComponent } from '../circular-gauge/circular-gauge.component';
 
 @Component({
   selector: 'app-weather-display',
   standalone: true,
-  imports: [CommonModule, WeatherChartsComponent],
+  imports: [
+    CommonModule, 
+    WeatherChartsComponent,
+    AnimatedWeatherIconComponent,
+    SparklineComponent,
+    CircularGaugeComponent
+  ],
   templateUrl: './weather-display.component.html',
   styleUrls: ['./weather-display.component.css'],
   animations: [
@@ -167,7 +176,7 @@ export class WeatherDisplayComponent implements OnChanges {
     return horasPorDia;
   }
 
-  getDiasConHoras(): { date: Date; horas: HourlyForecast[] }[] {
+  getDiasConHoras(): { date: Date; horas: HourlyForecast[]; tempMax: number; tempMin: number }[] {
     const horasPorDia = this.getHorasPorDia();
     const ahora = new Date();
     const hoyInicio = new Date(ahora);
@@ -183,9 +192,16 @@ export class WeatherDisplayComponent implements OnChanges {
           ? horas.filter(hora => hora.time >= ahora)
           : horas;
         
+        // Calcular temperatura máxima y mínima del día
+        const temperaturas = horasFiltradas.map(h => h.temperature);
+        const tempMax = temperaturas.length > 0 ? Math.max(...temperaturas) : 0;
+        const tempMin = temperaturas.length > 0 ? Math.min(...temperaturas) : 0;
+        
         return {
           date: fecha,
-          horas: horasFiltradas
+          horas: horasFiltradas,
+          tempMax,
+          tempMin
         };
       })
       .filter(item => {
@@ -195,6 +211,81 @@ export class WeatherDisplayComponent implements OnChanges {
         return fecha >= hoyInicio && item.horas.length > 0;
       })
       .sort((a, b) => a.date.getTime() - b.date.getTime());
+  }
+
+  /**
+   * Verificar si una hora es la hora actual
+   */
+  isCurrentHour(hora: Date): boolean {
+    const ahora = new Date();
+    return hora.getHours() === ahora.getHours() && 
+           hora.getDate() === ahora.getDate() &&
+           hora.getMonth() === ahora.getMonth() &&
+           hora.getFullYear() === ahora.getFullYear();
+  }
+
+  /**
+   * Mapear código WMO a tipo de icono animado
+   */
+  getAnimatedIconType(code: number, fecha?: Date): 'sunny' | 'cloudy' | 'rainy' | 'stormy' | 'snowy' | 'windy' | 'partly-cloudy' {
+    const isNight = fecha ? this.isNightTime(fecha) : false;
+
+    // Despejado
+    if (code === 0 || code === 1) return 'sunny';
+    
+    // Parcialmente nublado  
+    if (code === 2) return 'partly-cloudy';
+    
+    // Nublado
+    if (code === 3 || code === 45 || code === 48) return 'cloudy';
+    
+    // Lluvia
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return 'rainy';
+    
+    // Tormenta
+    if ([95, 96, 99].includes(code)) return 'stormy';
+    
+    // Nieve
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return 'snowy';
+    
+    // Por defecto
+    return 'partly-cloudy';
+  }
+
+  /**
+   * Obtener datos de temperatura para sparkline
+   */
+  getTemperatureSparkline(dia: DailyForecast): number[] {
+    if (!this.weatherData?.hourly) return [];
+    
+    // Obtener temperaturas del día específico
+    const dateStr = dia.date.toISOString().split('T')[0];
+    const horasDelDia = this.weatherData.hourly.filter(h => {
+      const hourDateStr = h.time.toISOString().split('T')[0];
+      return hourDateStr === dateStr;
+    });
+
+    return horasDelDia.map(h => h.temperature);
+  }
+
+  /**
+   * Obtener color según temperatura
+   */
+  getTemperatureColor(temp: number): string {
+    if (temp >= 30) return '#ff6b6b';
+    if (temp >= 25) return '#ff9a76';
+    if (temp >= 20) return '#ffd97d';
+    if (temp >= 15) return '#2E4DEE';
+    if (temp >= 10) return '#82b1ff';
+    return '#a8d5ff';
+  }
+
+  /**
+   * Verificar si es de noche
+   */
+  private isNightTime(date: Date): boolean {
+    const hour = date.getHours();
+    return hour < 7 || hour >= 21;
   }
 
   formatHora(date: Date): string {

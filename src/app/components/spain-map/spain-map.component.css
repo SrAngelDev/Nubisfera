@@ -2,7 +2,7 @@
   width: 100%;
   margin: 2rem 0;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2E4DEE 0%, #5DDFFF 100%);
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
@@ -267,7 +267,7 @@
 /* Scrollbar personalizado */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #667eea #f0f0f0;
+  scrollbar-color: #2E4DEE #f0f0f0;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

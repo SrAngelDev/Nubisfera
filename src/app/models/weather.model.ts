@@ -11,6 +11,15 @@ export interface CurrentWeather {
   weatherCode: number;
   windSpeed: number;
   windDirection: number;
+  windGusts?: number;
+  isDay?: number;
+  precipitation?: number;
+  rain?: number;
+  showers?: number;
+  snowfall?: number;
+  cloudCover?: number;
+  pressureMsl?: number;
+  surfacePressure?: number;
 }
 
 /**
@@ -26,6 +35,18 @@ export interface HourlyForecast {
   weatherCode: number;
   windSpeed: number;
   windDirection: number;
+  dewPoint?: number;
+  rain?: number;
+  showers?: number;
+  snowfall?: number;
+  cloudCover?: number;
+  pressureMsl?: number;
+  surfacePressure?: number;
+  visibility?: number;
+  evapotranspiration?: number;
+  windGusts?: number;
+  uvIndex?: number;
+  isDay?: number;
 }
 
 /**
@@ -44,6 +65,16 @@ export interface DailyForecast {
   precipitationProbabilityMax: number;
   windSpeedMax: number;
   windDirectionDominant: number;
+  daylightDuration?: number;
+  sunshineDuration?: number;
+  uvIndexMax?: number;
+  uvIndexClearSkyMax?: number;
+  rainSum?: number;
+  showersSum?: number;
+  snowfallSum?: number;
+  precipitationHours?: number;
+  windGustsMax?: number;
+  shortwaveRadiationSum?: number;
 }
 
 /**

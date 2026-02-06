@@ -1,51 +1,188 @@
-/* ===== NUBISFERA - ESTILOS GLOBALES RESPONSIVE ===== */
+/* ===== NUBISFERA - SISTEMA DE DISEÑO MODERNO ===== */
+/* Design System v2.0 - Premium Weather Experience */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+/* Fonts are loaded via index.html to avoid build issues */
 
 :root {
-  /* Colores */
-  --primary-blue: #6495ed;
-  --secondary-blue: #82b1ff;
-  --accent-sunrise: #ff9a76;
-  --accent-sunset: #ffd97d;
-  --primary-blue-light: #89a8e8;
+  /* ============================================
+     SPACING SYSTEM (8pt Grid)
+     ============================================ */
+  --space-0: 0;
+  --space-0-5: 0.125rem;  /* 2px */
+  --space-1: 0.25rem;     /* 4px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-4: 1rem;        /* 16px */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-7: 1.75rem;     /* 28px */
+  --space-8: 2rem;        /* 32px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-12: 3rem;       /* 48px */
+  --space-16: 4rem;       /* 64px */
+  --space-20: 5rem;       /* 80px */
+  --space-24: 6rem;       /* 96px */
+  --space-32: 8rem;       /* 128px */
+  
+  /* ============================================
+     FLUID TYPOGRAPHY
+     ============================================ */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);        /* 12-14px */
+  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);          /* 14-16px */
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);          /* 16-18px */
+  --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);         /* 18-20px */
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);          /* 20-24px */
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);               /* 24-32px */
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem);       /* 30-40px */
+  --text-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);           /* 36-48px */
+  --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);               /* 48-64px */
+  
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  --radius-none: 0;
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-3xl: 2rem;      /* 32px */
+  --radius-full: 9999px;
+  
+  /* ============================================
+     TRANSITIONS & ANIMATIONS
+     ============================================ */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slower: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Easing curves */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* ============================================
+     Z-INDEX (ELEVATION)
+     ============================================ */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+  --z-popover: 800;
+  
+  /* ============================================
+     COLOR PALETTE - SEMANTIC COLORS
+     Basada en el logo de Nubisfera
+     ============================================ */
+  --primary-blue: #2E4DEE;
+  --primary-blue-light: #5D7FFF;
+  --primary-blue-dark: #1A2FAA;
+  --secondary-blue: #3B5BFF;
+  --accent-cyan: #5DDFFF;
+  --accent-cyan-light: #87EBFF;
+  --accent-cyan-dark: #4DD4E8;
+  --sky-light: #B0E0F6;
+  --sky-medium: #87CEEB;
+  --cloud-white: #FFFFFF;
   --success-green: #4ade80;
   --warning-yellow: #fbbf24;
   --error-red: #f87171;
-  --info-cyan: #22d3ee;
+  --info-cyan: #5DDFFF;
   
-  /* Fondos */
-  --background-dark: #0f1419;
-  --background-light: #1a1f2e;
-  --surface-dark: #242b3d;
-  --surface-light: #2d3548;
+  /* ============================================
+     BACKGROUNDS & SURFACES
+     ============================================ */
+  --background-dark: #0a0e1f;
+  --background-light: #141a2e;
+  --surface-dark: #1a2341;
+  --surface-light: #242e4d;
+  --surface-elevated: #2d3959;
+  --surface-overlay: rgba(93, 223, 255, 0.05);
   
-  /* Textos */
+  /* ============================================
+     TEXT COLORS
+     ============================================ */
   --text-primary: #e8edf4;
   --text-secondary: #9ca3af;
   --text-tertiary: #6b7280;
+  --text-quaternary: #4b5563;
+  --text-inverse: #0f1419;
   
-  /* Bordes */
-  --border-light: #2d3548;
-  --border-medium: #3d4758;
+  /* ============================================
+     BORDERS
+     ============================================ */
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-width: 1px;
+  --border-width-thick: 2px;
   
-  /* Sombras */
+  /* ============================================
+     SHADOWS - ELEVATION SYSTEM
+     ============================================ */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.5);
   --shadow-xl: 0 25px 50px -10px rgb(0 0 0 / 0.6);
+  --shadow-2xl: 0 35px 70px -15px rgb(0 0 0 / 0.7);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.3);
   
-  /* Gradientes */
-  --gradient-sky: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-sky-diagonal: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
-  --gradient-horizon: linear-gradient(135deg, #ff9a76, #ffd97d);
-  --gradient-ethereal: linear-gradient(145deg, #1a1f2e 0%, #242b3d 50%, #2d3548 100%);
-  --gradient-ethereal-alt: linear-gradient(145deg, #0f1419 0%, #1a1f2e 50%, #242b3d 100%);
+  /* Glassmorphism */
+  --glass-bg: rgba(93, 223, 255, 0.05);
+  --glass-border: rgba(93, 223, 255, 0.12);
+  --glass-blur: blur(16px);
+  
+  /* ============================================
+     GRADIENTS
+     ============================================ */
+  --gradient-sky: linear-gradient(135deg, #2E4DEE 0%, #5D7FFF 100%);
+  --gradient-sky-diagonal: linear-gradient(145deg, #2E4DEE 0%, #3B5BFF 100%);
+  --gradient-horizon: linear-gradient(135deg, #5DDFFF, #87CEEB);
+  --gradient-ethereal: linear-gradient(145deg, #0a0e1f 0%, #1a2341 50%, #242e4d 100%);
+  --gradient-ethereal-alt: linear-gradient(145deg, #141a2e 0%, #1a2341 50%, #242e4d 100%);
+  --gradient-blue-purple: linear-gradient(135deg, #2E4DEE 0%, #5D7FFF 100%);
+  --gradient-cyan-blue: linear-gradient(135deg, #5DDFFF 0%, #3B5BFF 100%);
+  --gradient-mesh-1: radial-gradient(at 40% 20%, hsla(227, 85%, 55%, 0.4) 0, transparent 50%),
+                      radial-gradient(at 80% 0%, hsla(200, 100%, 68%, 0.3) 0, transparent 50%),
+                      radial-gradient(at 0% 50%, hsla(227, 85%, 55%, 0.3) 0, transparent 50%);
+  --gradient-glass: linear-gradient(135deg, rgba(93, 223, 255, 0.08) 0%, rgba(46, 77, 238, 0.08) 100%);
+  
+  /* ============================================
+     BREAKPOINTS (for reference in JS)
+     ============================================ */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* ============================================
+     OPACITY LEVELS
+     ============================================ */
+  --opacity-disabled: 0.4;
+  --opacity-hover: 0.8;
+  --opacity-pressed: 0.6;
 }
 
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -54,6 +191,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -63,13 +201,49 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
 }
 
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.3;
+  color: var(--text-primary);
 }
 
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+p {
+  margin-bottom: var(--space-4);
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-blue-light);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -77,7 +251,67 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
-/* Scrollbar */
+.container-fluid {
+  width: 100%;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+/* Focus visible improvements */
+*:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Skip to main content */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary-blue);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-md) 0;
+  z-index: var(--z-tooltip);
+  transition: top var(--transition-fast);
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -88,22 +322,44 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-light);
-  border-radius: 5px;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-blue);
 }
 
-/* Animaciones */
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-elevated) var(--background-light);
+}
+
+/* ============================================
+   ANIMATIONS & KEYFRAMES
+   ============================================ */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
+}
+
+@keyframes fadeOut {
+  from { 
+    opacity: 1; 
+  }
+  to { 
+    opacity: 0; 
+  }
 }
 
 @keyframes slideUp {
@@ -117,10 +373,301 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Responsive Base */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--primary-blue);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--primary-blue), 0 0 30px var(--primary-blue-light);
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES - ANIMATIONS
+   ============================================ */
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) var(--ease-out);
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-base) var(--ease-out);
+}
+
+.animate-slide-down {
+  animation: slideDown var(--transition-base) var(--ease-out);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-base) var(--ease-out);
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ============================================
+   UTILITY CLASSES - SPACING
+   ============================================ */
+.m-0 { margin: 0 !important; }
+.mt-0 { margin-top: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mt-2 { margin-top: var(--space-2); }
+.mt-4 { margin-top: var(--space-4); }
+.mt-6 { margin-top: var(--space-6); }
+.mt-8 { margin-top: var(--space-8); }
+.mb-2 { margin-bottom: var(--space-2); }
+.mb-4 { margin-bottom: var(--space-4); }
+.mb-6 { margin-bottom: var(--space-6); }
+.mb-8 { margin-bottom: var(--space-8); }
+
+.p-0 { padding: 0 !important; }
+.p-2 { padding: var(--space-2); }
+.p-4 { padding: var(--space-4); }
+.p-6 { padding: var(--space-6); }
+.p-8 { padding: var(--space-8); }
+
+/* ============================================
+   UTILITY CLASSES - LAYOUT
+   ============================================ */
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.grid { display: grid; }
+.hidden { display: none; }
+.block { display: block; }
+
+.flex-row { flex-direction: row; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+
+.gap-2 { gap: var(--space-2); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
+
+/* ============================================
+   UTILITY CLASSES - EFFECTS
+   ============================================ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+.shadow-2xl { box-shadow: var(--shadow-2xl); }
+
+.rounded-sm { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-xl { border-radius: var(--radius-xl); }
+.rounded-2xl { border-radius: var(--radius-2xl); }
+.rounded-full { border-radius: var(--radius-full); }
+
+.transition-fast { transition: all var(--transition-fast); }
+.transition-base { transition: all var(--transition-base); }
+.transition-slow { transition: all var(--transition-slow); }
+
+/* ============================================
+   INTERACTIVE STATES
+   ============================================ */
+.interactive {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.interactive:active {
+  transform: translateY(0);
+}
+
+.interactive-scale:hover {
+  transform: scale(1.05);
+}
+
+.interactive-scale:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   SKELETON LOADERS
+   ============================================ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-dark) 0%,
+    var(--surface-light) 50%,
+    var(--surface-dark) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-circle {
+  border-radius: var(--radius-full);
+  width: 3rem;
+  height: 3rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+/* Tablet and smaller */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
+}
+
 @media (max-width: 768px) {
   html {
     font-size: 15px;
+  }
+  
+  h1 { font-size: var(--text-3xl); }
+  h2 { font-size: var(--text-2xl); }
+  h3 { font-size: var(--text-xl); }
+  
+  .hide-on-mobile {
+    display: none !important;
+  }
+  
+  .show-on-mobile {
+    display: block !important;
   }
 }
 
@@ -128,4 +675,304 @@ h1, h2, h3, h4, h5, h6 {
   html {
     font-size: 14px;
   }
+  
+  .container {
+    padding: 0 var(--space-3);
+  }
 }
+
+/* Large screens */
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1400px;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #ffffff;
+    --text-secondary: #e5e5e5;
+    --border-light: rgba(255, 255, 255, 0.3);
+    --border-medium: rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* ============================================
+   DARK MODE COMPATIBILITY
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  /* Already in dark mode by default */
+}
+
+@media (prefers-color-scheme: light) {
+  /* Light mode variables (can be activated via theme toggle) */
+  .light-mode {
+    --background-dark: #f5f8ff;
+    --background-light: #ffffff;
+    --surface-dark: #f8fafc;
+    --surface-light: #ffffff;
+    --surface-elevated: #ffffff;
+    
+    --text-primary: #0f1419;
+    --text-secondary: #4b5563;
+    --text-tertiary: #6b7280;
+    --text-quaternary: #9ca3af;
+    
+    --border-light: rgba(0, 0, 0, 0.08);
+    --border-medium: rgba(0, 0, 0, 0.12);
+    --border-strong: rgba(0, 0, 0, 0.18);
+    
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    
+    --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.1);
+    --shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.15);
+    --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.2);
+    --shadow-xl: 0 25px 50px -10px rgb(0 0 0 / 0.25);
+  }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+/* GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Contain layout reflows */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+/* ============================================
+   VENDOR PREFIXES (if needed)
+   ============================================ */
+.backdrop-blur {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* ============================================
+   FOCUS TRAP (for modals)
+   ============================================ */
+.focus-trap:focus {
+  outline: none;
+}
+
+/* ============================================
+   SELECTION
+   ============================================ */
+::selection {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+::-moz-selection {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+.loading {
+  pointer-events: none;
+  opacity: var(--opacity-disabled);
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+}
+
+/* ============================================
+   THEME TRANSITIONS
+   ============================================ */
+
+/* Transición suave entre temas */
+:root.theme-transitioning,
+:root.theme-transitioning *,
+:root.theme-transitioning *::before,
+:root.theme-transitioning *::after {
+  transition: background-color 300ms ease,
+              color 300ms ease,
+              border-color 300ms ease,
+              box-shadow 300ms ease !important;
+}
+
+/* Temas específicos */
+:root.light-theme {
+  color-scheme: light;
+}
+
+:root.dark-theme {
+  color-scheme: dark;
+}
+
+/* Gamification Animations */
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); }
+  100% { transform: translateY(100vh) rotate(360deg); }
+}
+
+@keyframes achievement-unlock {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes level-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px currentColor; }
+  50% { box-shadow: 0 0 20px currentColor; }
+}
+
+.achievement-unlock-animation {
+  animation: achievement-unlock 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.level-up-animation {
+  animation: level-up 0.8s ease-in-out;
+}
+
+/* ============================================
+   END OF DESIGN SYSTEM
+   ============================================ */
+
+/* ==========================================================================
+   OPTIMIZACIONES Y MICRO-INTERACCIONES (FASE 8)
+   ==========================================================================
+*/
+
+/* Clases utilitarias de animación */
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.scale-in {
+  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Animaciones base */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Hover mejorados */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Efecto ripple */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Delays para cascadas */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimización rendimiento */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Accesibilidad: reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible */  
+:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/*
+   ==========================================================================
+   END OF OPTIMIZACIONES
+   ==========================================================================
+*/

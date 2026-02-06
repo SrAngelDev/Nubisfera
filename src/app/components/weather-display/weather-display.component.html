@@ -29,7 +29,15 @@
         <header class="prediction-header">
           <div class="location-info">
             <h2 class="municipio-name">{{ weatherData.municipio.nombre }}</h2>
-            <p class="provincia-name">{{ weatherData.municipio.provincia }}</p>
+            <p class="provincia-name">
+              @if (weatherData.municipio.provincia && weatherData.municipio.ccaa) {
+                {{ weatherData.municipio.provincia }}, {{ weatherData.municipio.ccaa }}
+              } @else if (weatherData.municipio.ccaa) {
+                {{ weatherData.municipio.ccaa }}
+              } @else if (weatherData.municipio.provincia) {
+                {{ weatherData.municipio.provincia }}
+              }
+            </p>
           </div>
           <div class="prediction-badge">
             <span class="badge-icon"><i [class]="tipoPrecision === 'diaria' ? 'fas fa-calendar-day' : 'fas fa-clock'"></i></span>
@@ -63,31 +71,71 @@
         @if (tipoPrecision === 'diaria') {
           <div class="daily-grid">
             @for (dia of getDiasFuturos(); track dia.date.getTime(); let i = $index) {
-              <div
-                class="day-card"
+              <article
+                class="day-card premium-card glass interactive"
                 [class.is-today]="isToday(dia.date)"
                 [@slideIn]="i"
                 >
-                <div class="day-card-header">
-                  <p class="day-name">{{ getDayName(dia.date) }}</p>
-                  <p class="day-date">{{ formatDate(dia.date, 'd MMM') }}</p>
-                </div>
+                <!-- Card Header con día -->
+                <header class="day-card-header">
+                  <div class="day-info">
+                    <h3 class="day-name">{{ getDayName(dia.date) }}</h3>
+                    <p class="day-date">{{ formatDate(dia.date, 'd MMM') }}</p>
+                  </div>
+                  @if (isToday(dia.date)) {
+                    <span class="today-badge">Hoy</span>
+                  }
+                </header>
+
+                <!-- Card Body con icono animado -->
                 <div class="day-card-body">
-                  <div class="weather-icon-large"><i class="wi" [ngClass]="getWeatherIcon(dia.weatherCode, dia.date)"></i></div>
+                  <div class="weather-icon-wrapper">
+                    <app-animated-weather-icon 
+                      [condition]="getAnimatedIconType(dia.weatherCode, dia.date)"
+                      [size]="80"
+                    ></app-animated-weather-icon>
+                  </div>
                   <p class="weather-description">{{ getWeatherDescription(dia.weatherCode) }}</p>
+                  
+                  <!-- Sparkline de temperatura -->
+                  @if (getTemperatureSparkline(dia).length > 0) {
+                    <div class="temperature-trend">
+                      <app-sparkline 
+                        [data]="getTemperatureSparkline(dia)"
+                        [width]="150"
+                        [height]="30"
+                        [color]="getTemperatureColor(dia.temperatureMax)"
+                      ></app-sparkline>
+                    </div>
+                  }
                 </div>
-                <div class="day-card-footer">
-                  <div class="temperature">
-                    <span class="temp-max">{{ dia.temperatureMax | number:'1.0-0' }}°</span>
-                    <span class="temp-separator">/</span>
-                    <span class="temp-min">{{ dia.temperatureMin | number:'1.0-0' }}°</span>
+
+                <!-- Card Footer con detalles -->
+                <footer class="day-card-footer">
+                  <div class="temperature-range">
+                    <div class="temp-item temp-max">
+                      <i class="fas fa-arrow-up"></i>
+                      <span class="temp-value">{{ dia.temperatureMax | number:'1.0-0' }}°</span>
+                    </div>
+                    <div class="temp-divider"></div>
+                    <div class="temp-item temp-min">
+                      <i class="fas fa-arrow-down"></i>
+                      <span class="temp-value">{{ dia.temperatureMin | number:'1.0-0' }}°</span>
+                    </div>
                   </div>
-                  <div class="precipitation">
-                    <span class="precip-icon">💧</span>
-                    <span>{{ dia.precipitationProbabilityMax | number:'1.0-0' }}%</span>
+                  
+                  <div class="weather-details-grid">
+                    <div class="detail-item">
+                      <i class="fas fa-tint"></i>
+                      <span class="detail-value">{{ dia.precipitationProbabilityMax | number:'1.0-0' }}%</span>
+                    </div>
+                    <div class="detail-item">
+                      <i class="fas fa-wind"></i>
+                      <span class="detail-value">{{ dia.windSpeedMax | number:'1.0-0' }} km/h</span>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </footer>
+              </article>
             }
           </div>
         }
@@ -95,41 +143,95 @@
         @if (tipoPrecision === 'horaria') {
           <div class="hourly-forecast">
             @for (diaConHoras of getDiasConHoras(); track diaConHoras.date.getTime(); let diaIndex = $index) {
-              <div class="hourly-day-section">
-                <div class="hourly-day-header">
-                  <h3 class="hourly-day-title">
-                    <span class="day-badge">{{ getDayName(diaConHoras.date) }}</span>
-                    <span class="day-date-detail">{{ formatDate(diaConHoras.date, 'd MMM') }}</span>
-                  </h3>
-                </div>
+              <section class="hourly-day-section">
+                <!-- Header del día -->
+                <header class="hourly-day-header">
+                  <div class="day-title-wrapper">
+                    <span class="day-badge-premium">{{ getDayName(diaConHoras.date) }}</span>
+                    <h3 class="day-date-detail">{{ formatDate(diaConHoras.date, 'd MMM') }}</h3>
+                  </div>
+                  <div class="day-summary">
+                    <div class="summary-item">
+                      <i class="fas fa-temperature-high"></i>
+                      <span>Max: {{ diaConHoras.tempMax | number:'1.0-0' }}°</span>
+                    </div>
+                    <div class="summary-item">
+                      <i class="fas fa-temperature-low"></i>
+                      <span>Min: {{ diaConHoras.tempMin | number:'1.0-0' }}°</span>
+                    </div>
+                  </div>
+                </header>
+
+                <!-- Grid de horas con scroll -->
                 <div class="hourly-scroll-container">
                   <div class="hourly-grid">
                     @for (hora of diaConHoras.horas; track hora.time.getTime(); let i = $index) {
-                      <div
-                        class="hour-card"
-                        [@slideIn]="i">
-                        <div class="hour-header">
-                          <p class="hour-time">{{ formatHora(hora.time) }}</p>
-                        </div>
-                        <div class="hour-body">
-                          <div class="hour-icon-large"><i class="wi" [ngClass]="getWeatherIcon(hora.weatherCode, hora.time)"></i></div>
+                      <article
+                        class="hour-card premium-card glass interactive"
+                        [class.is-current]="isCurrentHour(hora.time)"
+                        [@slideIn]="i"
+                        >
+                        <!-- Card Header con hora -->
+                        <header class="hour-card-header">
+                          <time class="hour-time">{{ formatHora(hora.time) }}</time>
+                          @if (isCurrentHour(hora.time)) {
+                            <span class="current-badge">Ahora</span>
+                          }
+                        </header>
+
+                        <!-- Card Body con icono animado y temperatura -->
+                        <div class="hour-card-body">
+                          <div class="icon-wrapper">
+                            <app-animated-weather-icon 
+                              [condition]="getAnimatedIconType(hora.weatherCode, hora.time)"
+                              [size]="56"
+                            ></app-animated-weather-icon>
+                          </div>
+                          
+                          <div class="temperature-display">
+                            <span 
+                              class="temp-value" 
+                              [style.color]="getTemperatureColor(hora.temperature)"
+                            >
+                              {{ hora.temperature | number:'1.0-0' }}°
+                            </span>
+                          </div>
+                          
                           <p class="weather-desc-mini">{{ getWeatherDescription(hora.weatherCode) }}</p>
                         </div>
-                        <div class="hour-footer">
-                          <div class="hour-temp-container">
-                            <span class="temp-icon">🌡️</span>
-                            <span class="hour-temp">{{ hora.temperature | number:'1.0-0' }}°</span>
+
+                        <!-- Card Footer con detalles meteorológicos -->
+                        <footer class="hour-card-footer">
+                          <div class="weather-metrics">
+                            <div class="metric-item">
+                              <i class="fas fa-tint"></i>
+                              <span class="metric-value">{{ hora.precipitationProbability | number:'1.0-0' }}%</span>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div class="metric-item">
+                              <i class="fas fa-wind"></i>
+                              <span class="metric-value">{{ hora.windSpeed | number:'1.0-0' }}</span>
+                            </div>
                           </div>
-                          <div class="hour-precip">
-                            <span class="precip-icon">💧</span>
-                            <span class="precip-value">{{ hora.precipitationProbability | number:'1.0-0' }}%</span>
-                          </div>
-                        </div>
-                      </div>
+                          
+                          @if (hora.humidity) {
+                            <div class="humidity-indicator">
+                              <app-circular-gauge
+                                [value]="hora.humidity"
+                                [max]="100"
+                                [size]="40"
+                                [strokeWidth]="4"
+                                [color]="'var(--info-cyan)'"
+                                unit="%"
+                              ></app-circular-gauge>
+                            </div>
+                          }
+                        </footer>
+                      </article>
                     }
                   </div>
                 </div>
-              </div>
+              </section>
             }
           </div>
         }

@@ -1,146 +1,327 @@
 <div class="app-layout">
+  <!-- Fondo animado con partículas -->
+  <app-animated-background [style]="'particles'"></app-animated-background>
 
   <header class="hero-section">
+    <!-- Decoración de fondo -->
+    <div class="hero-decoration">
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+    </div>
+
     <div class="container hero-grid">
       
-      <div class="hero-branding">
-        <div class="brand-badge">
-          <span class="badge-dot"></span>
-          <span>Nubisfera v1.0</span>
-        </div>
-        <h1 class="hero-title">
-          <span class="gradient-text">{{ title() }}</span>
-        </h1>
-        <p class="hero-subtitle">
-          Tu ventana al clima, con datos oficiales de AEMET.
-        </p>
-        
-        <div class="features-row">
-          <div class="feature-pill">
-            <span class="icon"><i class="fas fa-calendar-week"></i></span> 7 Días
-          </div>
-          <div class="divider"></div>
-          <div class="feature-pill">
-            <span class="icon"><i class="fas fa-bolt"></i></span> Tiempo Real
-          </div>
-          <div class="divider"></div>
-          <div class="feature-pill">
-            <span class="icon"><i class="fas fa-landmark"></i></span> AEMET
-          </div>
-        </div>
-      </div>
-      
-      <div class="hero-search-wrapper">
-        <div class="search-card glass-panel">
-          <div class="card-header">
-            <div class="header-icon-bg"><i class="fas fa-search"></i></div>
-            <div class="header-text">
-              <h2>Explora</h2>
-              <p>El tiempo en tu municipio</p>
+      <!-- Columna izquierda: Branding y búsqueda -->
+      <div class="hero-content">
+        <div class="hero-branding">
+          
+          <div class="title-wrapper">
+            <h1 class="hero-title animate-slide-up">
+              <span class="gradient-text">{{ title() }}</span>
+            </h1>
+            <div class="title-decoration">
+              <svg viewBox="0 0 300 20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="animated-underline">
+                <!-- Capa de resplandor base -->
+                <path class="line-glow" 
+                      d="M0,10 Q75,3 150,10 T300,10" 
+                      stroke="url(#heroGradient)" 
+                      fill="none" 
+                      stroke-width="12" 
+                      stroke-linecap="round"
+                      opacity="0.3"
+                      filter="url(#blur)"/>
+                <!-- Línea principal gruesa -->
+                <path class="line-main" 
+                      d="M0,10 Q75,3 150,10 T300,10" 
+                      stroke="url(#heroGradient)" 
+                      fill="none" 
+                      stroke-width="7" 
+                      stroke-linecap="round"/>
+                <!-- Línea brillante superior -->
+                <path class="line-shine" 
+                      d="M0,10 Q75,3 150,10 T300,10" 
+                      stroke="url(#shineGradient)" 
+                      fill="none" 
+                      stroke-width="3" 
+                      stroke-linecap="round"
+                      opacity="0.8"/>
+                <!-- Punto animado que recorre la línea -->
+                <circle class="moving-dot" r="4" fill="#ffffff" opacity="0.9">
+                  <animateMotion dur="3s" repeatCount="indefinite">
+                    <mpath href="#linePath"/>
+                  </animateMotion>
+                </circle>
+                <defs>
+                  <path id="linePath" d="M0,10 Q75,3 150,10 T300,10"/>
+                  <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#00D4FF;stop-opacity:1">
+                      <animate attributeName="stop-color" 
+                               values="#00D4FF; #5DDFFF; #00D4FF" 
+                               dur="2s" 
+                               repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="50%" style="stop-color:#4FC3F7;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#2E4DEE;stop-opacity:1">
+                      <animate attributeName="stop-color" 
+                               values="#2E4DEE; #4D5FEE; #2E4DEE" 
+                               dur="2s" 
+                               repeatCount="indefinite"/>
+                    </stop>
+                  </linearGradient>
+                  <linearGradient id="shineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0.6" />
+                    <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                  </linearGradient>
+                  <filter id="blur">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+                  </filter>
+                </defs>
+              </svg>
             </div>
-            
-            @if (isLoadingMunicipios) {
-              <div class="status-indicator loading" title="Cargando municipios">
-                <span class="spinner-ring"></span>
+          </div>
+          
+          <p class="hero-subtitle animate-slide-up" style="animation-delay: 0.1s">
+            Tu ventana inteligente al cielo
+          </p>
+          
+          <div class="features-row animate-slide-up" style="animation-delay: 0.2s">
+            <div class="feature-pill">
+              <span class="icon"><i class="fas fa-calendar-week"></i></span> 
+              <span class="pill-text">16 Días</span>
+            </div>
+            <div class="divider"></div>
+            <div class="feature-pill">
+              <span class="icon"><i class="fas fa-bolt"></i></span> 
+              <span class="pill-text">Tiempo Real</span>
+            </div>
+            <div class="divider"></div>
+            <div class="feature-pill">
+              <span class="icon"><i class="fas fa-landmark"></i></span> 
+              <span class="pill-text">INTERNACIONAL</span>
+            </div>
+            <div class="divider"></div>
+            <div class="feature-pill">
+              <span class="icon"><i class="fas fa-code"></i></span> 
+              <span class="pill-text">v2.0</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="hero-search-wrapper animate-slide-up" style="animation-delay: 0.3s">
+          <div class="search-card glass-premium">
+            <div class="card-header">
+              <div class="header-icon-bg">
+                <i class="fas fa-search"></i>
+                <div class="icon-glow"></div>
               </div>
-            } @else {
-              <div class="status-indicator ready" title="Sistema listo">
-                <span class="dot"></span>
+              <div class="header-text">
+                <h2>Explora el tiempo</h2>
+                <p>Busca cualquier ciudad del mundo</p>
+              </div>
+              
+              @if (isLoadingMunicipios) {
+                <div class="status-indicator loading" title="Cargando municipios">
+                  <span class="spinner-ring"></span>
+                </div>
+              } @else {
+                <div class="status-indicator ready" title="Sistema listo">
+                  <span class="dot"></span>
+                  <span class="dot-pulse"></span>
+                </div>
+              }
+            </div>
+
+            <form class="search-form" (submit)="$event.preventDefault()">
+              <label for="city-search" class="sr-only">Buscar municipio</label>
+              <div class="input-group">
+                <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                <input 
+                  id="city-search"
+                  type="text" 
+                  class="search-input"
+                  placeholder="Madrid, New York, Tokyo, London..."
+                  [(ngModel)]="searchQuery"
+                  [ngModelOptions]="{standalone: true}"
+                  (input)="onSearchInput()"
+                  (focus)="onSearchFocus()"
+                  (blur)="onSearchBlur()"
+                  [disabled]="isLoadingMunicipios"
+                  autocomplete="off"
+                  #searchInput
+                />
+                @if (searchQuery) {
+                  <button type="button" class="clear-btn" (click)="clearSearch()">
+                    <i class="fas fa-times-circle"></i>
+                  </button>
+                }
+                @if (isVoiceSearchSupported) {
+                  <button 
+                    type="button" 
+                    class="voice-btn"
+                    [class.listening]="isListeningVoice"
+                    (click)="startVoiceSearch()"
+                    title="Búsqueda por voz"
+                  >
+                    <i class="fas fa-microphone" [class.pulse]="isListeningVoice"></i>
+                  </button>
+                }
+              </div>
+            </form>
+            
+            <!-- Historial y Sugerencias -->
+            @if (showHistory && !isLoadingMunicipios) {
+              <div class="search-suggestions">
+                @if (searchHistory.length > 0) {
+                  <div class="suggestions-section">
+                    <div class="section-header">
+                      <h3><i class="fas fa-history"></i> Recientes</h3>
+                      <button class="text-btn" (click)="clearSearchHistory()">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
+                    <ul class="suggestions-list">
+                      @for (item of searchHistory; track item.id) {
+                        <li>
+                          <button class="suggestion-item" (click)="selectFromHistory(item)">
+                            <div class="suggestion-icon">
+                              <i class="fas fa-clock"></i>
+                            </div>
+                            <span class="suggestion-text">{{ item.nombre }}</span>
+                            <i class="fas fa-chevron-right suggestion-arrow"></i>
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+                
+                <div class="suggestions-section">
+                  <div class="section-header">
+                    <h3><i class="fas fa-fire"></i> Populares</h3>
+                  </div>
+                  <div class="popular-tags">
+                    @for (suggestion of popularSuggestions; track suggestion) {
+                      <button class="tag-btn" (click)="selectPopularSuggestion(suggestion)">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ suggestion }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+            
+            @if (showSearchResults && municipiosFiltrados.length > 0) {
+              <ul class="results-list custom-scrollbar" role="listbox">
+                <li class="list-header">
+                  <i class="fas fa-list-ul"></i>
+                  <small>{{ municipiosFiltrados.length }} resultados</small>
+                </li>
+                @for (municipio of municipiosFiltrados; track municipio.id) {
+                  <li>
+                    <button 
+                      class="result-item"
+                      (click)="seleccionarMunicipio(municipio)"
+                      role="option"
+                    >
+                      <div class="item-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                      </div>
+                      <div class="item-content">
+                        <span class="item-name">{{ municipio.nombre }}</span>
+                        <span class="item-meta">
+                          @if (municipio.provincia && municipio.ccaa) {
+                            {{ municipio.provincia }}, {{ municipio.ccaa }}
+                          } @else if (municipio.ccaa) {
+                            {{ municipio.ccaa }}
+                          } @else if (municipio.provincia) {
+                            {{ municipio.provincia }}
+                          } @else {
+                            Ciudad
+                          }
+                        </span>
+                      </div>
+                      <span class="item-action">
+                        <i class="fas fa-arrow-right"></i>
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+            
+            @if (showSearchResults && searchQuery && municipiosFiltrados.length === 0) {
+              <div class="empty-search-state">
+                <div class="empty-icon">
+                  <i class="fas fa-search-minus"></i>
+                </div>
+                <p class="empty-title">Sin resultados</p>
+                <p class="empty-text">No encontramos "<strong>{{ searchQuery }}</strong>"</p>
+                <button class="btn-secondary-small" (click)="clearSearch()">
+                  <i class="fas fa-redo"></i> Intentar de nuevo
+                </button>
               </div>
             }
           </div>
-
-          <form class="search-form" (submit)="$event.preventDefault()">
-            <label for="city-search" class="sr-only">Buscar municipio</label>
-            <div class="input-group">
-              <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
-              <input 
-                id="city-search"
-                type="text" 
-                class="search-input"
-                placeholder="Madrid, Vigo, Bilbao..."
-                [(ngModel)]="searchQuery"
-                [ngModelOptions]="{standalone: true}"
-                (input)="onSearchInput()"
-                (focus)="onSearchFocus()"
-                (blur)="onSearchBlur()"
-                [disabled]="isLoadingMunicipios"
-                autocomplete="off"
-                #searchInput
-              />
-              @if (searchQuery) {
-                <button type="button" class="clear-btn" (click)="clearSearch()">✕</button>
-              }
-            </div>
-          </form>
           
-          @if (showSearchResults && municipiosFiltrados.length > 0) {
-            <ul class="results-list custom-scrollbar" role="listbox">
-              <li class="list-header">
-                <small>Encontrados: {{ municipiosFiltrados.length }}</small>
-              </li>
-              @for (municipio of municipiosFiltrados; track municipio.id) {
-                <li>
-                  <button 
-                    class="result-item"
-                    (click)="seleccionarMunicipio(municipio)"
-                    role="option"
-                  >
-                    <div class="item-content">
-                      <span class="item-name">{{ municipio.nombre }}</span>
-                      <span class="item-meta">{{ municipio.capital || 'España' }}</span>
-                    </div>
-                    <span class="item-action">Ver →</span>
-                  </button>
-                </li>
-              }
-            </ul>
-          }
-          
-          @if (showSearchResults && searchQuery && municipiosFiltrados.length === 0) {
-            <div class="empty-search-state">
-              <span class="emoji">🤔</span>
-              <p>No encontramos "<strong>{{ searchQuery }}</strong>"</p>
-            </div>
-          }
-        </div>
-        
-        <div class="location-btn-wrapper">
-          <button class="btn-primary pulse" (click)="onAccionEspecial('ubicacion')">
-            <i class="fas fa-location-arrow"></i> Usar mi ubicación actual
-          </button>
+          <div class="location-btn-wrapper">
+            <button class="btn-location" (click)="onAccionEspecial('ubicacion')">
+              <div class="btn-icon-wrapper">
+                <i class="fas fa-location-arrow"></i>
+              </div>
+              <span class="btn-text">Usar mi ubicación actual</span>
+              <div class="btn-shine"></div>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </header>
 
-  <main class="main-content container">
-    
-    <!-- Mapa de España -->
-    <section class="map-section">
-      <app-spain-map 
-        (provinciaSeleccionada)="onProvinciaSeleccionada($event)"
-      ></app-spain-map>
-    </section>
-    
-    @if (municipioActual) {
-      <section id="weather-section" class="weather-dashboard fade-in">
+  <!-- CONTENIDO PRINCIPAL: Solo visible cuando hay una ciudad seleccionada -->
+  @if (municipioActual) {
+    <main class="main-content container fade-in">
+      
+      <!-- Encabezado del Dashboard con información de la ciudad -->
+      <div class="dashboard-header glass-panel">
+        <div class="location-info">
+          <button class="back-btn" (click)="volverABusqueda()" title="Volver a buscar">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="location-details">
+            <h2 class="location-name">
+              <i class="fas fa-map-marker-alt"></i>
+              {{ municipioActual.nombre }}
+            </h2>
+            <p class="location-meta">
+              @if (municipioActual.provincia && municipioActual.ccaa) {
+                {{ municipioActual.provincia }}, {{ municipioActual.ccaa }}
+              } @else if (municipioActual.ccaa) {
+                {{ municipioActual.ccaa }}
+              } @else if (municipioActual.capital) {
+                {{ municipioActual.capital }}
+              }
+            </p>
+          </div>
+        </div>
         
-        <div class="weather-toolbar glass-panel">
+        <div class="weather-toolbar">
           <div class="view-toggles">
             <button 
               class="toggle-btn"
               [class.active]="tipoPrecisionActual === 'diaria'"
               (click)="cambiarTipoPrecision('diaria')"
             >
-              Semana
+              <i class="fas fa-calendar-week"></i> Semana
             </button>
             <button 
               class="toggle-btn"
               [class.active]="tipoPrecisionActual === 'horaria'"
               (click)="cambiarTipoPrecision('horaria')"
             >
-              Horas
+              <i class="fas fa-clock"></i> Horas
             </button>
           </div>
           
@@ -153,35 +334,99 @@
             </button>
           </div>
         </div>
-        
+      </div>
+      
+      <!-- Dashboard de Predicciones -->
+      <section id="weather-section" class="weather-dashboard">
         <div class="weather-card-container">
           <app-weather-display 
             [municipio]="municipioActual"
             [tipoPrecision]="tipoPrecisionActual"
           ></app-weather-display>
         </div>
-
       </section>
 
-    }
-    
-  </main>
-
-  <footer class="app-footer">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <h3>Nubisfera</h3>
-        <p>© {{ currentYear }} • Datos AEMET</p>
+      <!-- Mapa de España (Contexto) -->
+      <section class="map-section">
+        <app-spain-map 
+          (provinciaSeleccionada)="onProvinciaSeleccionada($event)"
+        ></app-spain-map>
+      </section>
+      
+    </main>
+  } @else {
+    <!-- Estado inicial: Widget de Windy.com -->
+    <main class="main-content container">
+      <div class="windy-widget-container animate-fade-in">
+        <div class="windy-header glass-premium">
+          <div class="windy-header-content">
+            <div class="windy-icon">
+              <i class="fas fa-globe-europe"></i>
+            </div>
+            <div class="windy-title">
+              <h3>Mapa Meteorológico Mundial</h3>
+              <p>Explora el tiempo en tiempo real</p>
+            </div>
+          </div>
+          <div class="windy-badge">
+            <span class="badge-dot"></span>
+            <span>EN VIVO</span>
+          </div>
+        </div>
+        
+        <div class="windy-wrapper glass-premium">
+          <div class="windy-iframe-container">
+            <iframe 
+              src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=5&overlay=wind&product=ecmwf&level=surface&lat=39.028&lon=-5.098&message=true" 
+              frameborder="0"
+              allowfullscreen
+              loading="lazy"
+              title="Mapa meteorológico de Windy"
+            ></iframe>
+          </div>
+          
+          <div class="windy-footer">
+            <div class="windy-info">
+              <div class="info-item">
+                <i class="fas fa-wind"></i>
+                <span>Viento</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-temperature-high"></i>
+                <span>Temperatura</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-cloud-rain"></i>
+                <span>Precipitación</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Presión</span>
+              </div>
+            </div>
+            <a href="https://www.windy.com" target="_blank" rel="noopener" class="windy-link">
+              <span>Powered by Windy.com</span>
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="windy-cta glass-premium">
+          <div class="cta-content">
+            <i class="fas fa-search-location"></i>
+            <div class="cta-text">
+              <h3>Busca tu ciudad</h3>
+              <p>Descubre el pronóstico detallado para tu ubicación</p>
+            </div>
+          </div>
+          <button class="btn-cta" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); setTimeout(() => document.getElementById('city-search')?.focus(), 600);">
+            <span>Comenzar búsqueda</span>
+            <i class="fas fa-arrow-up"></i>
+          </button>
+        </div>
       </div>
-      <nav class="footer-nav">
-        <a href="https://github.com/SrAngelDev/Nubisfera" target="_blank">GitHub</a>
-        <a href="#" (click)="$event.preventDefault(); showNotification('info', 'Nubisfera v1.0')">Versión</a>
-      </nav>
-      <div class="footer-credits">
-        <p>Desarrollado con <i class="fas fa-heart"></i> por Angel Sanchez</p>
-      </div>
-    </div>
-  </footer>
+    </main>
+  }
 
 </div>
 
