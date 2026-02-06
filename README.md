@@ -49,6 +49,12 @@
 - **Selección por mapa**: Click en el mapa para ver el tiempo de cualquier región
 - **Animaciones fluidas**: Transiciones suaves entre vistas
 
+### 📊 Visualización Avanzada
+- **Gráficos interactivos**: Temperatura, precipitación, humedad y velocidad del viento (48h)
+- **Mapa de España**: Visualización de temperaturas por comunidad autónoma
+- **Selección por mapa**: Click en el mapa para ver el tiempo de cualquier región
+- **Animaciones fluidas**: Transiciones suaves entre vistas
+
 ### 🎨 Interfaz Moderna
 - Diseño **dark mode** profesional
 - Tarjetas animadas y responsivas
@@ -360,6 +366,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 📝 Notas de Versión
 
+<<<<<<< HEAD
 ### v2.0.0 (Actual) - Expansión Global
 - 🌍 **Búsqueda global**: Cualquier ciudad del mundo
 - 🌐 **Cobertura internacional**: Millones de ubicaciones disponibles
@@ -368,6 +375,15 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - ⏰ **Predicción horaria mejorada**: Pronóstico hora por hora
 - 📊 Gráficos interactivos con Google Charts (4 tipos)
 - 💾 Sistema de caché inteligente optimizado
+=======
+### v1.0.0 (Actual)
+- ✨ Búsqueda de 8,122 municipios españoles
+- 🌡️ Predicción diaria (7 días)
+- ⏰ Predicción por rangos horarios
+- 📊 Gráficos interactivos con Google Charts (4 tipos)
+- 🗺️ Mapa interactivo de España con temperaturas en tiempo real
+- 💾 Sistema de caché inteligente (v3)
+>>>>>>> a203724dac49c667f6c185c8ce89ab99a22f1c70
 - 🎨 Interfaz dark mode completa
 - 📱 Diseño responsive
 - ⚡ 35+ códigos meteorológicos soportados
