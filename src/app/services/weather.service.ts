@@ -209,9 +209,8 @@ export class WeatherService {
         const hourlyInterval = hourly.interval();
         const hourlyLength = (hourlyTimeEnd - hourlyTimeStart) / hourlyInterval;
 
-        for (let i = 0; i < hourlyLength; i++) {
-          const time = new Date((hourlyTimeStart + i * hourlyInterval + utcOffsetSeconds) * 1000);
-          
+        // Scope block to avoid variable name collisions and keep memory clean
+        {
           // Obtener arrays una sola vez para mejor rendimiento y seguridad
           const tempArray = hourly.variables(0)?.valuesArray();
           const humidityArray = hourly.variables(1)?.valuesArray();
@@ -233,30 +232,34 @@ export class WeatherService {
           const windGustsArray = hourly.variables(17)?.valuesArray();
           const uvIndexArray = hourly.variables(18)?.valuesArray();
           const isDayArray = hourly.variables(19)?.valuesArray();
-          
-          hourlyData.push({
-            time,
-            temperature: tempArray?.[i] ?? 0,
-            humidity: humidityArray?.[i] ?? 0,
-            dewPoint: dewPointArray?.[i],
-            apparentTemperature: appTempArray?.[i] ?? 0,
-            precipitationProbability: precipProbArray?.[i] ?? 0,
-            precipitation: precipArray?.[i] ?? 0,
-            rain: rainArray?.[i],
-            showers: showersArray?.[i],
-            snowfall: snowfallArray?.[i],
-            weatherCode: weatherCodeArray?.[i] ?? 0,
-            cloudCover: cloudCoverArray?.[i],
-            pressureMsl: pressureMslArray?.[i],
-            surfacePressure: surfacePressureArray?.[i],
-            visibility: visibilityArray?.[i],
-            evapotranspiration: evapotranspirationArray?.[i],
-            windSpeed: windSpeedArray?.[i] ?? 0,
-            windDirection: windDirArray?.[i] ?? 0,
-            windGusts: windGustsArray?.[i],
-            uvIndex: uvIndexArray?.[i],
-            isDay: isDayArray?.[i]
-          });
+
+          for (let i = 0; i < hourlyLength; i++) {
+            const time = new Date((hourlyTimeStart + i * hourlyInterval + utcOffsetSeconds) * 1000);
+            
+            hourlyData.push({
+              time,
+              temperature: tempArray?.[i] ?? 0,
+              humidity: humidityArray?.[i] ?? 0,
+              dewPoint: dewPointArray?.[i],
+              apparentTemperature: appTempArray?.[i] ?? 0,
+              precipitationProbability: precipProbArray?.[i] ?? 0,
+              precipitation: precipArray?.[i] ?? 0,
+              rain: rainArray?.[i],
+              showers: showersArray?.[i],
+              snowfall: snowfallArray?.[i],
+              weatherCode: weatherCodeArray?.[i] ?? 0,
+              cloudCover: cloudCoverArray?.[i],
+              pressureMsl: pressureMslArray?.[i],
+              surfacePressure: surfacePressureArray?.[i],
+              visibility: visibilityArray?.[i],
+              evapotranspiration: evapotranspirationArray?.[i],
+              windSpeed: windSpeedArray?.[i] ?? 0,
+              windDirection: windDirArray?.[i] ?? 0,
+              windGusts: windGustsArray?.[i],
+              uvIndex: uvIndexArray?.[i],
+              isDay: isDayArray?.[i]
+            });
+          }
         }
         console.log(`✅ ${hourlyData.length} registros horarios procesados`);
 
@@ -275,9 +278,8 @@ export class WeatherService {
         const dailyInterval = daily.interval();
         const dailyLength = (dailyTimeEnd - dailyTimeStart) / dailyInterval;
 
-        for (let i = 0; i < dailyLength; i++) {
-          const time = new Date((dailyTimeStart + i * dailyInterval + utcOffsetSeconds) * 1000);
-          
+        // Scope block to avoid variable name collisions and keep memory clean
+        {
           // Obtener arrays una sola vez
           const weatherCodeArray = daily.variables(0)?.valuesArray();
           const tempMaxArray = daily.variables(1)?.valuesArray();
@@ -301,30 +303,34 @@ export class WeatherService {
           const windDirArray = daily.variables(19)?.valuesArray();
           const shortwaveRadiationArray = daily.variables(20)?.valuesArray();
           
-          dailyData.push({
-            date: time,
-            weatherCode: weatherCodeArray?.[i] ?? 0,
-            temperatureMax: tempMaxArray?.[i] ?? 0,
-            temperatureMin: tempMinArray?.[i] ?? 0,
-            apparentTemperatureMax: appTempMaxArray?.[i] ?? 0,
-            apparentTemperatureMin: appTempMinArray?.[i] ?? 0,
-            sunrise: sunriseArray?.[i] ? new Date((Number(sunriseArray[i]) + utcOffsetSeconds) * 1000) : time,
-            sunset: sunsetArray?.[i] ? new Date((Number(sunsetArray[i]) + utcOffsetSeconds) * 1000) : time,
-            daylightDuration: daylightDurationArray?.[i],
-            sunshineDuration: sunshineDurationArray?.[i],
-            uvIndexMax: uvIndexMaxArray?.[i],
-            uvIndexClearSkyMax: uvIndexClearSkyMaxArray?.[i],
-            precipitationSum: precipSumArray?.[i] ?? 0,
-            rainSum: rainSumArray?.[i],
-            showersSum: showersSumArray?.[i],
-            snowfallSum: snowfallSumArray?.[i],
-            precipitationHours: precipHoursArray?.[i],
-            precipitationProbabilityMax: precipProbArray?.[i] ?? 0,
-            windSpeedMax: windSpeedArray?.[i] ?? 0,
-            windGustsMax: windGustsArray?.[i],
-            windDirectionDominant: windDirArray?.[i] ?? 0,
-            shortwaveRadiationSum: shortwaveRadiationArray?.[i]
-          });
+          for (let i = 0; i < dailyLength; i++) {
+            const time = new Date((dailyTimeStart + i * dailyInterval + utcOffsetSeconds) * 1000);
+            
+            dailyData.push({
+              date: time,
+              weatherCode: weatherCodeArray?.[i] ?? 0,
+              temperatureMax: tempMaxArray?.[i] ?? 0,
+              temperatureMin: tempMinArray?.[i] ?? 0,
+              apparentTemperatureMax: appTempMaxArray?.[i] ?? 0,
+              apparentTemperatureMin: appTempMinArray?.[i] ?? 0,
+              sunrise: sunriseArray?.[i] ? new Date((Number(sunriseArray[i]) + utcOffsetSeconds) * 1000) : time,
+              sunset: sunsetArray?.[i] ? new Date((Number(sunsetArray[i]) + utcOffsetSeconds) * 1000) : time,
+              daylightDuration: daylightDurationArray?.[i],
+              sunshineDuration: sunshineDurationArray?.[i],
+              uvIndexMax: uvIndexMaxArray?.[i],
+              uvIndexClearSkyMax: uvIndexClearSkyMaxArray?.[i],
+              precipitationSum: precipSumArray?.[i] ?? 0,
+              rainSum: rainSumArray?.[i],
+              showersSum: showersSumArray?.[i],
+              snowfallSum: snowfallSumArray?.[i],
+              precipitationHours: precipHoursArray?.[i],
+              precipitationProbabilityMax: precipProbArray?.[i] ?? 0,
+              windSpeedMax: windSpeedArray?.[i] ?? 0,
+              windGustsMax: windGustsArray?.[i],
+              windDirectionDominant: windDirArray?.[i] ?? 0,
+              shortwaveRadiationSum: shortwaveRadiationArray?.[i]
+            });
+          }
         }
         console.log(`✅ ${dailyData.length} días de pronóstico procesados`);
 
@@ -492,6 +498,29 @@ export class WeatherService {
         const response = responses[0];
         const current = response.current();
         const hourly = response.hourly();
+        const utcOffsetSeconds = Number(response.utcOffsetSeconds());
+
+        let hourlyData = undefined;
+        if (hourly) {
+          const start = Number(hourly.time());
+          const end = Number(hourly.timeEnd());
+          const interval = hourly.interval();
+          const length = (end - start) / interval;
+
+          const timeArray: string[] = [];
+          for (let i = 0; i < length; i++) {
+            timeArray.push(new Date((start + i * interval + utcOffsetSeconds) * 1000).toISOString());
+          }
+          
+          hourlyData = {
+            time: timeArray,
+            pm10: Array.from(hourly.variables(0)?.valuesArray() || []),
+            pm2_5: Array.from(hourly.variables(1)?.valuesArray() || []),
+            european_aqi: Array.from(hourly.variables(2)?.valuesArray() || []),
+            ozone: Array.from(hourly.variables(3)?.valuesArray() || []),
+            nitrogen_dioxide: Array.from(hourly.variables(4)?.valuesArray() || [])
+          };
+        }
 
         return {
           current: {
@@ -513,26 +542,7 @@ export class WeatherService {
             olive_pollen: current?.variables(15)?.value() || undefined,
             ragweed_pollen: current?.variables(16)?.value() || undefined
           },
-          hourly: hourly ? {
-            time: Array.from({ length: Number(hourly.time()) }, (_, i) => 
-              new Date((Number(hourly.time()) + i * 3600) * 1000).toISOString()
-            ),
-            pm10: Array.from({ length: hourly.variablesLength() }, (_, i) => 
-              hourly.variables(0)?.valuesArray()?.[i] || 0
-            ),
-            pm2_5: Array.from({ length: hourly.variablesLength() }, (_, i) => 
-              hourly.variables(1)?.valuesArray()?.[i] || 0
-            ),
-            european_aqi: Array.from({ length: hourly.variablesLength() }, (_, i) => 
-              hourly.variables(2)?.valuesArray()?.[i] || 0
-            ),
-            ozone: Array.from({ length: hourly.variablesLength() }, (_, i) => 
-              hourly.variables(3)?.valuesArray()?.[i] || 0
-            ),
-            nitrogen_dioxide: Array.from({ length: hourly.variablesLength() }, (_, i) => 
-              hourly.variables(4)?.valuesArray()?.[i] || 0
-            )
-          } : undefined
+          hourly: hourlyData
         } as AirQualityData;
       }),
       catchError(error => {

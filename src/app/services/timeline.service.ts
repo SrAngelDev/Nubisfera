@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, interval, Observable } from 'rxjs';
+import { BehaviorSubject, interval, Observable, from } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
+import { fetchWeatherApi } from 'openmeteo';
 import {
   TimelineDataPoint,
   TimeRange,
@@ -10,6 +11,7 @@ import {
   TimelineMetric,
   AggregatedData
 } from '../models/timeline.model';
+import { Municipio } from '../models/municipio.model';
 
 /**
  * Servicio para gestionar el Timeline Meteorológico
@@ -55,7 +57,225 @@ export class TimelineService {
   public timeRange$ = this.timeRangeSubject.asObservable();
 
   constructor() {
-    this.initializeTestData();
+    // No cargamos datos de prueba; se cargarán al seleccionar municipio
+  }
+
+  /**
+   * Carga datos reales de Open-Meteo para un municipio
+   */
+  loadDataForMunicipio(municipio: Municipio): Observable<boolean> {
+    const lat = parseFloat(municipio.latitud_dec || '0');
+    const lon = parseFloat(municipio.longitud_dec || '0');
+
+    if (!lat && !lon) {
+      return new Observable(obs => { obs.next(false); obs.complete(); });
+    }
+
+    const params = {
+      latitude: lat,
+      longitude: lon,
+      hourly: [
+        'temperature_2m',
+        'apparent_temperature',
+        'precipitation_probability',
+        'precipitation',
+        'weather_code',
+        'cloud_cover',
+        'pressure_msl',
+        'visibility',
+        'wind_speed_10m',
+        'wind_direction_10m',
+        'relative_humidity_2m',
+        'uv_index'
+      ],
+      daily: [
+        'sunrise',
+        'sunset'
+      ],
+      timezone: 'auto' as any,
+      forecast_days: 16
+    };
+
+    return from(fetchWeatherApi('https://api.open-meteo.com/v1/forecast', params)).pipe(
+      map(responses => {
+        if (!responses || responses.length === 0) return false;
+
+        const response = responses[0];
+        const hourly = response.hourly();
+        const daily = response.daily();
+        if (!hourly) return false;
+
+        const utcOffset = Number(response.utcOffsetSeconds());
+        const timeStart = Number(hourly.time());
+        const timeEnd = Number(hourly.timeEnd());
+        const intervalSec = hourly.interval();
+        const length = (timeEnd - timeStart) / intervalSec;
+
+        const tempArr = hourly.variables(0)?.valuesArray();
+        const feelsArr = hourly.variables(1)?.valuesArray();
+        const precipProbArr = hourly.variables(2)?.valuesArray();
+        const precipArr = hourly.variables(3)?.valuesArray();
+        const weatherCodeArr = hourly.variables(4)?.valuesArray();
+        const cloudArr = hourly.variables(5)?.valuesArray();
+        const pressureArr = hourly.variables(6)?.valuesArray();
+        const visArr = hourly.variables(7)?.valuesArray();
+        const windArr = hourly.variables(8)?.valuesArray();
+        const windDirArr = hourly.variables(9)?.valuesArray();
+        const humArr = hourly.variables(10)?.valuesArray();
+        const uvArr = hourly.variables(11)?.valuesArray();
+
+        const points: TimelineDataPoint[] = [];
+        const events: TimelineEvent[] = [];
+
+        for (let i = 0; i < length; i++) {
+          const timestamp = new Date((timeStart + i * intervalSec + utcOffset) * 1000);
+          const temp = tempArr?.[i] ?? 0;
+          const precip = precipProbArr?.[i] ?? 0;
+          const hour = timestamp.getHours();
+          const wCode = weatherCodeArr?.[i] ?? 0;
+
+          points.push({
+            timestamp,
+            temperature: Math.round(temp * 10) / 10,
+            feelsLike: Math.round((feelsArr?.[i] ?? temp) * 10) / 10,
+            precipitation: Math.round(precip),
+            humidity: Math.round(humArr?.[i] ?? 0),
+            windSpeed: Math.round(windArr?.[i] ?? 0),
+            windDirection: Math.round(windDirArr?.[i] ?? 0),
+            pressure: Math.round(pressureArr?.[i] ?? 0),
+            uvIndex: Math.round(uvArr?.[i] ?? 0),
+            cloudCover: Math.round(cloudArr?.[i] ?? 0),
+            visibility: Math.round((visArr?.[i] ?? 10000) / 1000 * 10) / 10,
+            condition: this.getConditionFromWeatherCode(wCode, hour),
+            icon: this.getIconFromWeatherCode(wCode, hour)
+          });
+        }
+
+        // Generar eventos de amanecer/atardecer desde daily
+        if (daily) {
+          const dailyStart = Number(daily.time());
+          const dailyEnd = Number(daily.timeEnd());
+          const dailyInterval = daily.interval();
+          const dailyLen = (dailyEnd - dailyStart) / dailyInterval;
+          const sunriseArr = daily.variables(0)?.valuesArray();
+          const sunsetArr = daily.variables(1)?.valuesArray();
+
+          for (let d = 0; d < dailyLen; d++) {
+            if (sunriseArr?.[d]) {
+              events.push({
+                id: `sunrise-${d}`,
+                timestamp: new Date((sunriseArr[d] + utcOffset) * 1000),
+                type: 'sunrise',
+                title: 'Amanecer',
+                icon: 'fas fa-sun',
+                color: '#f59e0b'
+              });
+            }
+            if (sunsetArr?.[d]) {
+              events.push({
+                id: `sunset-${d}`,
+                timestamp: new Date((sunsetArr[d] + utcOffset) * 1000),
+                type: 'sunset',
+                title: 'Atardecer',
+                icon: 'fas fa-moon',
+                color: '#e91e63'
+              });
+            }
+          }
+        }
+
+        // Generar alertas de lluvia
+        points.forEach((p, i) => {
+          if (p.precipitation > 60) {
+            events.push({
+              id: `alert-rain-${i}`,
+              timestamp: p.timestamp,
+              type: 'alert',
+              title: 'Alerta de Lluvia',
+              description: `Probabilidad de precipitación: ${p.precipitation}%`,
+              severity: p.precipitation > 80 ? 'high' : 'medium',
+              icon: 'fas fa-cloud-rain',
+              color: '#3b82f6'
+            });
+          }
+        });
+
+        // Deduplicar alertas (solo una por cada 6h)
+        const dedupedEvents = this.deduplicateEvents(events);
+
+        this.dataSubject.next(points);
+        this.eventsSubject.next(dedupedEvents);
+
+        const now = new Date();
+        this.timeRangeSubject.next({
+          start: now,
+          end: new Date(now.getTime() + 16 * 24 * 60 * 60 * 1000)
+        });
+
+        // Resetear reproducción
+        this.playbackSubject.next({
+          isPlaying: false,
+          currentTime: now,
+          speed: 1,
+          loop: false
+        });
+
+        return true;
+      })
+    );
+  }
+
+  /**
+   * Convierte weather code WMO a condición legible
+   */
+  private getConditionFromWeatherCode(code: number, hour: number): string {
+    if (code === 0) return hour >= 6 && hour <= 20 ? 'Despejado' : 'Noche despejada';
+    if (code <= 3) return 'Parcialmente nublado';
+    if (code <= 48) return 'Niebla';
+    if (code <= 57) return 'Llovizna';
+    if (code <= 67) return 'Lluvia';
+    if (code <= 77) return 'Nieve';
+    if (code <= 82) return 'Chubascos';
+    if (code <= 86) return 'Nieve intensa';
+    if (code >= 95) return 'Tormenta';
+    return 'Nublado';
+  }
+
+  /**
+   * Convierte weather code WMO a icono
+   */
+  private getIconFromWeatherCode(code: number, hour: number): string {
+    if (code === 0) return hour >= 6 && hour <= 20 ? 'fas fa-sun' : 'fas fa-moon';
+    if (code <= 3) return hour >= 6 && hour <= 20 ? 'fas fa-cloud-sun' : 'fas fa-cloud-moon';
+    if (code <= 48) return 'fas fa-smog';
+    if (code <= 57) return 'fas fa-cloud-rain';
+    if (code <= 67) return 'fas fa-cloud-showers-heavy';
+    if (code <= 77) return 'fas fa-snowflake';
+    if (code <= 82) return 'fas fa-cloud-showers-heavy';
+    if (code <= 86) return 'fas fa-snowflake';
+    if (code >= 95) return 'fas fa-bolt';
+    return 'fas fa-cloud';
+  }
+
+  /**
+   * Deduplica alertas dejando solo una cada 6 horas
+   */
+  private deduplicateEvents(events: TimelineEvent[]): TimelineEvent[] {
+    const nonAlerts = events.filter(e => e.type !== 'alert');
+    const alerts = events.filter(e => e.type === 'alert');
+    const seen = new Map<string, number>();
+    const filtered: TimelineEvent[] = [];
+
+    for (const alert of alerts) {
+      const bucket = Math.floor(alert.timestamp.getTime() / (6 * 3600 * 1000));
+      const key = `${alert.title}-${bucket}`;
+      if (!seen.has(key)) {
+        seen.set(key, 1);
+        filtered.push(alert);
+      }
+    }
+
+    return [...nonAlerts, ...filtered];
   }
 
   /**

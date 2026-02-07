@@ -17,6 +17,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /** PWA Install */
   canInstall = signal(false);
+  showMobileBanner = signal(true);
   private deferredPrompt: any = null;
   private beforeInstallHandler = (e: Event) => {
     e.preventDefault();
@@ -82,5 +83,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   closeMobileMenu() {
     this.isMobileMenuOpen = false;
     document.body.style.overflow = '';
+  }
+
+  dismissMobileInstall() {
+    this.showMobileBanner.set(false);
   }
 }

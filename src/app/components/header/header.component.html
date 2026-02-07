@@ -40,7 +40,7 @@
     <!-- Stats -->
     <div class="header-actions">
       @if (canInstall()) {
-        <button class="install-btn" (click)="installPwa()" title="Instalar Nubisfera">
+        <button class="install-btn" [class.banner-active]="showMobileBanner()" (click)="installPwa()" title="Instalar Nubisfera">
           <i class="fas fa-download"></i>
           <span>Instalar</span>
         </button>
@@ -57,3 +57,16 @@
     <div class="mobile-overlay" (click)="closeMobileMenu()"></div>
   }
 </header>
+
+<!-- Banner fijo inferior para instalar en móvil -->
+@if (canInstall() && showMobileBanner()) {
+  <div class="mobile-install-banner">
+    <button class="mobile-install-btn" (click)="installPwa()">
+      <i class="fas fa-download"></i>
+      <span>Descargar Nubisfera</span>
+    </button>
+    <button class="mobile-install-close" (click)="dismissMobileInstall()" aria-label="Cerrar">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+}

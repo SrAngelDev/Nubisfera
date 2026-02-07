@@ -1,10 +1,13 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, signal, computed, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TimelineService } from '../../services/timeline.service';
+import { WeatherService } from '../../services/weather.service';
 import { GamificationService } from '../../services/gamification.service';
 import { TimelineDataPoint, TimelineEvent, TimelineMetric, PlaybackState } from '../../models/timeline.model';
-import { Subscription } from 'rxjs';
+import { Municipio } from '../../models/municipio.model';
+import { Subscription, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { gsap } from 'gsap';
 import * as d3 from 'd3';
 
@@ -18,15 +21,82 @@ import * as d3 from 'd3';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
+    <!-- Pantalla de búsqueda de municipio -->
+    @if (!selectedMunicipio()) {
+      <div class="timeline-search-screen">
+        <div class="search-hero">
+          <div class="search-icon-wrapper">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h1 class="search-title">Timeline Meteorológico</h1>
+          <p class="search-subtitle">Busca un municipio para ver su evolución meteorológica en tiempo real</p>
+
+          <div class="search-box-wrapper">
+            <div class="search-box">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Escribe el nombre de un municipio..."
+                [(ngModel)]="searchQuery"
+                (input)="onSearchInput()"
+                (focus)="showSearchResults = true"
+                (blur)="onSearchBlur()"
+                autocomplete="off"
+              />
+              @if (searchQuery) {
+                <button class="search-clear" (click)="clearSearch()">
+                  <i class="fas fa-times"></i>
+                </button>
+              }
+            </div>
+
+            @if (showSearchResults && filteredMunicipios().length > 0) {
+              <div class="search-results-dropdown">
+                @for (m of filteredMunicipios(); track m.id) {
+                  <button class="search-result-item" (mousedown)="selectMunicipio(m)">
+                    <div class="result-info">
+                      <i class="fas fa-map-marker-alt"></i>
+                      <div class="result-text">
+                        <span class="result-name">{{ m.nombre }}</span>
+                        @if (m.provincia) {
+                          <span class="result-province">{{ m.provincia }}{{ m.ccaa ? ', ' + m.ccaa : '' }}</span>
+                        }
+                      </div>
+                    </div>
+                    <i class="fas fa-chevron-right result-arrow"></i>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          @if (isLoadingMunicipios()) {
+            <div class="search-loading">
+              <div class="spinner"></div>
+              <span>Cargando municipios...</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Timeline completo (visible tras selección) -->
+    @if (selectedMunicipio()) {
     <div class="timeline-container">
       <!-- Header con controles principales -->
       <header class="timeline-header">
         <div class="title-section">
-          <h2 class="title">
-            <i class="fas fa-clock"></i>
-            Timeline Meteorológico
-          </h2>
-          <p class="subtitle">Visualización temporal interactiva</p>
+          <button class="back-btn" (click)="goBack()" title="Cambiar municipio">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div>
+            <h2 class="title">
+              <i class="fas fa-clock"></i>
+              {{ selectedMunicipio()!.nombre }}
+            </h2>
+            <p class="subtitle">Timeline meteorológico · {{ selectedMunicipio()!.provincia }}</p>
+          </div>
         </div>
 
         <!-- Mode Selector -->
@@ -264,9 +334,263 @@ import * as d3 from 'd3';
           </div>
         </div>
       }
+
+      <!-- Loading overlay -->
+      @if (isLoadingTimeline()) {
+        <div class="timeline-loading-overlay">
+          <div class="spinner large"></div>
+          <p>Cargando datos meteorológicos...</p>
+        </div>
+      }
     </div>
+    }
   `,
   styles: [`
+    /* ===== PANTALLA DE BÚSQUEDA ===== */
+    .timeline-search-screen {
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .search-hero {
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .search-icon-wrapper {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15));
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #3b82f6;
+    }
+
+    .search-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary, #fff);
+      margin: 0 0 0.5rem;
+    }
+
+    .search-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary, rgba(255,255,255,0.6));
+      margin: 0 0 2rem;
+      line-height: 1.5;
+    }
+
+    .search-box-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 0 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .search-icon {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 1rem;
+      margin-right: 0.75rem;
+    }
+
+    .search-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text-primary, #fff);
+      font-size: 1.1rem;
+      font-family: inherit;
+      padding: 1rem 0;
+    }
+
+    .search-input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .search-clear {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.5);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .search-clear:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .search-results-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.97);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      z-index: 100;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0.875rem 1.25rem;
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-primary, #fff);
+      font-family: inherit;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .search-result-item:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .result-info i {
+      color: #3b82f6;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    .result-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .result-name {
+      font-weight: 600;
+    }
+
+    .result-province {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .result-arrow {
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 0.75rem;
+    }
+
+    .search-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(59, 130, 246, 0.2);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner.large {
+      width: 40px;
+      height: 40px;
+      border-width: 3px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Back button */
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .back-btn:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    /* Timeline loading overlay */
+    .timeline-loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 21, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      z-index: 1000;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1rem;
+    }
+
+    /* ===== TIMELINE ===== */
     .timeline-container {
       padding: 2rem;
       max-width: 1800px;
@@ -290,15 +614,15 @@ import * as d3 from 'd3';
 
     .title-section {
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+      align-items: center;
+      gap: 1rem;
     }
 
     .title {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--text-primary);
       margin: 0;
@@ -868,9 +1192,20 @@ import * as d3 from 'd3';
   `]
 })
 export class WeatherTimelineComponent implements OnInit, OnDestroy {
-  @ViewChild('timelineSvg', { static: true }) svgElement!: ElementRef<SVGElement>;
+  @ViewChild('timelineSvg', { static: false }) svgElement!: ElementRef<SVGElement>;
 
-  // Señales de estado
+  // Estado de búsqueda
+  selectedMunicipio = signal<Municipio | null>(null);
+  searchQuery = '';
+  showSearchResults = false;
+  filteredMunicipios = signal<Municipio[]>([]);
+  isLoadingMunicipios = signal(true);
+  isLoadingTimeline = signal(false);
+  private allMunicipios: Municipio[] = [];
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
+  // Señales de estado del timeline
   mode = signal<'hourly' | 'daily' | 'weekly'>('hourly');
   isPlaying = signal(false);
   isLooping = signal(false);
@@ -889,7 +1224,7 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
 
   // D3 elements
   private svg: any;
-  private  xScale: any;
+  private xScale: any;
   private yScale: any;
 
   // Subscriptions
@@ -897,17 +1232,123 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
 
   constructor(
     private timelineService: TimelineService,
-    private gamificationService: GamificationService
-  ) {}
+    private weatherService: WeatherService,
+    private gamificationService: GamificationService,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(query => this.filterMunicipios(query));
+  }
 
   ngOnInit(): void {
-    this.initializeData();
-    this.initializeD3Visualization();
-    this.subscribeToChanges();
+    this.loadMunicipios();
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  // ===== BÚSQUEDA =====
+
+  private loadMunicipios(): void {
+    this.isLoadingMunicipios.set(true);
+    this.weatherService.getMunicipios().subscribe({
+      next: (municipios) => {
+        this.allMunicipios = municipios;
+        this.isLoadingMunicipios.set(false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingMunicipios.set(false);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onSearchInput(): void {
+    const q = this.searchQuery.trim();
+    if (q.length >= 2) {
+      this.showSearchResults = true;
+      this.searchSubject.next(q);
+    } else {
+      this.filteredMunicipios.set([]);
+      this.showSearchResults = false;
+    }
+  }
+
+  onSearchBlur(): void {
+    setTimeout(() => this.showSearchResults = false, 200);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.filteredMunicipios.set([]);
+    this.showSearchResults = false;
+  }
+
+  private normalizeText(text: string): string {
+    return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private filterMunicipios(query: string): void {
+    const norm = this.normalizeText(query);
+    const results = this.allMunicipios
+      .filter(m => m?.nombre && this.normalizeText(m.nombre).includes(norm))
+      .sort((a, b) => {
+        const aN = this.normalizeText(a.nombre);
+        const bN = this.normalizeText(b.nombre);
+        const aS = aN.startsWith(norm);
+        const bS = bN.startsWith(norm);
+        if (aS && !bS) return -1;
+        if (!aS && bS) return 1;
+        return a.nombre.localeCompare(b.nombre);
+      })
+      .slice(0, 10);
+    this.filteredMunicipios.set(results);
+    this.cdr.markForCheck();
+  }
+
+  selectMunicipio(municipio: Municipio): void {
+    this.selectedMunicipio.set(municipio);
+    this.searchQuery = municipio.nombre;
+    this.showSearchResults = false;
+    this.isLoadingTimeline.set(true);
+    this.cdr.markForCheck();
+
+    this.timelineService.loadDataForMunicipio(municipio).subscribe({
+      next: (success) => {
+        this.isLoadingTimeline.set(false);
+        if (success) {
+          this.gamificationService.trackAction('use_timeline');
+          // Inicializar D3 después de que el DOM del timeline se renderice
+          setTimeout(() => {
+            this.initializeData();
+            this.initializeD3Visualization();
+            this.subscribeToChanges();
+            this.cdr.markForCheck();
+          }, 100);
+        }
+      },
+      error: () => {
+        this.isLoadingTimeline.set(false);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  goBack(): void {
+    this.selectedMunicipio.set(null);
+    this.searchQuery = '';
+    this.timelineService.stop();
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
+    this.svg = null;
+    this.cdr.markForCheck();
   }
 
   /**
