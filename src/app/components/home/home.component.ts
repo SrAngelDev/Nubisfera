@@ -218,10 +218,13 @@ export class HomeComponent implements OnInit, OnDestroy {
    * Seleccionar desde historial
    */
   selectFromHistory(item: SearchHistoryItem): void {
-    const municipio = this.todosLosMunicipios.find(m => m.id === item.id);
+    // Buscar en municipios estáticos primero
+    const municipiosEstaticos = this.weatherService.getMunicipiosEstaticos();
+    const municipio = municipiosEstaticos.find((m: Municipio) => m.id === item.id);
     if (municipio) {
       this.seleccionarMunicipio(municipio);
     } else {
+      // Si no está en estáticos, buscar por nombre en la API
       this.searchQuery = item.nombre;
       this.onSearchInput();
     }
@@ -319,8 +322,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   
   onProvinciaSeleccionada(provincia: string) {
+    // Usar municipios estáticos para buscar la capital
+    const municipiosEstaticos = this.weatherService.getMunicipiosEstaticos();
+    
     // Buscar el municipio capital de la provincia
-    const municipioCapital = this.todosLosMunicipios.find(m => 
+    const municipioCapital = municipiosEstaticos.find((m: Municipio) => 
       m.nombre.toLowerCase() === provincia.toLowerCase() ||
       (m.provincia && m.provincia.toLowerCase() === provincia.toLowerCase()) ||
       (m.capital && m.capital.toLowerCase() === provincia.toLowerCase())
@@ -331,12 +337,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.showNotification('success', `Mostrando el tiempo en ${provincia}`);
     } else {
       // Si no encuentra la capital exacta, buscar el municipio más poblado de esa provincia
-      const municipiosProvincia = this.todosLosMunicipios.filter(m => 
+      const municipiosProvincia = municipiosEstaticos.filter((m: Municipio) => 
         m.provincia && m.provincia.toLowerCase() === provincia.toLowerCase()
       );
       
       if (municipiosProvincia.length > 0) {
-        const municipioMasPoblado = municipiosProvincia.reduce((prev, current) => {
+        const municipioMasPoblado = municipiosProvincia.reduce((prev: Municipio, current: Municipio) => {
           const poblacionCurrent = current.poblacion || parseInt(current.num_hab || '0') || 0;
           const poblacionPrev = prev.poblacion || parseInt(prev.num_hab || '0') || 0;
           return poblacionCurrent > poblacionPrev ? current : prev;
@@ -424,7 +430,10 @@ export class HomeComponent implements OnInit, OnDestroy {
           let municipioCercano: Municipio | null = null;
           let distanciaMinima = Infinity;
           
-          for (const municipio of this.todosLosMunicipios) {
+          // Usar municipios estáticos para encontrar el más cercano
+          const municipiosEstaticos = this.weatherService.getMunicipiosEstaticos();
+          
+          for (const municipio of municipiosEstaticos) {
             if (municipio.latitud_dec && municipio.longitud_dec) {
               const lat = parseFloat(municipio.latitud_dec);
               const lon = parseFloat(municipio.longitud_dec);
