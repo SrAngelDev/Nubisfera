@@ -383,72 +383,6 @@ export class WeatherService {
   }
 
   /**
-   * Obtiene una lista de municipios (para compatibilidad con dataset local español)
-   * Descarga un dataset JSON completo desde una fuente pública
-   */
-  getMunicipios(): Observable<Municipio[]> {
-    // Cargar desde caché
-    const cached = this.getCachedMunicipios();
-    if (cached && cached.length > 5000) {
-      console.log(`📦 Cargando ${cached.length} municipios desde caché`);
-      return of(cached);
-    }
-
-    // Cargar desde JSON local pre-generado
-    console.log('📂 Cargando municipios desde JSON local...');
-    return this.cargarMunicipiosDesdeJSON();
-  }
-
-  /**
-   * Carga los municipios desde el JSON local pre-generado
-   * Este JSON se genera ejecutando: node scripts/generar-municipios.js
-   */
-  private cargarMunicipiosDesdeJSON(): Observable<Municipio[]> {
-    // Ruta al JSON local generado (en public/ porque Angular usa esa carpeta para assets)
-    const JSON_PATH = '/municipios-espana.json';
-    
-    console.log('📥 Cargando JSON local de municipios...');
-    
-    return from(
-      fetch(JSON_PATH)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`No se pudo cargar ${JSON_PATH}: ${response.status}`);
-          }
-          return response.json();
-        })
-    ).pipe(
-      switchMap((data: any) => {
-        console.log('✅ JSON cargado correctamente');
-        
-        // El JSON generado tiene estructura: { municipios: [...] }
-        const municipios: Municipio[] = data.municipios || [];
-        
-        if (municipios.length === 0) {
-          console.error('❌ JSON vacío o con formato incorrecto');
-          console.log('💡 Ejecuta: node scripts/generar-municipios.js');
-          return of(this.getMunicipiosEstaticos());
-        }
-        
-        console.log(`✅ ${municipios.length} municipios cargados`);
-        console.log(`📊 Versión: ${data.version || 'N/A'}`);
-        console.log(`📅 Fecha: ${data.fecha_generacion || 'N/A'}`);
-        console.log(`📈 Cobertura: ${((municipios.length / 8131) * 100).toFixed(1)}% del dataset local`);
-        
-        // Guardar en caché
-        this.cacheMunicipios(municipios);
-        return of(municipios);
-      }),
-      catchError(error => {
-        console.error('❌ Error cargando JSON local:', error);
-        console.log('💡 Solución: Ejecuta "node scripts/generar-municipios.js"');
-        console.log('🔄 Usando lista estática mínima como fallback...');
-        return of(this.getMunicipiosEstaticos());
-      })
-    );
-  }
-
-  /**
    * Obtiene datos de calidad del aire para un municipio
    */
   getAirQuality(municipio: Municipio): Observable<AirQualityData> {
@@ -677,7 +611,14 @@ export class WeatherService {
     );
   }
 
-  private getMunicipiosEstaticos(): Municipio[] {
+  /**
+   * Obtiene la lista de municipios (simplificado a estáticos por rendimiento)
+   */
+  getMunicipios(): Observable<Municipio[]> {
+    return of(this.getMunicipiosEstaticos());
+  }
+
+  public getMunicipiosEstaticos(): Municipio[] {
     return [
       // Capitales de provincia y ciudades principales
       { id: '28079', nombre: 'Madrid', provincia: 'Madrid', ccaa: 'Madrid', latitud_dec: '40.4168', longitud_dec: '-3.7038' },
@@ -760,34 +701,6 @@ export class WeatherService {
       { id: '15036', nombre: 'Santiago de Compostela', provincia: 'A Coruña', ccaa: 'Galicia', latitud_dec: '42.8782', longitud_dec: '-8.5448' },
       { id: '15037', nombre: 'Ferrol', provincia: 'A Coruña', ccaa: 'Galicia', latitud_dec: '43.4833', longitud_dec: '-8.2333' }
     ];
-  }
-
-  private getCachedMunicipios(): Municipio[] | null {
-    try {
-      const CACHE_VERSION = 'v8-dataset-local'; // JSON local generado con script
-      const cached = localStorage.getItem('weather_municipios');
-      const version = localStorage.getItem('weather_municipios_version');
-      
-      if (!cached || version !== CACHE_VERSION) {
-        return null;
-      }
-
-      return JSON.parse(cached);
-    } catch (error) {
-      console.error('Error al leer caché:', error);
-      return null;
-    }
-  }
-
-  private cacheMunicipios(municipios: Municipio[]): void {
-    try {
-      const CACHE_VERSION = 'v8-dataset-local'; // JSON local generado con script
-      localStorage.setItem('weather_municipios', JSON.stringify(municipios));
-      localStorage.setItem('weather_municipios_version', CACHE_VERSION);
-      console.log(`💾 ${municipios.length} municipios guardados en caché`);
-    } catch (error) {
-      console.error('Error guardando municipios en caché:', error);
-    }
   }
 
   /**

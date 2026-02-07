@@ -53,8 +53,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchQuery = '';
   showSearchResults = false;
   municipiosFiltrados: Municipio[] = [];
-  todosLosMunicipios: Municipio[] = [];
-  isLoadingMunicipios = true;
+  isLoadingMunicipios = false;
   
   // Historial y sugerencias
   searchHistory: SearchHistoryItem[] = [];
@@ -112,7 +111,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   ngOnInit() {
     this.showWelcomeMessage();
-    this.cargarMunicipios();
   }
 
   ngOnDestroy() {
@@ -121,29 +119,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   
   // Cargar lista de municipios
-  private cargarMunicipios() {
-    this.isLoadingMunicipios = true;
-    this.showNotification('info', 'Descargando dataset completo de municipios...');
-    
-    this.weatherService.getMunicipios().subscribe({
-      next: (municipios) => {
-        this.todosLosMunicipios = municipios;
-        this.isLoadingMunicipios = false;
-        console.log(`✅ ${municipios.length} municipios cargados`);
-        
-        const mensaje = municipios.length > 1000 
-          ? `${municipios.length} municipios disponibles (cargado desde caché)`
-          : `${municipios.length} municipios cargados. Búsqueda en tiempo real disponible`;
-        
-        this.showNotification('success', mensaje);
-      },
-      error: (error) => {
-        console.error('Error cargando municipios:', error);
-        this.isLoadingMunicipios = false;
-        this.showNotification('error', 'Error al cargar la lista de municipios. Intenta recargar la página.');
-      }
-    });
-  }
+  // Eliminado por optimización: Búsqueda directa en API
   
   // Métodos de búsqueda
   onSearchInput() {
@@ -176,41 +152,22 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
     
-    const normalizedQuery = this.normalizeText(query);
-    
-    const municipiosLocales = this.todosLosMunicipios
-      .filter(m => {
-        if (!m || !m.nombre) return false;
-        const normalizedNombre = this.normalizeText(m.nombre);
-        return normalizedNombre.includes(normalizedQuery);
-      })
-      .sort((a, b) => {
-        const normalizedA = this.normalizeText(a.nombre);
-        const normalizedB = this.normalizeText(b.nombre);
-        const aStartsWith = normalizedA.startsWith(normalizedQuery);
-        const bStartsWith = normalizedB.startsWith(normalizedQuery);
-        if (aStartsWith && !bStartsWith) return -1;
-        if (!aStartsWith && bStartsWith) return 1;
-        return a.nombre.localeCompare(b.nombre);
-      })
-      .slice(0, 10);
-    
-    if (municipiosLocales.length > 0) {
-      this.municipiosFiltrados = municipiosLocales;
-    } else {
-      this.weatherService.searchMunicipios(query).subscribe({
-        next: (municipios) => {
-          this.municipiosFiltrados = municipios.slice(0, 10);
-          if (municipios.length === 0) {
-            this.showNotification('info', 'No se encontraron municipios con ese nombre');
-          }
-        },
-        error: (error) => {
-          console.error('Error buscando municipios:', error);
-          this.showNotification('warning', 'Error en la búsqueda. Intenta de nuevo.');
+    this.isLoadingMunicipios = true;
+    this.weatherService.searchMunicipios(query).subscribe({
+      next: (municipios) => {
+        this.municipiosFiltrados = municipios.slice(0, 10);
+        this.isLoadingMunicipios = false;
+        if (municipios.length === 0) {
+          // No mostrar notificación intrusiva mientras se escribe
+          // this.showNotification('info', 'No se encontraron municipios con ese nombre');
         }
-      });
-    }
+      },
+      error: (error) => {
+        console.error('Error buscando municipios:', error);
+        this.isLoadingMunicipios = false;
+        this.showNotification('warning', 'Error en la búsqueda. Intenta de nuevo.');
+      }
+    });
   }
   
   seleccionarMunicipio(municipio: Municipio) {

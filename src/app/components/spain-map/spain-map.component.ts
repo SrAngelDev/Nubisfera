@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Municipio } from '../../models/municipio.model';
+import { WeatherService } from '../../services/weather.service';
 
 declare const google: any;
 
@@ -78,7 +79,11 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
     'ES-PV': 'País Vasco', 'ES-VC': 'Comunidad Valenciana'
   };
 
-  constructor(private http: HttpClient, private zone: NgZone) {}
+  constructor(
+    private http: HttpClient, 
+    private zone: NgZone,
+    private weatherService: WeatherService
+  ) {}
 
   ngOnInit() {
     this.cargarDatosProvincias();
@@ -126,10 +131,8 @@ export class SpainMapComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.isLoading = true;
       
-      // Cargar municipios
-      const response = await fetch('/municipios-espana.json');
-      const data = await response.json();
-      const municipios: Municipio[] = data.municipios;
+      // Cargar municipios (Usamos estáticos por optimización)
+      const municipios: Municipio[] = this.weatherService.getMunicipiosEstaticos();
 
       // Agrupar por provincia y obtener capitales
       const provinciaMap = new Map<string, Municipio[]>();
