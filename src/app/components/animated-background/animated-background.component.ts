@@ -1,5 +1,6 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, input } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ThemeService } from '../../services/theme.service';
 
 /**
  * Animated Background Component
@@ -124,6 +125,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('bgCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  private themeService = inject(ThemeService);
 
   // Inputs
   style = input<'particles' | 'mesh-gradient'>('particles');
@@ -182,7 +184,7 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
     this.animationId = requestAnimationFrame(this.animate);
     
     // Clear con fade para trail effect
-    this.ctx.fillStyle = 'rgba(10, 14, 26, 0.05)';
+    this.ctx.fillStyle = this.themeService.isDark() ? 'rgba(10, 14, 26, 0.05)' : 'rgba(240, 244, 255, 0.08)';
     this.ctx.fillRect(0, 0, this.width, this.height);
 
     // Update y draw particles

@@ -1,25 +1,26 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, of } from 'rxjs';
+import { takeUntil, switchMap, tap, catchError, map } from 'rxjs/operators';
 
-// Importar componentes
+// Componentes
 import { WeatherDisplayComponent } from '../weather-display/weather-display.component';
-import { SpainMapComponent } from '../spain-map/spain-map.component';
-import { WeatherOrbComponent } from '../weather-orb/weather-orb.component';
 import { AnimatedBackgroundComponent } from '../animated-background/animated-background.component';
+import { SearchWeatherComponent } from '../search-weather/search-weather.component';
 
-// Importar modelos
+// Pipes
+// CountryFlagPipe ahora se usa dentro de SearchWeatherComponent
+
+// Modelos
 import { Municipio } from '../../models/municipio.model';
+import { WeatherData } from '../../models/weather.model';
 
-// Importar servicios
+// Servicios
 import { WeatherService, WeatherAlert } from '../../services/weather.service';
-import { SearchHistoryService, SearchHistoryItem } from '../../services/search-history.service';
+import { SearchHistoryService } from '../../services/search-history.service';
 import { VoiceSearchService } from '../../services/voice-search.service';
-import { GamificationService } from '../../services/gamification.service';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
-// Interfaces para la aplicación
 interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
@@ -32,476 +33,159 @@ interface Notification {
     CommonModule,
     FormsModule,
     WeatherDisplayComponent,
-    SpainMapComponent,
-    AnimatedBackgroundComponent
-],
+    AnimatedBackgroundComponent,
+    SearchWeatherComponent
+  ],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrl: './home.component.css',
+  // OPTIMIZACIÓN: OnPush reduce drásticamente los renderizados innecesarios
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit, OnDestroy {
   protected readonly title = signal('Nubisfera');
   
-  // Estado de la aplicación
+  // Estado principal
   municipioActual: Municipio | null = null;
+  weatherData: WeatherData | null = null;
   tipoPrecisionActual: 'diaria' | 'horaria' = 'diaria';
   isLoadingGlobal = false;
   notification: Notification | null = null;
-  testMessage = false;
   currentYear = new Date().getFullYear();
   
-  // Estado de búsqueda
-  searchQuery = '';
-  showSearchResults = false;
-  municipiosFiltrados: Municipio[] = [];
-  isLoadingMunicipios = false;
+  // Búsqueda (simplificado - ahora manejado por SearchWeatherComponent)
+  isSearching = false;
+  private selectionSubject$ = new Subject<Municipio>();
   
-  // Historial y sugerencias
-  searchHistory: SearchHistoryItem[] = [];
-  popularSuggestions: string[] = [];
-  showHistory = false;
-  
-  // Búsqueda por voz
-  isVoiceSearchSupported = false;
-  isListeningVoice = false;
-  
-  // Alertas activas (generadas dinámicamente desde los datos meteorológicos)
+  // Alertas
   alertasActivas: WeatherAlert[] = [];
   
-  private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
   constructor(
     private weatherService: WeatherService,
     private searchHistoryService: SearchHistoryService,
     private voiceSearchService: VoiceSearchService,
-    private gamificationService: GamificationService
-  ) {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
+    private cdr: ChangeDetectorRef
+  ) {}
+  
+  ngOnInit(): void {
+    // PIPELINE DE SELECCIÓN DE CIUDAD (SOLUCIÓN AL CONGELAMIENTO)
+    this.selectionSubject$.pipe(
+      tap(() => {
+        // Activar loading y limpiar estado anterior
+        this.isLoadingGlobal = true;
+        this.alertasActivas = [];
+        this.municipioActual = null;
+        this.weatherData = null;
+        this.cdr.markForCheck();
+      }),
+      switchMap(municipio => {
+        return this.weatherService.getWeatherForecast(municipio).pipe(
+          map(weatherData => {
+            return { municipio, weatherData };
+          }),
+          catchError(error => {
+            console.error('❌ Error cargando datos:', error);
+            this.showNotificationAsync('error', 'Error al cargar el tiempo');
+            return of(null);
+          })
+        );
+      }),
       takeUntil(this.destroy$)
-    ).subscribe(query => {
-      this.filtrarMunicipios(query);
+    ).subscribe(result => {
+      if (result) {
+        this.municipioActual = result.municipio;
+        this.weatherData = result.weatherData;
+        this.alertasActivas = [];
+        
+        // Lógica pesada en microtasks
+        this.postSelectionLogicAsync(result.municipio);
+      }
+      
+      this.isLoadingGlobal = false;
+      this.cdr.markForCheck();
     });
 
-    // Inicializar búsqueda por voz
-    this.isVoiceSearchSupported = this.voiceSearchService.isSupported();
-    
-    // Suscribirse a resultados de voz
-    this.voiceSearchService.result$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(transcript => {
-        if (transcript) {
-          this.searchQuery = transcript;
-          this.onSearchInput();
-        }
-        this.isListeningVoice = false;
-      });
-
-    // Cargar historial
-    this.searchHistoryService.history$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(history => {
-        this.searchHistory = history;
-      });
-
-    // Cargar sugerencias populares
-    this.popularSuggestions = this.searchHistoryService.getPopularSuggestions();
-  }
-  
-  ngOnInit() {
-    this.showWelcomeMessage();
+    // Notificación de bienvenida
+    setTimeout(() => {
+      this.showNotificationAsync('info', '¡Bienvenido a Nubisfera!');
+    }, 500);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
   
-  // Cargar lista de municipios
-  // Eliminado por optimización: Búsqueda directa en API
+  // ========== MANEJO DE EVENTOS DEL SEARCH COMPONENT ==========
   
-  // Métodos de búsqueda
-  onSearchInput() {
-    const query = this.searchQuery.trim();
-    if (query.length >= 1) {
-      this.showSearchResults = true;
-      this.searchSubject.next(query);
-    } else {
-      this.municipiosFiltrados = [];
-      this.showSearchResults = false;
-    }
+  onMunicipioSelected(municipio: Municipio): void {
+    console.log('📍 Ciudad seleccionada:', municipio);
+    this.selectionSubject$.next(municipio);
   }
   
-  onSearchBlur() {
-    setTimeout(() => {
-      this.showSearchResults = false;
-    }, 200);
+  onSearchStateChange(isSearching: boolean): void {
+    this.isSearching = isSearching;
+    this.cdr.markForCheck();
   }
   
-  private normalizeText(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-  }
-
-  private filtrarMunicipios(query: string) {
-    if (!query || query.trim().length < 2) {
-      this.municipiosFiltrados = [];
-      return;
-    }
-    
-    this.isLoadingMunicipios = true;
-    this.weatherService.searchMunicipios(query).subscribe({
-      next: (municipios) => {
-        this.municipiosFiltrados = municipios.slice(0, 10);
-        this.isLoadingMunicipios = false;
-        if (municipios.length === 0) {
-          // No mostrar notificación intrusiva mientras se escribe
-          // this.showNotification('info', 'No se encontraron municipios con ese nombre');
+  // OPTIMIZACIÓN: Lógica NO bloqueante ejecutada en microtasks
+  private postSelectionLogicAsync(municipio: Municipio): void {
+    Promise.resolve().then(() => {
+      const location = municipio.pais ? `${municipio.nombre}, ${municipio.pais}` : municipio.nombre;
+      this.showNotificationAsync('success', `El tiempo en ${location}`);
+      
+      // Scroll suave después de que se pinte el DOM
+      setTimeout(() => {
+        const weatherSection = document.getElementById('weather-section');
+        if (weatherSection) {
+          weatherSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      },
-      error: (error) => {
-        console.error('Error buscando municipios:', error);
-        this.isLoadingMunicipios = false;
-        this.showNotification('warning', 'Error en la búsqueda. Intenta de nuevo.');
-      }
+      }, 300);
     });
   }
   
-  seleccionarMunicipio(municipio: Municipio) {
-    this.municipioActual = municipio;
-    this.searchQuery = municipio.nombre;
-    this.showSearchResults = false;
-    this.showNotification('success', `Mostrando el tiempo para ${municipio.nombre}`);
-    
-    // Guardar en historial
-    this.searchHistoryService.addToHistory(municipio.id, municipio.nombre);
-    
-    // Trackear acción para gamificación
-    this.gamificationService.trackAction('check_weather');
-    
-    // Generar alertas basadas en el pronóstico
-    this.generarAlertas(municipio);
-    
-    this.scrollToWeather();
-  }
+  // ========== MÉTODOS AUXILIARES ==========
   
-  clearSearch() {
-    this.searchQuery = '';
-    this.municipiosFiltrados = [];
-    this.showSearchResults = false;
-    this.showHistory = false;
-  }
-  
-  /**
-   * Iniciar búsqueda por voz
-   */
-  startVoiceSearch(): void {
-    if (!this.isVoiceSearchSupported) {
-      this.showNotification('warning', 'Búsqueda por voz no disponible en este navegador');
-      return;
-    }
-
-    if (this.isListeningVoice) {
-      this.voiceSearchService.stopListening();
-      this.isListeningVoice = false;
-    } else {
-      this.voiceSearchService.startListening();
-      this.isListeningVoice = true;
-      this.showNotification('info', '🎤 Escuchando... Di el nombre de un municipio');
-    }
-  }
-
-  /**
-   * Seleccionar desde historial
-   */
-  selectFromHistory(item: SearchHistoryItem): void {
-    // Buscar en municipios estáticos primero
-    const municipiosEstaticos = this.weatherService.getMunicipiosEstaticos();
-    const municipio = municipiosEstaticos.find((m: Municipio) => m.id === item.id);
-    if (municipio) {
-      this.seleccionarMunicipio(municipio);
-    } else {
-      // Si no está en estáticos, buscar por nombre en la API
-      this.searchQuery = item.nombre;
-      this.onSearchInput();
-    }
-  }
-
-  /**
-   * Limpiar historial de búsquedas
-   */
-  clearSearchHistory(): void {
-    this.searchHistoryService.clearHistory();
-    this.showNotification('info', 'Historial de búsquedas eliminado');
-  }
-
-  /**
-   * Seleccionar sugerencia popular
-   */
-  selectPopularSuggestion(suggestion: string): void {
-    this.searchQuery = suggestion;
-    this.onSearchInput();
-  }
-
-  /**
-   * Mostrar/ocultar historial
-   */
-  onSearchFocus() {
-    if (this.searchQuery.length >= 1) {
-      this.showSearchResults = true;
-      this.showHistory = false;
-      this.filtrarMunicipios(this.searchQuery);
-    } else {
-      // Mostrar historial y sugerencias si no hay búsqueda
-      this.showHistory = true;
-      this.showSearchResults = false;
-    }
-  }
-  
-  buscarMunicipioPorNombre(nombre: string) {
-    this.searchQuery = nombre;
-    this.filtrarMunicipios(nombre);
-    
-    if (this.municipiosFiltrados.length > 0) {
-      this.seleccionarMunicipio(this.municipiosFiltrados[0]);
-    }
-  }
-  
-  volverABusqueda() {
+  volverABusqueda(): void {
     this.municipioActual = null;
-    this.searchQuery = '';
-    this.municipiosFiltrados = [];
-    this.scrollToTop();
-    this.showNotification('info', 'Busca otra ciudad para ver el pronóstico');
-  }
-  
-  private scrollToTop() {
+    this.alertasActivas = [];
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.showNotificationAsync('info', 'Busca otra ciudad');
+    this.cdr.markForCheck();
   }
   
-  cambiarTipoPrecision(tipo: 'diaria' | 'horaria') {
+  cambiarTipoPrecision(tipo: 'diaria' | 'horaria'): void {
     this.tipoPrecisionActual = tipo;
     const mensaje = tipo === 'diaria' 
-      ? 'Mostrando predicción diaria' 
-      : 'Mostrando predicción horaria';
-    this.showNotification('info', mensaje);
+      ? 'Vista de predicción diaria' 
+      : 'Vista de predicción horaria';
+    this.showNotificationAsync('info', mensaje);
   }
   
-  onAccionEspecial(accion: string) {
-    switch (accion) {
-      case 'compartir':
-        this.shareWeather();
-        break;
-      case 'actualizar':
-        this.refreshWeather();
-        break;
-      case 'ubicacion':
-        this.detectLocation();
-        break;
-      default:
-        this.showNotification('info', `Acción ${accion} ejecutada`);
-    }
-  }
+  // ========== ACCIONES ESPECIALES ==========
   
-  private showWelcomeMessage() {
-    setTimeout(() => {
-      this.showNotification('success', '¡Bienvenido a Nubisfera! Busca tu municipio para comenzar');
-    }, 1000);
-  }
-  
-  private scrollToWeather() {
-    setTimeout(() => {
-      const weatherSection = document.getElementById('weather-section');
-      if (weatherSection) {
-        weatherSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  }
-  
-  onProvinciaSeleccionada(provincia: string) {
-    // Usar municipios estáticos para buscar la capital
-    const municipiosEstaticos = this.weatherService.getMunicipiosEstaticos();
-    
-    // Buscar el municipio capital de la provincia
-    const municipioCapital = municipiosEstaticos.find((m: Municipio) => 
-      m.nombre.toLowerCase() === provincia.toLowerCase() ||
-      (m.provincia && m.provincia.toLowerCase() === provincia.toLowerCase()) ||
-      (m.capital && m.capital.toLowerCase() === provincia.toLowerCase())
-    );
-    
-    if (municipioCapital) {
-      this.seleccionarMunicipio(municipioCapital);
-      this.showNotification('success', `Mostrando el tiempo en ${provincia}`);
-    } else {
-      // Si no encuentra la capital exacta, buscar el municipio más poblado de esa provincia
-      const municipiosProvincia = municipiosEstaticos.filter((m: Municipio) => 
-        m.provincia && m.provincia.toLowerCase() === provincia.toLowerCase()
-      );
+  // OPTIMIZACIÓN: Notificaciones asíncronas para no bloquear el hilo
+  private showNotificationAsync(type: Notification['type'], message: string): void {
+    // Usar microtask para no bloquear el renderizado principal
+    Promise.resolve().then(() => {
+      this.notification = { type, message };
+      this.cdr.markForCheck();
       
-      if (municipiosProvincia.length > 0) {
-        const municipioMasPoblado = municipiosProvincia.reduce((prev: Municipio, current: Municipio) => {
-          const poblacionCurrent = current.poblacion || parseInt(current.num_hab || '0') || 0;
-          const poblacionPrev = prev.poblacion || parseInt(prev.num_hab || '0') || 0;
-          return poblacionCurrent > poblacionPrev ? current : prev;
-        });
-        this.seleccionarMunicipio(municipioMasPoblado);
-        this.showNotification('success', `Mostrando el tiempo en ${municipioMasPoblado.nombre}, ${provincia}`);
-      } else {
-        this.showNotification('warning', `No se encontraron datos para ${provincia}`);
-      }
-    }
-  }
-  
-  private shareWeather() {
-    if (this.municipioActual) {
-      const shareText = `🌤️ Consulta el tiempo en ${this.municipioActual.nombre} con Nubisfera`;
-      
-      if (navigator.share) {
-        navigator.share({
-          title: 'Nubisfera - El Tiempo',
-          text: shareText,
-          url: window.location.href
-        }).then(() => {
-          this.showNotification('success', 'Compartido correctamente');
-        }).catch(() => {
-          this.fallbackShare(shareText);
-        });
-      } else {
-        this.fallbackShare(shareText);
-      }
-    } else {
-      this.showNotification('warning', 'Selecciona un municipio primero para compartir');
-    }
-  }
-  
-  private fallbackShare(text: string) {
-    navigator.clipboard.writeText(text).then(() => {
-      this.showNotification('success', 'Enlace copiado al portapapeles');
-    }).catch(() => {
-      this.showNotification('error', 'No se pudo copiar el enlace');
+      setTimeout(() => {
+        this.closeNotification();
+      }, 4000); // Reducido a 4s para menos distracción
     });
   }
   
-  private refreshWeather() {
-    if (this.municipioActual) {
-      this.isLoadingGlobal = true;
-      this.showNotification('info', 'Actualizando datos meteorológicos...');
-      
-      setTimeout(() => {
-        this.isLoadingGlobal = false;
-        this.showNotification('success', 'Datos actualizados correctamente');
-      }, 2000);
-    } else {
-      this.showNotification('warning', 'Selecciona un municipio primero para actualizar');
-    }
+  // Mantener versión síncrona solo para casos donde no importe el bloqueo
+  showNotification(type: Notification['type'], message: string): void {
+    this.showNotificationAsync(type, message);
   }
   
-  private calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371;
-    const dLat = this.toRad(lat2 - lat1);
-    const dLon = this.toRad(lon2 - lon1);
-    
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  private toRad(degrees: number): number {
-    return degrees * (Math.PI / 180);
-  }
-
-  private detectLocation() {
-    this.showNotification('info', 'Detectando tu ubicación...');
-    
-    if ('geolocation' in navigator) {
-      this.isLoadingGlobal = true;
-      
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          let municipioCercano: Municipio | null = null;
-          let distanciaMinima = Infinity;
-          
-          // Usar municipios estáticos para encontrar el más cercano
-          const municipiosEstaticos = this.weatherService.getMunicipiosEstaticos();
-          
-          for (const municipio of municipiosEstaticos) {
-            if (municipio.latitud_dec && municipio.longitud_dec) {
-              const lat = parseFloat(municipio.latitud_dec);
-              const lon = parseFloat(municipio.longitud_dec);
-              
-              if (!isNaN(lat) && !isNaN(lon)) {
-                const distancia = this.calcularDistancia(latitude, longitude, lat, lon);
-                
-                if (distancia < distanciaMinima) {
-                  distanciaMinima = distancia;
-                  municipioCercano = municipio;
-                }
-              }
-            }
-          }
-          
-          this.isLoadingGlobal = false;
-          
-          if (municipioCercano) {
-            this.municipioActual = municipioCercano;
-            this.searchQuery = municipioCercano.nombre;
-            this.showNotification('success', 
-              `Municipio más cercano: ${municipioCercano.nombre} (a ${distanciaMinima.toFixed(1)} km)`
-            );
-            this.scrollToWeather();
-          } else {
-            this.showNotification('warning', 
-              'No se pudo encontrar un municipio cercano con coordenadas válidas'
-            );
-          }
-        },
-        (error) => {
-          this.isLoadingGlobal = false;
-          let mensaje = 'No se pudo detectar tu ubicación';
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              mensaje = 'Permiso de ubicación denegado. Búsca tu municipio manualmente.';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              mensaje = 'Información de ubicación no disponible';
-              break;
-            case error.TIMEOUT:
-              mensaje = 'Tiempo de espera agotado para detectar ubicación';
-              break;
-          }
-          
-          this.showNotification('warning', mensaje);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000
-        }
-      );
-    } else {
-      this.showNotification('error', 'Tu navegador no soporta geolocalización');
-    }
-  }
-  
-  showNotification(type: Notification['type'], message: string) {
-    this.notification = { type, message };
-    
-    setTimeout(() => {
-      this.closeNotification();
-    }, 5000);
-  }
-  
-  closeNotification() {
+  closeNotification(): void {
     this.notification = null;
+    this.cdr.markForCheck();
   }
   
   getNotificationIcon(type: Notification['type']): string {
@@ -513,171 +197,130 @@ export class HomeComponent implements OnInit, OnDestroy {
     };
     return icons[type];
   }
-
-  verTodasLasAlertas() {
-    // Si hay alertas activas, mostrar información detallada
-    if (this.alertasActivas.length > 0) {
-      const alertasResumen = this.alertasActivas.length === 1 
-        ? '1 alerta activa' 
-        : `${this.alertasActivas.length} alertas activas`;
-      
-      const alertasDetalle = this.alertasActivas
-        .map(a => `${this.getAlertIcon(a.icono)} ${a.tipo} - Nivel ${a.nivelTexto} (${a.zona})`)
-        .join('\n');
-      
-      // Mostrar diálogo de confirmación con las alertas
-      const mensaje = `📢 ${alertasResumen} en tu región:\n\n${alertasDetalle}\n\n¿Deseas ver más información en el sitio oficial?`;
-      
-      if (confirm(mensaje)) {
-        this.abrirSitioAlertas();
-      } else {
-        this.showNotification('info', 'Consulta fuentes oficiales para información actualizada');
-      }
+  
+  // ========== FUNCIONES AVANZADAS ==========
+  
+  private shareWeather(): void {
+    if (!this.municipioActual) {
+      this.showNotification('warning', 'Selecciona una ciudad primero');
+      return;
+    }
+    
+    const shareText = `🌤️ El tiempo en ${this.municipioActual.nombre} - Nubisfera`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Nubisfera',
+        text: shareText,
+        url: window.location.href
+      }).then(() => {
+        this.showNotification('success', 'Compartido');
+      }).catch(() => {
+        this.fallbackShare(shareText);
+      });
     } else {
-      this.showNotification('success', '✅ No hay alertas meteorológicas activas. Todo tranquilo en tu ubicación');
+      this.fallbackShare(shareText);
     }
   }
   
-  private getAlertIcon(iconName: string): string {
-    const icons: {[key: string]: string} = {
-      'wind': '💨',
-      'cloud-rain': '🌧️',
-      'bolt': '⚡',
-      'snowflake': '❄️',
-      'temperature-high': '🌡️',
-      'water': '🌊'
-    };
-    return icons[iconName] || '⚠️';
-  }
-  
-  private abrirSitioAlertas() {
-    let alertUrl = 'https://www.meteoalarm.org/';
-    
-    // Si hay ciudad seleccionada, usar su país para URL específica
-    if (this.municipioActual) {
-      const pais = this.municipioActual.ccaa || this.municipioActual.capital || '';
-      
-      // URLs específicas por país
-      if (pais.includes('Spain') || pais.includes('España')) {
-        alertUrl = 'https://www.aemet.es/es/eltiempo/prediccion/avisos';
-      } else if (pais.includes('United States') || pais.includes('USA')) {
-        alertUrl = 'https://www.weather.gov/alerts';
-      } else if (pais.includes('France') || pais.includes('Francia')) {
-        alertUrl = 'https://vigilance.meteofrance.fr/';
-      } else if (pais.includes('United Kingdom') || pais.includes('Reino Unido')) {
-        alertUrl = 'https://www.metoffice.gov.uk/weather/warnings-and-advice';
-      } else if (pais.includes('Germany') || pais.includes('Alemania')) {
-        alertUrl = 'https://www.dwd.de/EN/weather/warnings/warnings_node.html';
-      } else if (pais.includes('Italy') || pais.includes('Italia')) {
-        alertUrl = 'http://www.protezionecivile.gov.it/attivita-rischi/meteo-idro/attivita/previsione-prevenzione/centro-funzionale-centrale-rischio-meteo-idrogeologico/monitoraggio-sorveglianza/bollettini-criticita';
-      }
-    }
-    
-    window.open(alertUrl, '_blank', 'noopener,noreferrer');
-    this.showNotification('info', '🌐 Abriendo sitio oficial de alertas meteorológicas...');
-  }
-  
-  /**
-   * Genera alertas meteorológicas completas basadas en datos de Open-Meteo
-   * Incluye calidad del aire, riesgo de inundación y condiciones meteorológicas
-   */
-  private generarAlertas(municipio: Municipio) {
-    // Limpiar alertas anteriores
-    this.alertasActivas = [];
-    
-    // Mostrar indicador de carga temporal
-    console.log('🔍 Analizando condiciones meteorológicas para:', municipio.nombre);
-    
-    // Usar método simplificado que siempre funciona (solo alertas meteorológicas)
-    this.weatherService.getWeatherForecast(municipio).subscribe({
-      next: (weatherData) => {
-        console.log('🌤️ Datos meteorológicos obtenidos:', weatherData.current);
-        
-        // Generar alertas meteorológicas básicas (siempre funciona)
-        const alertasBasicas = this.weatherService.generateWeatherAlerts(weatherData);
-        this.alertasActivas.push(...alertasBasicas);
-        
-        // Intentar obtener alertas adicionales (opcional)
-        this.weatherService.generateComprehensiveAlerts(municipio).subscribe({
-          next: (alertasCompletas) => {
-            console.log('🚨 Alertas completas:', alertasCompletas);
-            // Reemplazar con alertas completas
-            this.alertasActivas = alertasCompletas;
-            this.mostrarResumenAlertas(municipio.nombre);
-          },
-          error: (error) => {
-            console.warn('⚠️ Error obteniendo alertas completas, usando básicas:', error);
-            // Mantener las alertas básicas que ya tenemos
-            this.mostrarResumenAlertas(municipio.nombre);
-          }
-        });
-        
-        // Mostrar resumen inmediatamente con alertas básicas
-        if (this.alertasActivas.length === 0) {
-          // Si no hay alertas, forzar al menos una para debugging
-          this.mostrarResumenAlertas(municipio.nombre);
-        }
-      },
-      error: (error) => {
-        console.error('💥 Error obteniendo datos meteorológicos:', error);
-        this.showNotification('error', 'Error obteniendo datos meteorológicos. Inténtalo de nuevo.');
-        this.alertasActivas = [];
-      }
+  private fallbackShare(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      this.showNotification('success', 'Enlace copiado');
+    }).catch(() => {
+      this.showNotification('error', 'No se pudo copiar');
     });
   }
   
-  /**
-   * Muestra el resumen de alertas al usuario
-   */
-  private mostrarResumenAlertas(nombreCiudad: string) {
-    if (this.alertasActivas.length > 0) {
-      const alertasCount = this.alertasActivas.length;
-      const alertasTexto = alertasCount === 1 ? '1 alerta detectada' : `${alertasCount} alertas detectadas`;
-      
-      // Categorizar alertas para el mensaje
-      const categorias = this.alertasActivas.reduce((acc, alerta) => {
-        const cat = alerta.categoria || 'meteorologica';
-        acc[cat] = (acc[cat] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      
-      const categoriasTexto = Object.entries(categorias)
-        .map(([cat, count]) => {
-          switch (cat) {
-            case 'calidad_aire': return `${count} calidad del aire`;
-            case 'inundacion': return `${count} riesgo de inundación`;
-            case 'polen': return `${count} polen`;
-            default: return `${count} meteorológica${count > 1 ? 's' : ''}`;
-          }
-        })
-        .join(', ');
-      
-      this.showNotification('warning', `⚠️ ${alertasTexto} (${categoriasTexto}) para ${nombreCiudad}`);
-      
-      // Log detallado para debugging
-      console.log('🚨 Alertas finales mostradas:', {
-        total: this.alertasActivas.length,
-        categorias,
-        alertas: this.alertasActivas
-      });
-    } else {
-      console.log('❓ Generando alerta informativa para debugging...');
-      // Si no hay alertas, crear una alerta informativa para debugging
-      this.alertasActivas = [{
-        id: `debug-${Date.now()}`,
-        tipo: 'Estado del Tiempo',
-        nivel: 'amarilla',
-        nivelTexto: 'Info',
-        zona: nombreCiudad,
-        icono: 'info-circle',
-        descripcion: `Condiciones monitoreadas para ${nombreCiudad}`,
-        valor: 1,
-        umbral: 0,
-        categoria: 'meteorologica'
-      }];
-      
-      this.showNotification('info', `🌤️ Condiciones monitoreadas para ${nombreCiudad}`);
-      console.log('ℹ️ Alerta informativa creada para debugging');
+  private refreshWeather(): void {
+    if (!this.municipioActual) {
+      this.showNotification('warning', 'Selecciona una ciudad primero');
+      return;
     }
+    
+    this.isLoadingGlobal = true;
+    this.showNotification('info', 'Actualizando...');
+    this.cdr.markForCheck();
+    
+    setTimeout(() => {
+      this.isLoadingGlobal = false;
+      this.showNotification('success', 'Datos actualizados');
+      this.cdr.markForCheck();
+    }, 1500);
+  }
+  
+  detectLocation(): void {
+    if (!('geolocation' in navigator)) {
+      this.showNotification('error', 'Geolocalización no disponible');
+      return;
+    }
+    
+    this.showNotification('info', 'Detectando ubicación...');
+    this.isLoadingGlobal = true;
+    this.cdr.markForCheck();
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log(`📍 Ubicación: ${latitude}, ${longitude}`);
+        
+        try {
+          const url = `https://geocoding-api.open-meteo.com/v1/search?latitude=${latitude}&longitude=${longitude}&count=1&language=es&format=json`;
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+            const municipio: Municipio = {
+              id: `geo-${result.id}`,
+              nombre: result.name,
+              provincia: result.admin1 || '',
+              ccaa: result.admin1 || '',
+              pais: result.country || '',
+              country_code: result.country_code || '',
+              latitud_dec: result.latitude.toFixed(4),
+              longitud_dec: result.longitude.toFixed(4),
+              poblacion: result.population || 0
+            };
+            
+            // REUTILIZAMOS LA TUBERÍA SEGURA
+            this.selectionSubject$.next(municipio);
+          } else {
+            this.isLoadingGlobal = false;
+            this.showNotification('warning', 'No se pudo identificar la ubicación');
+            this.cdr.markForCheck();
+          }
+        } catch (error) {
+          console.error('Error en geocoding:', error);
+          this.isLoadingGlobal = false;
+          this.showNotification('error', 'Error al identificar ubicación');
+          this.cdr.markForCheck();
+        }
+      },
+      (error) => {
+        this.isLoadingGlobal = false;
+        let mensaje = 'No se pudo detectar la ubicación';
+        
+        if (error.code === error.PERMISSION_DENIED) {
+          mensaje = 'Permiso denegado. Busca tu ciudad manualmente.';
+        }
+        
+        this.showNotification('warning', mensaje);
+        this.cdr.markForCheck();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }
+  
+  // ========== ALERTAS ==========
+  // OPTIMIZACIÓN: Sistema de alertas simplificado/removido para mejor rendimiento
+  // Las alertas pueden calcularse on-demand si se necesitan
+  
+  verTodasLasAlertas(): void {
+    // Funcionalidad deshabilitada temporalmente para optimización
+    this.showNotificationAsync('info', 'Sistema de alertas en mantenimiento');
   }
 }

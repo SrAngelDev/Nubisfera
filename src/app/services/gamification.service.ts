@@ -22,6 +22,10 @@ export class GamificationService {
   private readonly STORAGE_KEY_STATS = 'nubisfera-user-stats';
   private readonly STORAGE_KEY_ACHIEVEMENTS = 'nubisfera-achievements';
   private readonly STORAGE_KEY_EVENTS = 'nubisfera-events';
+  private readonly STORAGE_KEY_RATE_LIMITS = 'nubisfera-rate-limits';
+
+  // Rate limiting: tracks cooldowns and daily action counts
+  private rateLimits: Record<string, { lastTimestamp: number; dailyDate: string; dailyCount: number }> = {};
 
   // Estado reactivo
   private statsSubject: BehaviorSubject<UserStats>;
@@ -47,7 +51,7 @@ export class GamificationService {
     { level: 3, minPoints: 250, maxPoints: 500, title: 'Explorador', icon: 'fas fa-compass', color: '#3b82f6' },
     { level: 4, minPoints: 500, maxPoints: 1000, title: 'Experto', icon: 'fas fa-star', color: '#8b5cf6' },
     { level: 5, minPoints: 1000, maxPoints: 2000, title: 'Maestro', icon: 'fas fa-crown', color: '#f59e0b' },
-    { level: 6, minPoints: 2000, maxPoints: 5000, title: 'Leyenda', icon: 'fas fa-trophy', color: '#ef4444' }
+    { level: 6, minPoints: 2000, maxPoints: Infinity, title: 'Leyenda', icon: 'fas fa-trophy', color: '#ef4444' }
   ];
 
   // Recompensas por acción
@@ -249,18 +253,42 @@ export class GamificationService {
         stats.firstVisitDate = new Date(stats.firstVisitDate);
         stats.lastVisitDate = new Date(stats.lastVisitDate);
         if (stats.lastCheckDate) stats.lastCheckDate = new Date(stats.lastCheckDate);
+        // Siempre sincronizar el total de logros con las definiciones actuales
+        stats.achievementsTotal = this.achievementDefinitions.length;
         this.statsSubject.next(stats);
         this.updateSignals();
       }
 
-      // Cargar logros
+      // Cargar logros y MERGE con definiciones (para nuevos logros añadidos al código)
       const achievementsStr = localStorage.getItem(this.STORAGE_KEY_ACHIEVEMENTS);
       if (achievementsStr) {
-        const achievements: Achievement[] = JSON.parse(achievementsStr);
-        achievements.forEach(a => {
+        const saved: Achievement[] = JSON.parse(achievementsStr);
+        saved.forEach(a => {
           if (a.unlockedAt) a.unlockedAt = new Date(a.unlockedAt);
         });
-        this.achievementsSubject.next(achievements);
+
+        // Merge: mantener progreso guardado, añadir nuevos logros faltantes
+        const merged = this.achievementDefinitions.map(def => {
+          const savedAch = saved.find(s => s.id === def.id);
+          if (savedAch) {
+            // Preservar progreso y estado desbloqueado, pero actualizar metadatos
+            return {
+              ...def,
+              isUnlocked: savedAch.isUnlocked,
+              unlockedAt: savedAch.unlockedAt,
+              progress: savedAch.progress ?? def.progress
+            };
+          }
+          return { ...def }; // Nuevo logro: usar definición por defecto
+        });
+
+        // Recalcular achievementsUnlocked basado en datos reales
+        const stats = this.statsSubject.value;
+        stats.achievementsUnlocked = merged.filter(a => a.isUnlocked).length;
+        this.statsSubject.next(stats);
+        this.unlockedAchievementsCount.set(stats.achievementsUnlocked);
+
+        this.achievementsSubject.next(merged);
       }
 
       // Cargar eventos
@@ -269,6 +297,12 @@ export class GamificationService {
         const events: GamificationEvent[] = JSON.parse(eventsStr);
         events.forEach(e => e.timestamp = new Date(e.timestamp));
         this.eventsSubject.next(events);
+      }
+
+      // Cargar rate limits
+      const rateLimitsStr = localStorage.getItem(this.STORAGE_KEY_RATE_LIMITS);
+      if (rateLimitsStr) {
+        this.rateLimits = JSON.parse(rateLimitsStr);
       }
     } catch (error) {
       console.warn('Error loading gamification data:', error);
@@ -283,6 +317,7 @@ export class GamificationService {
       localStorage.setItem(this.STORAGE_KEY_STATS, JSON.stringify(this.statsSubject.value));
       localStorage.setItem(this.STORAGE_KEY_ACHIEVEMENTS, JSON.stringify(this.achievementsSubject.value));
       localStorage.setItem(this.STORAGE_KEY_EVENTS, JSON.stringify(this.eventsSubject.value));
+      localStorage.setItem(this.STORAGE_KEY_RATE_LIMITS, JSON.stringify(this.rateLimits));
     } catch (error) {
       console.warn('Error saving gamification data:', error);
     }
@@ -325,27 +360,58 @@ export class GamificationService {
   }
 
   /**
+   * Obtiene la fecha como string YYYY-MM-DD para comparar días calendario
+   */
+  private getCalendarDay(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  /**
+   * Calcula la diferencia en días calendario entre dos fechas
+   */
+  private calendarDaysDiff(a: Date, b: Date): number {
+    const dateA = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+    const dateB = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+    return Math.round((dateB.getTime() - dateA.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  /**
    * Actualiza la racha de días consecutivos
    */
   private updateStreak(): void {
     const stats = this.statsSubject.value;
     const now = new Date();
-    const lastCheck = stats.lastCheckDate || stats.firstVisitDate;
+    const lastCheck = stats.lastCheckDate;
     
-    const daysDiff = Math.floor((now.getTime() - lastCheck.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysDiff === 1) {
-      // Día consecutivo
-      stats.currentStreak++;
-      stats.longestStreak = Math.max(stats.longestStreak, stats.currentStreak);
-      
-      // Verificar logro de racha
-      if (stats.currentStreak >= 7) {
-        this.unlockAchievement('streak_7');
-      }
-    } else if (daysDiff > 1) {
-      // Racha rota
+    if (!lastCheck) {
+      // Primera visita: iniciar racha en 1
       stats.currentStreak = 1;
+      stats.longestStreak = Math.max(stats.longestStreak, 1);
+    } else {
+      const daysDiff = this.calendarDaysDiff(lastCheck, now);
+      
+      if (daysDiff === 1) {
+        // Día consecutivo
+        stats.currentStreak++;
+        stats.longestStreak = Math.max(stats.longestStreak, stats.currentStreak);
+      } else if (daysDiff > 1) {
+        // Racha rota
+        stats.currentStreak = 1;
+      }
+      // daysDiff === 0: mismo día, no cambiar racha
+    }
+
+    // Verificar logro de racha
+    if (stats.currentStreak >= 7) {
+      this.unlockAchievement('streak_7');
+    }
+    
+    // Actualizar progreso del logro de racha
+    const achievements = this.achievementsSubject.value;
+    const streakAch = achievements.find(a => a.id === 'streak_7');
+    if (streakAch && !streakAch.isUnlocked) {
+      streakAch.progress = Math.min(stats.currentStreak, streakAch.maxProgress || 7);
+      this.achievementsSubject.next(achievements);
     }
     
     stats.lastCheckDate = now;
@@ -366,11 +432,65 @@ export class GamificationService {
   }
 
   /**
-   * Otorga puntos por una acción
+   * Verifica si una acción puede otorgar puntos según cooldown y límite diario
+   */
+  private canAwardPoints(action: string, reward: ActionReward): boolean {
+    const now = Date.now();
+    const today = this.getCalendarDay(new Date());
+    const limit = this.rateLimits[action];
+
+    if (limit) {
+      // Verificar cooldown (en minutos)
+      if (reward.cooldown && reward.cooldown > 0) {
+        const cooldownMs = reward.cooldown * 60 * 1000;
+        if (now - limit.lastTimestamp < cooldownMs) {
+          return false;
+        }
+      }
+
+      // Verificar límite diario
+      if (reward.maxDaily && reward.maxDaily > 0) {
+        if (limit.dailyDate === today && limit.dailyCount >= reward.maxDaily) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Registra que una acción fue ejecutada para rate limiting
+   */
+  private recordAction(action: string): void {
+    const now = Date.now();
+    const today = this.getCalendarDay(new Date());
+    const limit = this.rateLimits[action];
+
+    if (limit && limit.dailyDate === today) {
+      limit.lastTimestamp = now;
+      limit.dailyCount++;
+    } else {
+      this.rateLimits[action] = {
+        lastTimestamp: now,
+        dailyDate: today,
+        dailyCount: 1
+      };
+    }
+  }
+
+  /**
+   * Otorga puntos por una acción (respeta cooldown y límite diario)
    */
   awardPoints(action: string, multiplier: number = 1): void {
     const reward = this.actionRewards.find(r => r.action === action);
     if (!reward) return;
+
+    // Verificar rate limits
+    if (!this.canAwardPoints(action, reward)) return;
+
+    // Registrar acción para rate limiting
+    this.recordAction(action);
 
     const points = Math.floor(reward.points * multiplier);
     const stats = this.statsSubject.value;
@@ -608,8 +728,10 @@ export class GamificationService {
         break;
     }
     
-    // Verificar logro de analista
-    if (stats.mapViewCount > 0 && stats.timelinePlaybacks > 0 && stats.citiesCompared > 0) {
+    // Verificar logro de analista (solo si no está desbloqueado)
+    const dataAnalyst = this.achievementsSubject.value.find(a => a.id === 'data_analyst');
+    if (dataAnalyst && !dataAnalyst.isUnlocked &&
+        stats.mapViewCount > 0 && stats.timelinePlaybacks > 0 && stats.citiesCompared > 0) {
       this.unlockAchievement('data_analyst');
     }
     
@@ -660,6 +782,7 @@ export class GamificationService {
     localStorage.removeItem(this.STORAGE_KEY_STATS);
     localStorage.removeItem(this.STORAGE_KEY_ACHIEVEMENTS);
     localStorage.removeItem(this.STORAGE_KEY_EVENTS);
+    localStorage.removeItem(this.STORAGE_KEY_RATE_LIMITS);
     window.location.reload();
   }
 }

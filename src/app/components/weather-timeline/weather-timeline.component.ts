@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, signal, computed, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SearchWeatherComponent } from '../search-weather/search-weather.component';
 import { TimelineService } from '../../services/timeline.service';
 import { WeatherService } from '../../services/weather.service';
 import { GamificationService } from '../../services/gamification.service';
@@ -19,7 +20,7 @@ import * as d3 from 'd3';
   selector: 'app-weather-timeline',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchWeatherComponent],
   template: `
     <!-- Pantalla de búsqueda de municipio -->
     @if (!selectedMunicipio()) {
@@ -31,50 +32,18 @@ import * as d3 from 'd3';
           <h1 class="search-title">Timeline Meteorológico</h1>
           <p class="search-subtitle">Busca un municipio para ver su evolución meteorológica en tiempo real</p>
 
-          <div class="search-box-wrapper">
-            <div class="search-box">
-              <i class="fas fa-search search-icon"></i>
-              <input
-                type="text"
-                class="search-input"
-                placeholder="Escribe el nombre de un municipio..."
-                [(ngModel)]="searchQuery"
-                (input)="onSearchInput()"
-                (focus)="showSearchResults = true"
-                (blur)="onSearchBlur()"
-                autocomplete="off"
-              />
-              @if (searchQuery) {
-                <button class="search-clear" (click)="clearSearch()">
-                  <i class="fas fa-times"></i>
-                </button>
-              }
-            </div>
+          <app-search-weather
+            [showHistory]="true"
+            [showPopularSuggestions]="true"
+            [showLocationButton]="false"
+            [placeholder]="'Escribe el nombre de un municipio...'"
+            (municipioSelected)="onMunicipioSelected($event)"
+          ></app-search-weather>
 
-            @if (showSearchResults && filteredMunicipios().length > 0) {
-              <div class="search-results-dropdown">
-                @for (m of filteredMunicipios(); track m.id) {
-                  <button class="search-result-item" (mousedown)="selectMunicipio(m)">
-                    <div class="result-info">
-                      <i class="fas fa-map-marker-alt"></i>
-                      <div class="result-text">
-                        <span class="result-name">{{ m.nombre }}</span>
-                        @if (m.provincia) {
-                          <span class="result-province">{{ m.provincia }}{{ m.ccaa ? ', ' + m.ccaa : '' }}</span>
-                        }
-                      </div>
-                    </div>
-                    <i class="fas fa-chevron-right result-arrow"></i>
-                  </button>
-                }
-              </div>
-            }
-          </div>
-
-          @if (isLoadingMunicipios()) {
+          @if (isLoadingTimeline()) {
             <div class="search-loading">
               <div class="spinner"></div>
-              <span>Cargando municipios...</span>
+              <span>Cargando timeline...</span>
             </div>
           }
         </div>
@@ -1196,13 +1165,7 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
 
   // Estado de búsqueda
   selectedMunicipio = signal<Municipio | null>(null);
-  searchQuery = '';
-  showSearchResults = false;
-  filteredMunicipios = signal<Municipio[]>([]);
-  isLoadingMunicipios = signal(true);
   isLoadingTimeline = signal(false);
-  private allMunicipios: Municipio[] = [];
-  private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
   // Señales de estado del timeline
@@ -1235,17 +1198,9 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
     private weatherService: WeatherService,
     private gamificationService: GamificationService,
     private cdr: ChangeDetectorRef
-  ) {
-    this.searchSubject.pipe(
-      debounceTime(250),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(query => this.filterMunicipios(query));
-  }
+  ) {}
 
-  ngOnInit(): void {
-    this.loadMunicipios();
-  }
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -1255,68 +1210,8 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
 
   // ===== BÚSQUEDA =====
 
-  private loadMunicipios(): void {
-    this.isLoadingMunicipios.set(true);
-    this.weatherService.getMunicipios().subscribe({
-      next: (municipios) => {
-        this.allMunicipios = municipios;
-        this.isLoadingMunicipios.set(false);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.isLoadingMunicipios.set(false);
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  onSearchInput(): void {
-    const q = this.searchQuery.trim();
-    if (q.length >= 2) {
-      this.showSearchResults = true;
-      this.searchSubject.next(q);
-    } else {
-      this.filteredMunicipios.set([]);
-      this.showSearchResults = false;
-    }
-  }
-
-  onSearchBlur(): void {
-    setTimeout(() => this.showSearchResults = false, 200);
-  }
-
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.filteredMunicipios.set([]);
-    this.showSearchResults = false;
-  }
-
-  private normalizeText(text: string): string {
-    return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
-
-  private filterMunicipios(query: string): void {
-    const norm = this.normalizeText(query);
-    const results = this.allMunicipios
-      .filter(m => m?.nombre && this.normalizeText(m.nombre).includes(norm))
-      .sort((a, b) => {
-        const aN = this.normalizeText(a.nombre);
-        const bN = this.normalizeText(b.nombre);
-        const aS = aN.startsWith(norm);
-        const bS = bN.startsWith(norm);
-        if (aS && !bS) return -1;
-        if (!aS && bS) return 1;
-        return a.nombre.localeCompare(b.nombre);
-      })
-      .slice(0, 10);
-    this.filteredMunicipios.set(results);
-    this.cdr.markForCheck();
-  }
-
-  selectMunicipio(municipio: Municipio): void {
+  onMunicipioSelected(municipio: Municipio): void {
     this.selectedMunicipio.set(municipio);
-    this.searchQuery = municipio.nombre;
-    this.showSearchResults = false;
     this.isLoadingTimeline.set(true);
     this.cdr.markForCheck();
 
@@ -1343,7 +1238,6 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.selectedMunicipio.set(null);
-    this.searchQuery = '';
     this.timelineService.stop();
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions = [];

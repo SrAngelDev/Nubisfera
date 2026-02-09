@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,9 +8,11 @@ import { WindWidgetComponent } from '../widgets/wind-widget/wind-widget.componen
 import { UvIndexWidgetComponent } from '../widgets/uv-index-widget/uv-index-widget.component';
 import { SunriseSunsetWidgetComponent } from '../widgets/sunrise-sunset-widget/sunrise-sunset-widget.component';
 import { AlertsWidgetComponent } from '../widgets/alerts-widget/alerts-widget.component';
-import { WidgetConfig } from '../../models/widget.model';
+import { SearchWeatherComponent } from '../search-weather/search-weather.component';
+import { WidgetConfig, TemperatureWidgetData, PrecipitationWidgetData, WindWidgetData, UVIndexWidgetData, SunriseSunsetWidgetData } from '../../models/widget.model';
 import { Municipio } from '../../models/municipio.model';
 import { WeatherService } from '../../services/weather.service';
+import { WeatherData } from '../../models/weather.model';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -30,7 +32,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
     WindWidgetComponent,
     UvIndexWidgetComponent,
     SunriseSunsetWidgetComponent,
-    AlertsWidgetComponent
+    AlertsWidgetComponent,
+    SearchWeatherComponent
   ],
   template: `
     <div class="dashboard-container">
@@ -47,69 +50,13 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
               <p class="search-subtitle">Selecciona cualquier ciudad del mundo para ver el panel meteorológico completo</p>
             </div>
             
-            <div class="search-input-wrapper">
-              <i class="fas fa-search search-icon"></i>
-              <input
-                type="text"
-                class="search-input"
-                placeholder="Madrid, Paris, Tokyo, New York..."
-                [(ngModel)]="searchQuery"
-                (input)="onSearchInput()"
-                (focus)="onSearchFocus()"
-                (blur)="onSearchBlur()"
-                [attr.aria-label]="'Buscar ciudad'"
-              />
-              @if (searchQuery()) {
-                <button class="clear-btn" (click)="clearSearch()">
-                  <i class="fas fa-times"></i>
-                </button>
-              }
-            </div>
-            
-            @if (isSearching()) {
-              <div class="search-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Buscando ciudades...</span>
-              </div>
-            }
-            
-            @if (municipiosFiltrados().length > 0 && searchQuery()) {
-              <div class="search-results">
-                <p class="results-count">{{ municipiosFiltrados().length }} resultados encontrados</p>
-                <ul class="results-list">
-                  @for (municipio of municipiosFiltrados(); track municipio.id) {
-                    <li class="result-item" (click)="seleccionarMunicipio(municipio)">
-                      <div class="result-info">
-                        <i class="fas fa-map-marker-alt result-icon"></i>
-                        <div class="result-text">
-                          <span class="result-name">{{ municipio.nombre }}</span>
-                          <span class="result-meta">
-                            @if (municipio.provincia && municipio.ccaa) {
-                              {{ municipio.provincia }}, {{ municipio.ccaa }}
-                            } @else if (municipio.ccaa) {
-                              {{ municipio.ccaa }}
-                            } @else if (municipio.provincia) {
-                              {{ municipio.provincia }}
-                            } @else {
-                              Ciudad
-                            }
-                          </span>
-                        </div>
-                      </div>
-                      <i class="fas fa-chevron-right result-arrow"></i>
-                    </li>
-                  }
-                </ul>
-              </div>
-            }
-            
-            @if (searchQuery() && municipiosFiltrados().length === 0 && !isSearching()) {
-              <div class="no-results">
-                <i class="fas fa-search"></i>
-                <p>No se encontraron ciudades con ese nombre</p>
-                <small>Intenta con otro nombre o verifica la ortografía</small>
-              </div>
-            }
+            <app-search-weather
+              [showHistory]="true"
+              [showPopularSuggestions]="false"
+              [showLocationButton]="false"
+              [placeholder]="'Madrid, Paris, Tokyo, New York...'"
+              (municipioSelected)="onMunicipioSelected($event)"
+            ></app-search-weather>
           </div>
         </div>
       } @else {
@@ -169,6 +116,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
               <div class="widget-wrapper" [style.grid-area]="'temp'">
                 <app-temperature-widget
                   [size]="'large'"
+                  [data]="temperatureData()"
+                  [isLoading]="isLoadingData()"
                 ></app-temperature-widget>
               </div>
             }
@@ -178,6 +127,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
               <div class="widget-wrapper" [style.grid-area]="'precip'">
                 <app-precipitation-widget
                   [size]="'medium'"
+                  [data]="precipitationData()"
+                  [isLoading]="isLoadingData()"
                 ></app-precipitation-widget>
               </div>
             }
@@ -187,6 +138,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
               <div class="widget-wrapper" [style.grid-area]="'wind'">
                 <app-wind-widget
                   [size]="'medium'"
+                  [data]="windData()"
+                  [isLoading]="isLoadingData()"
                 ></app-wind-widget>
               </div>
             }
@@ -196,6 +149,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
               <div class="widget-wrapper" [style.grid-area]="'uv'">
                 <app-uv-index-widget
                   [size]="'medium'"
+                  [data]="uvIndexData()"
+                  [isLoading]="isLoadingData()"
                 ></app-uv-index-widget>
               </div>
             }
@@ -205,6 +160,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
               <div class="widget-wrapper" [style.grid-area]="'sunrise'">
                 <app-sunrise-sunset-widget
                   [size]="'medium'"
+                  [data]="sunriseSunsetData()"
+                  [isLoading]="isLoadingData()"
                 ></app-sunrise-sunset-widget>
               </div>
             }
@@ -778,20 +735,22 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 export class WeatherDashboardComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private weatherService = inject(WeatherService);
+  private cdr = inject(ChangeDetectorRef);
   
   // Signals para estado
   municipioSeleccionado = signal<Municipio | null>(null);
-  searchQuery = signal('');
-  municipiosFiltrados = signal<Municipio[]>([]);
-  isSearching = signal(false);
   layoutMode = signal<'grid' | 'list'>('grid');
   isRefreshing = signal(false);
+  isLoadingData = signal(false);
   
-  // Datos
-  private todosLosMunicipios: Municipio[] = [];
+  // Signals para datos de widgets
+  weatherData = signal<WeatherData | null>(null);
+  temperatureData = signal<TemperatureWidgetData | undefined>(undefined);
+  precipitationData = signal<PrecipitationWidgetData | undefined>(undefined);
+  windData = signal<WindWidgetData | undefined>(undefined);
+  uvIndexData = signal<UVIndexWidgetData | undefined>(undefined);
+  sunriseSunsetData = signal<SunriseSunsetWidgetData | undefined>(undefined);
   
-  // Subjects para búsqueda con debounce
-  private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
   
   enabledWidgets: Set<string> = new Set([
@@ -803,144 +762,230 @@ export class WeatherDashboardComponent implements OnInit, OnDestroy {
     'alerts'
   ]);
 
-  constructor() {
-    // Configurar búsqueda con debounce igual que home y comparison
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(query => {
-      this.filtrarMunicipios(query);
-      this.isSearching.set(false);
-    });
-  }
+  constructor() {}
 
-  ngOnInit(): void {
-    this.cargarMunicipios();
-  }
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private cargarMunicipios(): void {
-    this.weatherService.getMunicipios().subscribe({
+  onMunicipioSelected(municipio: Municipio): void {
+    this.municipioSeleccionado.set(municipio);
+    console.log('Municipio seleccionado para dashboard:', municipio.nombre);
+    this.loadWeatherData(municipio);
+  }
+
+  private loadWeatherData(municipio: Municipio): void {
+    this.isLoadingData.set(true);
+    this.cdr.markForCheck();
+
+    this.weatherService.getWeatherForecast(municipio).subscribe({
       next: (data) => {
-        this.todosLosMunicipios = data;
-        console.log(`${data.length} municipios cargados para dashboard`);
+        console.log('Datos meteorológicos cargados:', data);
+        this.weatherData.set(data);
+        this.processWeatherData(data);
+        this.isLoadingData.set(false);
+        this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error cargando municipios:', error);
+        console.error('Error cargando datos meteorológicos:', error);
+        this.isLoadingData.set(false);
+        this.cdr.markForCheck();
       }
     });
   }
 
-  onSearchInput(): void {
-    const query = this.searchQuery().trim();
-    
-    if (!query) {
-      this.municipiosFiltrados.set([]);
-      this.isSearching.set(false);
-      return;
+  private processWeatherData(data: WeatherData): void {
+    // Procesar datos de temperatura
+    if (data.current) {
+      const hourlyTemps = data.hourly?.slice(0, 12).map((h, i) => ({
+        hour: new Date(h.time).getHours() + ':00',
+        temp: h.temperature
+      })) || [];
+
+      this.temperatureData.set({
+        current: data.current.temperature,
+        feelsLike: data.current.apparentTemperature || data.current.temperature,
+        min: data.daily?.[0]?.temperatureMin || data.current.temperature - 5,
+        max: data.daily?.[0]?.temperatureMax || data.current.temperature + 5,
+        trend: this.calculateTrend(hourlyTemps.map(h => h.temp)),
+        hourlyForecast: hourlyTemps
+      });
     }
 
-    if (query.length < 2) {
-      return;
+    // Procesar datos de precipitación
+    if (data.current && data.hourly) {
+      const hourlyPrecip = data.hourly.slice(0, 12).map((h, i) => ({
+        hour: new Date(h.time).getHours() + ':00',
+        probability: h.precipitationProbability || 0,
+        amount: h.precipitation || 0
+      }));
+
+      this.precipitationData.set({
+        currentProbability: data.hourly[0]?.precipitationProbability || 0,
+        nextHourProbability: data.hourly[1]?.precipitationProbability || 0,
+        accumulated24h: data.daily?.[0]?.precipitationSum || 0,
+        forecast: hourlyPrecip
+      });
     }
 
-    this.isSearching.set(true);
-    this.searchSubject.next(query);
-  }
+    // Procesar datos de viento
+    if (data.current && data.hourly) {
+      const hourlyWind = data.hourly.slice(0, 12).map((h, i) => ({
+        hour: new Date(h.time).getHours() + ':00',
+        speed: h.windSpeed || 0,
+        direction: h.windDirection || 0
+      }));
 
-  private normalizeText(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-  }
-
-  private filtrarMunicipios(query: string): void {
-    if (!query || query.length < 2) {
-      this.municipiosFiltrados.set([]);
-      return;
+      this.windData.set({
+        speed: data.current.windSpeed || 0,
+        direction: data.current.windDirection || 0,
+        directionName: this.getWindDirectionName(data.current.windDirection || 0),
+        gusts: data.current.windGusts || data.current.windSpeed || 0,
+        beaufortScale: this.getBeaufortScale(data.current.windSpeed || 0),
+        forecast: hourlyWind
+      });
     }
-    
-    const normalizedQuery = this.normalizeText(query);
-    
-    // Primero buscar en lista local
-    const municipiosLocales = this.todosLosMunicipios
-      .filter(m => {
-        if (!m || !m.nombre) return false;
-        const normalizedNombre = this.normalizeText(m.nombre);
-        const normalizedProvincia = m.provincia ? this.normalizeText(m.provincia) : '';
-        const normalizedCapital = m.capital ? this.normalizeText(m.capital) : '';
-        
-        return normalizedNombre.includes(normalizedQuery) ||
-               normalizedProvincia.includes(normalizedQuery) ||
-               normalizedCapital.includes(normalizedQuery);
-      })
-      .sort((a, b) => {
-        const normalizedA = this.normalizeText(a.nombre);
-        const normalizedB = this.normalizeText(b.nombre);
-        const aStartsWith = normalizedA.startsWith(normalizedQuery);
-        const bStartsWith = normalizedB.startsWith(normalizedQuery);
-        
-        // Priorizar los que empiezan con el query
-        if (aStartsWith && !bStartsWith) return -1;
-        if (!aStartsWith && bStartsWith) return 1;
-        
-        // Orden alfabético
-        return a.nombre.localeCompare(b.nombre);
-      })
-      .slice(0, 10);
-    
-    if (municipiosLocales.length > 0) {
-      this.municipiosFiltrados.set(municipiosLocales);
-    } else {
-      // Si no hay resultados locales, buscar en API
-      this.weatherService.searchMunicipios(query).subscribe({
-        next: (municipios) => {
-          this.municipiosFiltrados.set(municipios.slice(0, 10));
+
+    // Procesar datos de UV
+    if (data.hourly && data.daily) {
+      const currentUV = data.hourly[0]?.uvIndex || 0;
+      const hourlyUV = data.hourly.slice(0, 12).map((h, i) => ({
+        hour: new Date(h.time).getHours() + ':00',
+        index: h.uvIndex || 0
+      }));
+
+      this.uvIndexData.set({
+        current: currentUV,
+        max: data.daily[0]?.uvIndexMax || currentUV,
+        level: this.getUvRiskLevel(currentUV),
+        protection: this.getUvProtectionAdvice(currentUV),
+        hourlyForecast: hourlyUV
+      });
+    }
+
+    // Procesar datos de amanecer/atardecer
+    if (data.daily?.[0]) {
+      const today = data.daily[0];
+      const dayLengthMinutes = this.calculateDaylightMinutes(today.sunrise, today.sunset);
+      
+      this.sunriseSunsetData.set({
+        sunrise: today.sunrise,
+        sunset: today.sunset,
+        dayLength: dayLengthMinutes,
+        civilTwilight: {
+          dawn: new Date(today.sunrise.getTime() - 30 * 60 * 1000),
+          dusk: new Date(today.sunset.getTime() + 30 * 60 * 1000)
         },
-        error: (error) => {
-          console.error('Error buscando municipios:', error);
-          this.municipiosFiltrados.set([]);
-        }
+        progress: this.calculateDayProgress(today.sunrise, today.sunset)
       });
     }
   }
 
-  onSearchFocus(): void {
-    const query = this.searchQuery().trim();
-    if (query && query.length >= 2 && this.municipiosFiltrados().length === 0) {
-      this.onSearchInput();
+  private calculateTrend(temps: number[]): 'up' | 'down' | 'stable' {
+    if (temps.length < 2) return 'stable';
+    const first = temps[0];
+    const last = temps[temps.length - 1];
+    const diff = last - first;
+    if (diff > 1) return 'up';
+    if (diff < -1) return 'down';
+    return 'stable';
+  }
+
+  private getPrecipitationType(weatherCode: number): 'rain' | 'snow' | 'mixed' | 'none' {
+    if (weatherCode >= 71 && weatherCode <= 77) return 'snow';
+    if (weatherCode >= 51 && weatherCode <= 67) return 'rain';
+    if (weatherCode >= 80) return 'rain';
+    return 'none';
+  }
+
+  private getBeaufortScale(windSpeed: number): number {
+    if (windSpeed < 1) return 0;
+    if (windSpeed < 6) return 1;
+    if (windSpeed < 12) return 2;
+    if (windSpeed < 20) return 3;
+    if (windSpeed < 29) return 4;
+    if (windSpeed < 39) return 5;
+    if (windSpeed < 50) return 6;
+    if (windSpeed < 62) return 7;
+    if (windSpeed < 75) return 8;
+    if (windSpeed < 89) return 9;
+    if (windSpeed < 103) return 10;
+    if (windSpeed < 118) return 11;
+    return 12;
+  }
+
+  private getWindDescription(windSpeed: number): string {
+    if (windSpeed < 1) return 'Calma';
+    if (windSpeed < 6) return 'Ventolina';
+    if (windSpeed < 12) return 'Brisa ligera';
+    if (windSpeed < 20) return 'Brisa';
+    if (windSpeed < 29) return 'Brisa moderada';
+    if (windSpeed < 39) return 'Brisa fuerte';
+    if (windSpeed < 50) return 'Viento fuerte';
+    if (windSpeed < 62) return 'Viento muy fuerte';
+    if (windSpeed < 75) return 'Temporal';
+    if (windSpeed < 89) return 'Temporal fuerte';
+    if (windSpeed < 103) return 'Temporal muy fuerte';
+    if (windSpeed < 118) return 'Temporal huracanado';
+    return 'Huracán';
+  }
+
+  private getUvRiskLevel(uvIndex: number): 'low' | 'moderate' | 'high' | 'very-high' | 'extreme' {
+    if (uvIndex < 3) return 'low';
+    if (uvIndex < 6) return 'moderate';
+    if (uvIndex < 8) return 'high';
+    if (uvIndex < 11) return 'very-high';
+    return 'extreme';
+  }
+
+  private getUvProtectionAdvice(uvIndex: number): string {
+    if (uvIndex < 3) return 'No se necesita protección';
+    if (uvIndex < 6) return 'Se recomienda protección solar';
+    if (uvIndex < 8) return 'Protección necesaria. Buscar sombra';
+    if (uvIndex < 11) return 'Protección extra necesaria. Evitar el sol';
+    return 'Evitar exposición solar. Máxima protección';
+  }
+
+  private calculateDaylightMinutes(sunrise: Date, sunset: Date): number {
+    if (!sunrise || !sunset) return 0;
+    try {
+      const diff = sunset.getTime() - sunrise.getTime();
+      return Math.floor(diff / (1000 * 60));
+    } catch {
+      return 0;
     }
   }
 
-  onSearchBlur(): void {
-    // Pequeño delay para permitir clicks en resultados
-    setTimeout(() => {
-      // No limpiar resultados aquí, solo si se selecciona un municipio
-    }, 200);
+  private calculateDayProgress(sunrise: Date, sunset: Date): number {
+    try {
+      const now = new Date();
+      if (now < sunrise) return 0;
+      if (now > sunset) return 100;
+      const total = sunset.getTime() - sunrise.getTime();
+      const elapsed = now.getTime() - sunrise.getTime();
+      return Math.round((elapsed / total) * 100);
+    } catch {
+      return 50;
+    }
   }
 
-  clearSearch(): void {
-    this.searchQuery.set('');
-    this.municipiosFiltrados.set([]);
-  }
-
-  seleccionarMunicipio(municipio: Municipio): void {
-    this.municipioSeleccionado.set(municipio);
-    this.searchQuery.set('');
-    this.municipiosFiltrados.set([]);
-    console.log('Municipio seleccionado:', municipio.nombre);
+  private getWindDirectionName(degrees: number): string {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.round(degrees / 22.5) % 16;
+    return directions[index];
   }
 
   volverABusqueda(): void {
     this.municipioSeleccionado.set(null);
-    this.searchQuery.set('');
-    this.municipiosFiltrados.set([]);
+    this.weatherData.set(null);
+    this.temperatureData.set(undefined);
+    this.precipitationData.set(undefined);
+    this.windData.set(undefined);
+    this.uvIndexData.set(undefined);
+    this.sunriseSunsetData.set(undefined);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -953,8 +998,13 @@ export class WeatherDashboardComponent implements OnInit, OnDestroy {
   }
 
   refreshAllWidgets(): void {
+    const municipio = this.municipioSeleccionado();
+    if (!municipio) return;
+    
     this.isRefreshing.set(true);
     console.log('Refreshing all widgets...');
+    
+    this.loadWeatherData(municipio);
     
     setTimeout(() => {
       this.isRefreshing.set(false);

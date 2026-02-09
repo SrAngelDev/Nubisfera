@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, map, catchError, of, switchMap } from 'rxjs';
+import { Observable, from, map, catchError, of, switchMap, shareReplay, tap } from 'rxjs';
 import { fetchWeatherApi } from 'openmeteo';
 import { Municipio } from '../models/municipio.model';
 import { WeatherData, DailyForecast, HourlyForecast } from '../models/weather.model';
@@ -64,6 +64,14 @@ export class WeatherService {
   private readonly GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search';
   private readonly AIR_QUALITY_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
   private readonly FLOOD_URL = 'https://flood-api.open-meteo.com/v1/flood';
+  
+  // Sistema de caché para búsquedas de municipios
+  private searchCache = new Map<string, {data: Municipio[], timestamp: number}>();
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+  private readonly MAX_CACHE_SIZE = 50; // Máximo de búsquedas cacheadas
+  
+  // Control de peticiones en vuelo
+  private pendingRequests = new Map<string, Observable<Municipio[]>>();
   
   constructor() {}
 
@@ -233,10 +241,13 @@ export class WeatherService {
           const uvIndexArray = hourly.variables(18)?.valuesArray();
           const isDayArray = hourly.variables(19)?.valuesArray();
 
+          // OPTIMIZACIÓN: Pre-allocar array para mejor rendimiento
+          hourlyData.length = hourlyLength;
+          
           for (let i = 0; i < hourlyLength; i++) {
             const time = new Date((hourlyTimeStart + i * hourlyInterval + utcOffsetSeconds) * 1000);
             
-            hourlyData.push({
+            hourlyData[i] = {
               time,
               temperature: tempArray?.[i] ?? 0,
               humidity: humidityArray?.[i] ?? 0,
@@ -258,7 +269,7 @@ export class WeatherService {
               windGusts: windGustsArray?.[i],
               uvIndex: uvIndexArray?.[i],
               isDay: isDayArray?.[i]
-            });
+            };
           }
         }
         console.log(`✅ ${hourlyData.length} registros horarios procesados`);
@@ -303,10 +314,13 @@ export class WeatherService {
           const windDirArray = daily.variables(19)?.valuesArray();
           const shortwaveRadiationArray = daily.variables(20)?.valuesArray();
           
+          // OPTIMIZACIÓN: Pre-allocar array para mejor rendimiento
+          dailyData.length = dailyLength;
+          
           for (let i = 0; i < dailyLength; i++) {
             const time = new Date((dailyTimeStart + i * dailyInterval + utcOffsetSeconds) * 1000);
             
-            dailyData.push({
+            dailyData[i] = {
               date: time,
               weatherCode: weatherCodeArray?.[i] ?? 0,
               temperatureMax: tempMaxArray?.[i] ?? 0,
@@ -329,7 +343,7 @@ export class WeatherService {
               windGustsMax: windGustsArray?.[i],
               windDirectionDominant: windDirArray?.[i] ?? 0,
               shortwaveRadiationSum: shortwaveRadiationArray?.[i]
-            });
+            };
           }
         }
         console.log(`✅ ${dailyData.length} días de pronóstico procesados`);
@@ -542,59 +556,160 @@ export class WeatherService {
   /**
    * Busca municipios por nombre usando la API de geocoding de Open-Meteo
    * BÚSQUEDA GLOBAL: Busca ciudades en todo el mundo
+   * Implementa caché y deduplicación de peticiones
    */
   searchMunicipios(query: string, count: number = 100): Observable<Municipio[]> {
     if (!query || query.trim().length < 1) {
       return of([]);
     }
 
-    // Usar el máximo permitido por la API (100)
+    const normalizedQuery = query.trim().toLowerCase();
+    // OPTIMIZACIÓN: Limitar resultados por defecto para mejor rendimiento
+    const limitedCount = Math.min(count, 20);
+    const cacheKey = `${normalizedQuery}_${limitedCount}`;
+    
+    console.log(`🔍 Buscando municipios para: "${query}"`);
+    
+    // 1. Verificar caché
+    const cached = this.searchCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_DURATION) {
+      console.log('✅ Resultados obtenidos desde caché:', cached.data.length);
+      return of(cached.data);
+    }
+    
+    // 2. Verificar si ya hay una petición en vuelo para esta query
+    const pending = this.pendingRequests.get(cacheKey);
+    if (pending) {
+      console.log('⏳ Petición en vuelo, reutilizando...');
+      return pending;
+    }
+
+    // 3. Crear nueva petición
     const params = new URLSearchParams({
       name: query,
-      count: Math.min(count, 100).toString(),
+      count: limitedCount.toString(),
       language: 'es',
       format: 'json'
     });
 
-    return from(
-      fetch(`${this.GEOCODING_URL}?${params}`)
-        .then(response => response.json())
+    const url = `${this.GEOCODING_URL}?${params.toString()}`;
+    console.log('🌐 Llamando a API de geocoding:', url);
+
+    const request$ = from(
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
     ).pipe(
       map((data: any) => {
+        console.log('📦 Respuesta de API recibida:', data);
+        
         if (!data.results || !Array.isArray(data.results)) {
+          console.warn('⚠️ No se encontraron resultados para:', query);
           return [];
         }
 
+        console.log(`✅ Se encontraron ${data.results.length} resultados`);
+
         // Convertir todos los resultados globales al formato Municipio
-        return data.results
+        const municipios = data.results
           .filter((result: any) => {
             // Excluir resultados sin coordenadas válidas
-            return result.latitude && result.longitude;
+            const valid = result.latitude != null && result.longitude != null && result.name;
+            if (!valid) {
+              console.warn('⚠️ Resultado inválido (sin coordenadas o nombre):', result);
+            }
+            return valid;
           })
           .map((result: any, index: number) => {
             // Crear un nombre descriptivo con ciudad, región y país
             const nombreCompleto = result.name;
-            const paisInfo = result.country || '';
-            const regionInfo = result.admin1 || result.admin2 || '';
+            const pais = result.country || '';
+            const region = result.admin1 || '';
+            const provincia = result.admin2 || '';
+            const countryCode = result.country_code || '';
             
-            return {
+            // Crear nombre con contexto para mejor UX
+            let nombreConContexto = nombreCompleto;
+            if (region && region !== nombreCompleto) {
+              nombreConContexto += `, ${region}`;
+            }
+            if (pais && pais !== nombreCompleto) {
+              nombreConContexto += `, ${pais}`;
+            }
+            
+            const municipio = {
               id: `geo-${result.id || `${result.latitude}-${result.longitude}`}`,
               nombre: nombreCompleto,
-              provincia: regionInfo,
-              ccaa: paisInfo, // Usamos ccaa para almacenar el país
-              capital: paisInfo, // También en capital para compatibilidad
+              provincia: provincia || region,
+              ccaa: region,
+              capital: nombreConContexto, // Usar para mostrar en UI
+              pais: pais,
+              country_code: countryCode,
               latitud_dec: result.latitude.toFixed(4),
               longitud_dec: result.longitude.toFixed(4),
               num_hab: result.population ? result.population.toString() : undefined,
-              poblacion: result.population
+              poblacion: result.population || 0
             } as Municipio;
+            
+            if (index < 3) {
+              console.log(`  ${index + 1}. ${nombreConContexto} (${result.latitude}, ${result.longitude})`);
+            }
+            
+            return municipio;
+          })
+          // Ordenar por población (más pobladas primero)
+          .sort((a: Municipio, b: Municipio) => {
+            const popA = a.poblacion || 0;
+            const popB = b.poblacion || 0;
+            return popB - popA;
           });
+        
+        console.log(`✅ Devolviendo ${municipios.length} municipios procesados y ordenados`);
+        return municipios;
+      }),
+      tap(data => {
+        // Guardar en caché
+        this.addToCache(cacheKey, data);
+        console.log(`💾 Resultados guardados en caché (${this.searchCache.size}/${this.MAX_CACHE_SIZE})`);
+        // Limpiar petición pendiente
+        this.pendingRequests.delete(cacheKey);
       }),
       catchError(error => {
-        console.error('Error buscando ciudades:', error);
+        console.error('❌ Error buscando ciudades:', error);
+        console.error('   Query:', query);
+        console.error('   URL:', url);
+        this.pendingRequests.delete(cacheKey);
         return of([]);
-      })
+      }),
+      shareReplay(1) // Compartir resultado entre suscriptores
     );
+    
+    // Guardar referencia a la petición en vuelo
+    this.pendingRequests.set(cacheKey, request$);
+    
+    return request$;
+  }
+  
+  /**
+   * Añade resultados a la caché con límite de tamaño
+   */
+  private addToCache(key: string, data: Municipio[]): void {
+    // Limpiar caché si está llena (FIFO)
+    if (this.searchCache.size >= this.MAX_CACHE_SIZE) {
+      const firstKey = this.searchCache.keys().next().value as string | undefined;
+      if (firstKey !== undefined) {
+        this.searchCache.delete(firstKey);
+      }
+    }
+    
+    this.searchCache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
   }
 
   /**

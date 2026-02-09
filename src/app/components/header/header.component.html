@@ -39,6 +39,12 @@
 
     <!-- Stats -->
     <div class="header-actions">
+      <!-- Theme Toggle -->
+      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="'Tema: ' + getThemeLabel()">
+        <span class="theme-icon">{{ getThemeIcon() }}</span>
+        <span class="theme-label">{{ getThemeLabel() }}</span>
+      </button>
+
       @if (canInstall()) {
         <button class="install-btn" [class.banner-active]="showMobileBanner()" (click)="installPwa()" title="Instalar Nubisfera">
           <i class="fas fa-download"></i>

@@ -8,7 +8,6 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
 import { WeatherChartsComponent } from '../weather-charts/weather-charts.component';
 import { AnimatedWeatherIconComponent } from '../animated-weather-icon/animated-weather-icon.component';
 import { SparklineComponent } from '../sparkline/sparkline.component';
-import { CircularGaugeComponent } from '../circular-gauge/circular-gauge.component';
 
 @Component({
   selector: 'app-weather-display',
@@ -17,8 +16,7 @@ import { CircularGaugeComponent } from '../circular-gauge/circular-gauge.compone
     CommonModule, 
     WeatherChartsComponent,
     AnimatedWeatherIconComponent,
-    SparklineComponent,
-    CircularGaugeComponent
+    SparklineComponent
   ],
   templateUrl: './weather-display.component.html',
   styleUrls: ['./weather-display.component.css'],
@@ -47,10 +45,18 @@ import { CircularGaugeComponent } from '../circular-gauge/circular-gauge.compone
 export class WeatherDisplayComponent implements OnChanges {
   @Input() municipio!: Municipio;
   @Input() tipoPrecision: 'diaria' | 'horaria' = 'diaria';
+  // OPTIMIZACIÓN: Recibir weatherData directamente para evitar doble carga
+  @Input() weatherData: WeatherData | null = null;
 
-  weatherData: WeatherData | null = null;
   isLoading = false;
   error: string | null = null;
+  
+  // OPTIMIZACIÓN: Cachear resultados computacionales pesados
+  private _diasFuturosCache?: DailyForecast[];
+  private _diasConHorasCache?: { date: Date; horas: HourlyForecast[]; tempMax: number; tempMin: number }[];
+  
+  // Vista activa: diaria (por defecto) o horaria
+  vistaActiva: 'diaria' | 'horaria' = 'diaria';
 
   constructor(
     private weatherService: WeatherService,
@@ -58,8 +64,15 @@ export class WeatherDisplayComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['municipio'] && this.municipio) {
+    // OPTIMIZACIÓN: Solo cargar si weatherData no fue provisto y municipio cambió
+    if (changes['municipio'] && this.municipio && !this.weatherData) {
       this.cargarPrediccion();
+    }
+    
+    // Invalidar cachés cuando cambian los datos
+    if (changes['weatherData'] || changes['municipio']) {
+      this._diasFuturosCache = undefined;
+      this._diasConHorasCache = undefined;
     }
   }
 
@@ -82,6 +95,19 @@ export class WeatherDisplayComponent implements OnChanges {
         this.isLoading = false;
       }
     });
+  }
+  
+  // OPTIMIZACIÓN: TrackBy functions para evitar re-renderizado
+  trackByDate(index: number, item: DailyForecast): string {
+    return item.date.toISOString();
+  }
+  
+  trackByTime(index: number, item: HourlyForecast): string {
+    return item.time.toISOString();
+  }
+  
+  trackByDayWithHours(index: number, item: { date: Date; horas: HourlyForecast[] }): string {
+    return item.date.toISOString();
   }
 
   getWeatherIcon(code: number, fecha?: Date): string {
@@ -131,6 +157,11 @@ export class WeatherDisplayComponent implements OnChanges {
 
     return date.toLocaleDateString('es-ES', { weekday: 'long' });
   }
+  
+  // Cambiar entre vista diaria y horaria
+  cambiarVista(vista: 'diaria' | 'horaria'): void {
+    this.vistaActiva = vista;
+  }
 
   isToday(date: Date): boolean {
     const today = new Date();
@@ -138,16 +169,21 @@ export class WeatherDisplayComponent implements OnChanges {
   }
 
   getDiasFuturos(): DailyForecast[] {
+    // OPTIMIZACIÓN: Usar caché para evitar recalcular en cada ciclo de detección
+    if (this._diasFuturosCache) return this._diasFuturosCache;
+    
     if (!this.weatherData?.daily) return [];
     
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     
-    return this.weatherData.daily.filter(dia => {
+    this._diasFuturosCache = this.weatherData.daily.filter(dia => {
       const fechaDia = new Date(dia.date);
       fechaDia.setHours(0, 0, 0, 0);
       return fechaDia >= hoy;
     });
+    
+    return this._diasFuturosCache;
   }
 
   getHorasHoy(): HourlyForecast[] {
@@ -177,12 +213,15 @@ export class WeatherDisplayComponent implements OnChanges {
   }
 
   getDiasConHoras(): { date: Date; horas: HourlyForecast[]; tempMax: number; tempMin: number }[] {
+    // OPTIMIZACIÓN: Usar caché para evitar recalcular en cada ciclo de detección
+    if (this._diasConHorasCache) return this._diasConHorasCache;
+    
     const horasPorDia = this.getHorasPorDia();
     const ahora = new Date();
     const hoyInicio = new Date(ahora);
     hoyInicio.setHours(0, 0, 0, 0);
     
-    return Object.entries(horasPorDia)
+    this._diasConHorasCache = Object.entries(horasPorDia)
       .map(([dateStr, horas]) => {
         const fecha = new Date(dateStr);
         const esHoy = fecha.toDateString() === ahora.toDateString();
@@ -211,6 +250,8 @@ export class WeatherDisplayComponent implements OnChanges {
         return fecha >= hoyInicio && item.horas.length > 0;
       })
       .sort((a, b) => a.date.getTime() - b.date.getTime());
+    
+    return this._diasConHorasCache;
   }
 
   /**

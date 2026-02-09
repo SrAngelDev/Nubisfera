@@ -39,9 +39,25 @@
               }
             </p>
           </div>
-          <div class="prediction-badge">
-            <span class="badge-icon"><i [class]="tipoPrecision === 'diaria' ? 'fas fa-calendar-day' : 'fas fa-clock'"></i></span>
-            <span>{{ tipoPrecision === 'diaria' ? 'Predicción Semanal' : 'Predicción por Horas' }}</span>
+          
+          <!-- Toggle de Vista -->
+          <div class="view-toggle">
+            <button 
+              class="toggle-btn" 
+              [class.active]="vistaActiva === 'diaria'"
+              (click)="cambiarVista('diaria')"
+              type="button">
+              <i class="fas fa-calendar-day"></i>
+              <span>Días</span>
+            </button>
+            <button 
+              class="toggle-btn" 
+              [class.active]="vistaActiva === 'horaria'"
+              (click)="cambiarVista('horaria')"
+              type="button">
+              <i class="fas fa-clock"></i>
+              <span>Horas</span>
+            </button>
           </div>
         </header>
         <!-- Tiempo Actual -->
@@ -68,7 +84,7 @@
           </div>
         }
         <!-- Predicción Diaria -->
-        @if (tipoPrecision === 'diaria') {
+        @if (vistaActiva === 'diaria') {
           <div class="daily-grid">
             @for (dia of getDiasFuturos(); track dia.date.getTime(); let i = $index) {
               <article
@@ -78,10 +94,8 @@
                 >
                 <!-- Card Header con día -->
                 <header class="day-card-header">
-                  <div class="day-info">
-                    <h3 class="day-name">{{ getDayName(dia.date) }}</h3>
-                    <p class="day-date">{{ formatDate(dia.date, 'd MMM') }}</p>
-                  </div>
+                  <h3 class="day-name">{{ getDayName(dia.date) }}</h3>
+                  <p class="day-date">{{ formatDate(dia.date, 'd MMM') }}</p>
                   @if (isToday(dia.date)) {
                     <span class="today-badge">Hoy</span>
                   }
@@ -140,7 +154,7 @@
           </div>
         }
         <!-- Predicción Horaria -->
-        @if (tipoPrecision === 'horaria') {
+        @if (vistaActiva === 'horaria') {
           <div class="hourly-forecast">
             @for (diaConHoras of getDiasConHoras(); track diaConHoras.date.getTime(); let diaIndex = $index) {
               <section class="hourly-day-section">
@@ -151,13 +165,23 @@
                     <h3 class="day-date-detail">{{ formatDate(diaConHoras.date, 'd MMM') }}</h3>
                   </div>
                   <div class="day-summary">
-                    <div class="summary-item">
-                      <i class="fas fa-temperature-high"></i>
-                      <span>Max: {{ diaConHoras.tempMax | number:'1.0-0' }}°</span>
+                    <div class="summary-item temp-max">
+                      <div class="summary-icon">
+                        <i class="fas fa-arrow-up"></i>
+                      </div>
+                      <div class="summary-content">
+                        <span class="summary-label">Máxima</span>
+                        <span class="summary-value">{{ diaConHoras.tempMax | number:'1.0-0' }}°</span>
+                      </div>
                     </div>
-                    <div class="summary-item">
-                      <i class="fas fa-temperature-low"></i>
-                      <span>Min: {{ diaConHoras.tempMin | number:'1.0-0' }}°</span>
+                    <div class="summary-item temp-min">
+                      <div class="summary-icon">
+                        <i class="fas fa-arrow-down"></i>
+                      </div>
+                      <div class="summary-content">
+                        <span class="summary-label">Mínima</span>
+                        <span class="summary-value">{{ diaConHoras.tempMin | number:'1.0-0' }}°</span>
+                      </div>
                     </div>
                   </div>
                 </header>
@@ -202,30 +226,33 @@
 
                         <!-- Card Footer con detalles meteorológicos -->
                         <footer class="hour-card-footer">
-                          <div class="weather-metrics">
-                            <div class="metric-item">
-                              <i class="fas fa-tint"></i>
-                              <span class="metric-value">{{ hora.precipitationProbability | number:'1.0-0' }}%</span>
+                          <div class="weather-metrics-grid">
+                            <div class="metric-item-compact">
+                              <i class="fas fa-cloud-rain"></i>
+                              <div class="metric-content">
+                                <span class="metric-value">{{ hora.precipitationProbability | number:'1.0-0' }}%</span>
+                                <span class="metric-label">Lluvia</span>
+                              </div>
                             </div>
-                            <div class="metric-divider"></div>
-                            <div class="metric-item">
+                            
+                            @if (hora.humidity) {
+                              <div class="metric-item-compact">
+                                <i class="fas fa-droplet"></i>
+                                <div class="metric-content">
+                                  <span class="metric-value">{{ hora.humidity | number:'1.0-0' }}%</span>
+                                  <span class="metric-label">Humedad</span>
+                                </div>
+                              </div>
+                            }
+                            
+                            <div class="metric-item-compact">
                               <i class="fas fa-wind"></i>
-                              <span class="metric-value">{{ hora.windSpeed | number:'1.0-0' }}</span>
+                              <div class="metric-content">
+                                <span class="metric-value">{{ hora.windSpeed | number:'1.0-0' }}</span>
+                                <span class="metric-label">km/h</span>
+                              </div>
                             </div>
                           </div>
-                          
-                          @if (hora.humidity) {
-                            <div class="humidity-indicator">
-                              <app-circular-gauge
-                                [value]="hora.humidity"
-                                [max]="100"
-                                [size]="40"
-                                [strokeWidth]="4"
-                                [color]="'var(--info-cyan)'"
-                                unit="%"
-                              ></app-circular-gauge>
-                            </div>
-                          }
                         </footer>
                       </article>
                     }

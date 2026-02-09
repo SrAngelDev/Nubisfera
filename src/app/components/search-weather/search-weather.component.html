@@ -1,0 +1,173 @@
+<div class="search-card glass-premium">
+  <div class="card-header">
+    <div class="header-icon-bg">
+      <i class="fas fa-search"></i>
+      <div class="icon-glow"></div>
+    </div>
+    <div class="header-text">
+      <h2>Explora el tiempo</h2>
+      <p>Busca cualquier ciudad del mundo</p>
+    </div>
+    
+    @if (isSearching) {
+      <div class="status-indicator loading" title="Buscando">
+        <span class="spinner-ring"></span>
+      </div>
+    } @else {
+      <div class="status-indicator ready" title="Listo">
+        <span class="dot"></span>
+        <span class="dot-pulse"></span>
+      </div>
+    }
+  </div>
+
+  <form class="search-form" (submit)="$event.preventDefault()">
+    <label for="city-search" class="sr-only">Buscar ciudad</label>
+    <div class="input-group">
+      <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+      <input 
+        id="city-search"
+        type="text" 
+        class="search-input"
+        [placeholder]="placeholder"
+        [(ngModel)]="searchQuery"
+        [ngModelOptions]="{standalone: true}"
+        (input)="onSearchInput()"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+        autocomplete="off"
+      />
+      @if (searchQuery) {
+        <button type="button" class="clear-btn" (click)="clearSearch()">
+          <i class="fas fa-times-circle"></i>
+        </button>
+      }
+      @if (isVoiceSearchSupported) {
+        <button 
+          type="button" 
+          class="voice-btn"
+          [class.listening]="isListeningVoice"
+          (click)="startVoiceSearch()"
+          title="Búsqueda por voz"
+        >
+          <i class="fas fa-microphone" [class.pulse]="isListeningVoice"></i>
+        </button>
+      }
+    </div>
+  </form>
+  
+  <!-- Resultados de búsqueda -->
+  @if (showDropdown && searchResults.length > 0) {
+    <ul class="results-list custom-scrollbar" role="listbox">
+      <li class="list-header">
+        <i class="fas fa-globe"></i>
+        <small>{{ searchResults.length }} {{ searchResults.length === 1 ? 'resultado' : 'resultados' }}</small>
+      </li>
+      @for (municipio of searchResults; track trackByMunicipioId($index, municipio)) {
+        <li>
+          <button 
+            class="result-item"
+            (click)="selectMunicipio(municipio)"
+            role="option"
+          >
+            <div class="item-icon">
+              @if (municipio.country_code) {
+                <span class="country-flag">{{ municipio.country_code | countryFlag }}</span>
+              } @else {
+                <i class="fas fa-map-marker-alt"></i>
+              }
+            </div>
+            <div class="item-content">
+              <span class="item-name">{{ municipio.nombre }}</span>
+              <span class="item-meta">
+                @if (municipio.ccaa && municipio.pais) {
+                  <i class="fas fa-location-dot"></i> {{ municipio.ccaa }}, {{ municipio.pais }}
+                } @else if (municipio.pais) {
+                  <i class="fas fa-globe-americas"></i> {{ municipio.pais }}
+                } @else {
+                  <i class="fas fa-city"></i> Ciudad
+                }
+                @if (municipio.poblacion && municipio.poblacion > 0) {
+                  <span class="population-badge">
+                    <i class="fas fa-users"></i> {{ formatPopulation(municipio.poblacion) }}
+                  </span>
+                }
+              </span>
+            </div>
+            <span class="item-action">
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+  
+  <!-- Estado de búsqueda vacía -->
+  @if (showDropdown && searchQuery && !isSearching && searchResults.length === 0) {
+    <div class="empty-search-state">
+      <div class="empty-icon">
+        <i class="fas fa-search-minus"></i>
+      </div>
+      <p class="empty-title">Sin resultados</p>
+      <p class="empty-text">Intenta con otro nombre</p>
+    </div>
+  }
+  
+  <!-- Historial y sugerencias -->
+  @if (!searchQuery && !showDropdown && (showHistory || showPopularSuggestions)) {
+    <div class="search-suggestions">
+      @if (showHistory && searchHistory.length > 0) {
+        <div class="suggestions-section">
+          <div class="section-header">
+            <h3><i class="fas fa-history"></i> Recientes</h3>
+            <button class="text-btn" (click)="clearSearchHistory()">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+          <ul class="suggestions-list">
+            @for (item of searchHistory; track trackByHistoryId($index, item)) {
+              <li>
+                <button class="suggestion-item" (click)="selectFromHistory(item)">
+                  <div class="suggestion-icon">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <span class="suggestion-text">{{ item.nombre }}</span>
+                  <i class="fas fa-chevron-right suggestion-arrow"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+      
+      @if (showPopularSuggestions) {
+        <div class="suggestions-section">
+          <div class="section-header">
+            <h3><i class="fas fa-fire"></i> Populares</h3>
+          </div>
+          <div class="popular-tags">
+            @for (suggestion of popularSuggestions; track trackBySuggestion($index, suggestion)) {
+              <button class="tag-btn" (click)="selectPopularSuggestion(suggestion)">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ suggestion }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (showLocationButton) {
+  <div class="location-btn-wrapper">
+    <button class="btn-location" (click)="requestLocation()">
+      <div class="btn-icon-wrapper">
+        <i class="fas fa-location-arrow"></i>
+      </div>
+      <span class="btn-text">Usar mi ubicación actual</span>
+      <div class="btn-shine"></div>
+    </button>
+  </div>
+}

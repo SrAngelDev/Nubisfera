@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -28,6 +28,9 @@ interface CityWeatherData {
   condition: string;
   icon: string;
   hourlyTemps: number[];
+  hourlyWind: number[];
+  hourlyPrecipitation: number[];
+  hourlyHumidity: number[];
   hourlyLabels: string[];
 }
 
@@ -803,7 +806,8 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
 
   constructor(
     private gamificationService: GamificationService,
-    private weatherService: WeatherService
+    private weatherService: WeatherService,
+    private cdr: ChangeDetectorRef
   ) {
     // Configurar búsqueda con debounce
     this.searchSubject.pipe(
@@ -816,9 +820,6 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Cargar datos de prueba
-    this.loadTestData();
-    
     // Cargar lista de municipios
     this.weatherService.getMunicipios().subscribe({
       next: (municipios) => {
@@ -831,53 +832,15 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadTestData(): void {
-    const testCities: CityWeatherData[] = [
-      {
-        id: '1',
-        name: 'Madrid',
-        country: 'España',
-        temperature: 22,
-        feelsLike: 24,
-        humidity: 55,
-        windSpeed: 12,
-        precipitation: 10,
-        pressure: 1013,
-        uvIndex: 6,
-        condition: 'Soleado',
-        icon: 'fas fa-sun',
-        hourlyTemps: [18, 19, 20, 21, 22, 23, 24, 23, 22, 20, 19, 18, 17, 16, 15, 14, 14, 15, 16, 18, 20, 21, 22, 22],
-        hourlyLabels: ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
-      },
-      {
-        id: '2',
-        name: 'Barcelona',
-        country: 'España',
-        temperature: 24,
-        feelsLike: 26,
-        humidity: 62,
-        windSpeed: 15,
-        precipitation: 5,
-        pressure: 1015,
-        uvIndex: 7,
-        condition: 'Parcialmente nublado',
-        icon: 'fas fa-cloud-sun',
-        hourlyTemps: [20, 21, 21, 22, 23, 24, 25, 26, 26, 25, 24, 23, 22, 21, 20, 19, 19, 20, 21, 22, 23, 24, 24, 23],
-        hourlyLabels: ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
-      }
-    ];
-
-    this.cities.set(testCities);
-
-    // Crear gráficos después de que el DOM se actualice
-    setTimeout(() => {
-      this.createMiniCharts();
-      this.createComparisonChart();
-    }, 100);
-  }
-
   createMiniCharts(): void {
     this.cities().forEach(city => {
+      // Si ya existe un gráfico para esta ciudad, destruirlo primero
+      const existingChart = this.miniCharts.get(city.id);
+      if (existingChart) {
+        existingChart.destroy();
+        this.miniCharts.delete(city.id);
+      }
+
       const canvas = document.getElementById(`chart-${city.id}`) as HTMLCanvasElement;
       if (!canvas) return;
 
@@ -940,9 +903,12 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
       this.comparisonChart.destroy();
     }
 
+    const citiesData = this.cities();
+    if (citiesData.length === 0) return;
+
     const metric = this.activeMetric();
-    const datasets = this.cities().map((city, index) => {
-      const colors = ['#2E4DEE', '#5DDFFF', '#4DD4E8'];
+    const datasets = citiesData.map((city, index) => {
+      const colors = ['#2E4DEE', '#FF6B6B', '#00E396'];
       let data: number[];
 
       switch (metric) {
@@ -950,13 +916,13 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
           data = city.hourlyTemps;
           break;
         case 'wind':
-          data = new Array(24).fill(city.windSpeed).map((v, i) => v + Math.random() * 5 - 2.5);
+          data = city.hourlyWind;
           break;
         case 'precipitation':
-          data = new Array(24).fill(city.precipitation).map((v, i) => Math.max(0, v + Math.random() * 20 - 10));
+          data = city.hourlyPrecipitation;
           break;
         case 'humidity':
-          data = new Array(24).fill(city.humidity).map((v, i) => Math.max(30, Math.min(100, v + Math.random() * 10 - 5)));
+          data = city.hourlyHumidity;
           break;
         default:
           data = city.hourlyTemps;
@@ -1115,31 +1081,46 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.municipiosFiltrados = [];
 
-    // Por ahora crear ciudad con datos simulados
-    // TODO: Integrar con WeatherService para obtener datos reales
-    const newCity: CityWeatherData = {
-      id: Date.now().toString(),
-      name: municipio.nombre,
-      country: 'España',
-      temperature: Math.floor(Math.random() * 20) + 10,
-      feelsLike: Math.floor(Math.random() * 20) + 10,
-      humidity: Math.floor(Math.random() * 40) + 40,
-      windSpeed: Math.floor(Math.random() * 30) + 5,
-      precipitation: Math.floor(Math.random() * 60),
-      pressure: Math.floor(Math.random() * 30) + 1000,
-      uvIndex: Math.floor(Math.random() * 11),
-      condition: 'Soleado',
-      icon: 'fas fa-sun',
-      hourlyTemps: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 15),
-      hourlyLabels: Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'))
-    };
+    // Obtener datos reales del clima
+    this.weatherService.getWeatherForecast(municipio).subscribe({
+      next: (weatherData: any) => {
+        const hourlyData = weatherData.hourly.slice(0, 24);
+        const currentUV = hourlyData[0]?.uvIndex || 0;
 
-    this.cities.update(cities => [...cities, newCity]);
+        const newCity: CityWeatherData = {
+          id: Date.now().toString(),
+          name: municipio.nombre,
+          country: 'España',
+          temperature: Math.round(weatherData.current.temperature),
+          feelsLike: Math.round(weatherData.current.apparentTemperature),
+          humidity: weatherData.current.humidity,
+          windSpeed: Math.round(weatherData.current.windSpeed),
+          precipitation: hourlyData[0]?.precipitationProbability || 0,
+          pressure: Math.round(weatherData.current.pressureMsl || weatherData.current.surfacePressure || 1013),
+          uvIndex: currentUV,
+          condition: this.getConditionFromWeatherCode(weatherData.current.weatherCode, weatherData.current.isDay),
+          icon: this.getIconFromWeatherCode(weatherData.current.weatherCode, weatherData.current.isDay),
+          hourlyTemps: hourlyData.map((h: any) => Math.round(h.temperature)),
+          hourlyWind: hourlyData.map((h: any) => Math.round(h.windSpeed)),
+          hourlyPrecipitation: hourlyData.map((h: any) => h.precipitationProbability || 0),
+          hourlyHumidity: hourlyData.map((h: any) => h.humidity),
+          hourlyLabels: hourlyData.map((h: any) => new Date(h.time).getHours().toString().padStart(2, '0'))
+        };
 
-    setTimeout(() => {
-      this.createMiniCharts();
-      this.updateComparisonChart();
-    }, 100);
+        this.cities.update(cities => [...cities, newCity]);
+        this.cdr.detectChanges(); // Forzar render del DOM antes de crear charts
+
+        setTimeout(() => {
+          this.createMiniCharts();
+          this.updateComparisonChart();
+        }, 200);
+      },
+      error: (err: any) => {
+        console.error('Error cargando datos del clima:', err);
+        // En caso de error, mostrar mensaje al usuario
+        alert('No se pudo cargar el clima para ' + municipio.nombre);
+      }
+    });
   }
 
   /**
@@ -1186,6 +1167,40 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
   onClose(): void {
     console.log('Closing city comparison');
     // TODO: Implementar navegación o cerrar modal
+  }
+
+  /**
+   * Convierte weather code WMO a condición legible
+   */
+  private getConditionFromWeatherCode(code: number, isDay?: number): string {
+    const hour = isDay ? 12 : 0; // Simulamos hora diurna o nocturna
+    if (code === 0) return hour >= 6 && hour <= 20 ? 'Despejado' : 'Noche despejada';
+    if (code <= 3) return 'Parcialmente nublado';
+    if (code <= 48) return 'Niebla';
+    if (code <= 57) return 'Llovizna';
+    if (code <= 67) return 'Lluvia';
+    if (code <= 77) return 'Nieve';
+    if (code <= 82) return 'Chubascos';
+    if (code <= 86) return 'Nieve intensa';
+    if (code >= 95) return 'Tormenta';
+    return 'Nublado';
+  }
+
+  /**
+   * Convierte weather code WMO a icono FontAwesome
+   */
+  private getIconFromWeatherCode(code: number, isDay?: number): string {
+    const hour = isDay ? 12 : 0;
+    if (code === 0) return hour >= 6 && hour <= 20 ? 'fas fa-sun' : 'fas fa-moon';
+    if (code <= 3) return hour >= 6 && hour <= 20 ? 'fas fa-cloud-sun' : 'fas fa-cloud-moon';
+    if (code <= 48) return 'fas fa-smog';
+    if (code <= 57) return 'fas fa-cloud-rain';
+    if (code <= 67) return 'fas fa-cloud-showers-heavy';
+    if (code <= 77) return 'fas fa-snowflake';
+    if (code <= 82) return 'fas fa-cloud-showers-heavy';
+    if (code <= 86) return 'fas fa-snowflake';
+    if (code >= 95) return 'fas fa-bolt';
+    return 'fas fa-cloud';
   }
 
   ngOnDestroy(): void {

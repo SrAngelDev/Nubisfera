@@ -57,14 +57,11 @@ import { CommonModule } from '@angular/common';
           <svg viewBox="0 0 100 100" class="icon-snowy">
             <path class="cloud" d="M 25,30 Q 25,20 35,20 Q 35,10 45,10 Q 55,10 55,20 Q 65,20 65,30 Q 65,40 55,40 L 35,40 Q 25,40 25,30 Z" fill="currentColor"/>
             <g class="snowflakes">
-              @for (flake of [{x:33,y:50},{x:45,y:55},{x:57,y:50}]; track flake.x) {
-                <g [attr.transform]="'translate(' + flake.x + ',' + flake.y + ')'">
-                  <line x1="-4" y1="0" x2="4" y2="0" stroke="currentColor" stroke-width="1.5"/>
-                  <line x1="0" y1="-4" x2="0" y2="4" stroke="currentColor" stroke-width="1.5"/>
-                  <line x1="-3" y1="-3" x2="3" y2="3" stroke="currentColor" stroke-width="1"/>
-                  <line x1="-3" y1="3" x2="3" y2="-3" stroke="currentColor" stroke-width="1"/>
-                </g>
-              }
+              <circle class="flake flake-1" cx="33" cy="52" r="3" fill="currentColor" opacity="0.9"/>
+              <circle class="flake flake-2" cx="45" cy="48" r="2.5" fill="currentColor" opacity="0.9"/>
+              <circle class="flake flake-3" cx="57" cy="54" r="3" fill="currentColor" opacity="0.9"/>
+              <circle class="flake flake-4" cx="39" cy="62" r="2" fill="currentColor" opacity="0.7"/>
+              <circle class="flake flake-5" cx="51" cy="60" r="2.5" fill="currentColor" opacity="0.7"/>
             </g>
           </svg>
         }
@@ -177,18 +174,20 @@ import { CommonModule } from '@angular/common';
     }
 
     /* Snowy Animation */
-    .icon-snowy .snowflakes g {
+    .icon-snowy .flake {
       animation: snow-fall 3s ease-in-out infinite;
     }
 
-    .icon-snowy .snowflakes g:nth-child(1) { animation-delay: 0s; }
-    .icon-snowy .snowflakes g:nth-child(2) { animation-delay: 1s; }
-    .icon-snowy .snowflakes g:nth-child(3) { animation-delay: 2s; }
+    .icon-snowy .flake-1 { animation-delay: 0s; }
+    .icon-snowy .flake-2 { animation-delay: 0.6s; }
+    .icon-snowy .flake-3 { animation-delay: 1.2s; }
+    .icon-snowy .flake-4 { animation-delay: 1.8s; }
+    .icon-snowy .flake-5 { animation-delay: 2.4s; }
 
     @keyframes snow-fall {
-      0% { opacity: 0; transform: translateY(0); }
-      50% { opacity: 1; }
-      100% { opacity: 0; transform: translateY(20px); }
+      0% { opacity: 0; transform: translateY(-2px); }
+      30% { opacity: 0.9; }
+      100% { opacity: 0; transform: translateY(18px); }
     }
 
     /* Windy Animation */
@@ -220,6 +219,51 @@ import { CommonModule } from '@angular/common';
       .weather-icon-animated * {
         animation: none !important;
       }
+    }
+
+    /* ===== LIGHT MODE — Colores apropiados por condición ===== */
+    :host-context(.light-mode) .icon-sunny {
+      color: #f59e0b;
+    }
+
+    :host-context(.light-mode) .icon-cloudy {
+      color: #94a3b8;
+    }
+
+    :host-context(.light-mode) .icon-rainy .cloud {
+      fill: #64748b;
+    }
+    :host-context(.light-mode) .icon-rainy .drop {
+      stroke: #3b82f6;
+    }
+
+    :host-context(.light-mode) .icon-stormy .cloud {
+      fill: #475569;
+    }
+    :host-context(.light-mode) .icon-stormy .lightning {
+      stroke: #f59e0b;
+    }
+
+    :host-context(.light-mode) .icon-snowy .cloud {
+      fill: #94a3b8;
+    }
+    :host-context(.light-mode) .icon-snowy .snowflakes line {
+      stroke: #60a5fa;
+    }
+
+    :host-context(.light-mode) .icon-windy {
+      color: #64748b;
+    }
+
+    :host-context(.light-mode) .icon-partly-cloudy .sun-behind {
+      color: #f59e0b;
+    }
+    :host-context(.light-mode) .icon-partly-cloudy .cloud {
+      fill: #94a3b8;
+    }
+
+    :host-context(.light-mode) .icon-default {
+      color: #94a3b8;
     }
   `]
 })

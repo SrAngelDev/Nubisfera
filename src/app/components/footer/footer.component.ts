@@ -375,6 +375,74 @@ import { RouterLink } from '@angular/router';
         gap: 1.5rem;
       }
     }
+
+    /* ===== LIGHT MODE ===== */
+    :host-context(.light-mode) .footer {
+      background: linear-gradient(180deg, transparent 0%, rgba(240, 244, 255, 0.95) 15%, #eef2ff 100%);
+      color: rgba(15, 23, 42, 0.85);
+    }
+
+    :host-context(.light-mode) .footer-glow {
+      background: radial-gradient(ellipse, rgba(46, 77, 238, 0.04) 0%, transparent 70%);
+    }
+
+    :host-context(.light-mode) .divider-line {
+      background: linear-gradient(90deg, transparent, rgba(46, 77, 238, 0.15), transparent);
+    }
+
+    :host-context(.light-mode) .divider-icon {
+      color: rgba(46, 77, 238, 0.4);
+    }
+
+    :host-context(.light-mode) .logo-text h3 {
+      color: #0f1729;
+    }
+
+    :host-context(.light-mode) .version-tag {
+      color: #4F6AFF;
+      background: rgba(46, 77, 238, 0.08);
+    }
+
+    :host-context(.light-mode) .brand-tagline {
+      color: rgba(15, 23, 42, 0.5);
+    }
+
+    :host-context(.light-mode) .links-group h4,
+    :host-context(.light-mode) .footer-credits h4 {
+      color: rgba(15, 23, 42, 0.4);
+    }
+
+    :host-context(.light-mode) .footer-link {
+      color: rgba(15, 23, 42, 0.6);
+    }
+
+    :host-context(.light-mode) .footer-link:hover {
+      color: rgba(15, 23, 42, 0.9);
+    }
+
+    :host-context(.light-mode) .tech-pill {
+      color: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.03);
+      border-color: rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light-mode) .tech-pill:hover {
+      background: rgba(46, 77, 238, 0.06);
+      border-color: rgba(46, 77, 238, 0.15);
+      color: rgba(15, 23, 42, 0.85);
+    }
+
+    :host-context(.light-mode) .credits-author {
+      color: rgba(15, 23, 42, 0.45);
+    }
+
+    :host-context(.light-mode) .footer-bottom {
+      border-top-color: rgba(15, 23, 42, 0.06);
+    }
+
+    :host-context(.light-mode) .copyright {
+      color: rgba(15, 23, 42, 0.35);
+    }
   `]
 })
 export class FooterComponent {

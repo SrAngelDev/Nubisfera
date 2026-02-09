@@ -713,38 +713,68 @@ a:focus-visible {
 }
 
 /* ============================================
-   DARK MODE COMPATIBILITY
+   THEME SYSTEM - DARK / LIGHT MODE
    ============================================ */
-@media (prefers-color-scheme: dark) {
-  /* Already in dark mode by default */
+
+/* Dark mode ya es el valor por defecto en :root */
+
+/* Light mode: se activa al añadir .light-mode al <html> */
+:root.light-mode {
+  /* Backgrounds */
+  --background-dark: #f0f4ff;
+  --background-light: #f8faff;
+  --surface-dark: #ffffff;
+  --surface-light: #f1f5f9;
+  --surface-elevated: #ffffff;
+  --surface-overlay: rgba(46, 77, 238, 0.04);
+
+  /* Text */
+  --text-primary: #0f1729;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-quaternary: #94a3b8;
+  --text-inverse: #f8fafc;
+
+  /* Borders */
+  --border-light: rgba(15, 23, 42, 0.08);
+  --border-medium: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.2);
+
+  /* Shadows - más suaves en light */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 10px 24px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 40px -8px rgb(0 0 0 / 0.12);
+  --shadow-2xl: 0 30px 60px -12px rgb(0 0 0 / 0.15);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.04);
+
+  /* Glass - claro */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-blur: blur(20px);
+
+  /* Gradients - versiones claras */
+  --gradient-ethereal: linear-gradient(145deg, #f0f4ff 0%, #e8eeff 50%, #f8faff 100%);
+  --gradient-ethereal-alt: linear-gradient(145deg, #f8faff 0%, #eef2ff 50%, #f0f4ff 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(46, 77, 238, 0.04) 0%, rgba(93, 223, 255, 0.04) 100%);
+  --gradient-mesh-1: radial-gradient(at 40% 20%, hsla(227, 85%, 55%, 0.08) 0, transparent 50%),
+                      radial-gradient(at 80% 0%, hsla(200, 100%, 68%, 0.06) 0, transparent 50%),
+                      radial-gradient(at 0% 50%, hsla(227, 85%, 55%, 0.06) 0, transparent 50%);
+
+  /* Colores primarios ajustados para contraste en light */
+  --primary-blue: #2741D9;
+  --primary-blue-light: #4F6AFF;
+  --primary-blue-dark: #1A2FAA;
+  --accent-cyan: #0EA5E9;
+  --accent-cyan-light: #38BDF8;
+  --accent-cyan-dark: #0284C7;
 }
 
-@media (prefers-color-scheme: light) {
-  /* Light mode variables (can be activated via theme toggle) */
-  .light-mode {
-    --background-dark: #f5f8ff;
-    --background-light: #ffffff;
-    --surface-dark: #f8fafc;
-    --surface-light: #ffffff;
-    --surface-elevated: #ffffff;
-    
-    --text-primary: #0f1419;
-    --text-secondary: #4b5563;
-    --text-tertiary: #6b7280;
-    --text-quaternary: #9ca3af;
-    
-    --border-light: rgba(0, 0, 0, 0.08);
-    --border-medium: rgba(0, 0, 0, 0.12);
-    --border-strong: rgba(0, 0, 0, 0.18);
-    
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(0, 0, 0, 0.1);
-    
-    --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.1);
-    --shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.15);
-    --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.2);
-    --shadow-xl: 0 25px 50px -10px rgb(0 0 0 / 0.25);
-  }
+/* Body background adapta con el tema */
+:root.light-mode body {
+  background: var(--background-dark);
+  color: var(--text-primary);
 }
 
 /* ============================================

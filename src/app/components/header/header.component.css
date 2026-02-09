@@ -199,6 +199,69 @@
   letter-spacing: 0.02em;
 }
 
+/* ===== THEME TOGGLE ===== */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(93, 223, 255, 0.08), rgba(46, 77, 238, 0.08));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(93, 223, 255, 0.1);
+}
+
+.theme-toggle-btn:hover::before {
+  opacity: 1;
+}
+
+.theme-toggle-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.theme-icon {
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.theme-toggle-btn:hover .theme-icon {
+  transform: rotate(25deg) scale(1.15);
+}
+
+.theme-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
 /* ===== BOTÓN INSTALAR PWA ===== */
 .install-btn {
   display: flex;
@@ -373,6 +436,14 @@
   .install-btn {
     padding: 0.4rem 0.6rem;
   }
+
+  .theme-label {
+    display: none;
+  }
+
+  .theme-toggle-btn {
+    padding: 0.4rem 0.55rem;
+  }
 }
 
 /* ===== BANNER FIJO INFERIOR MÓVIL ===== */
@@ -461,5 +532,115 @@
       transform: translateY(0);
       opacity: 1;
     }
+  }
+}
+
+/* ===== LIGHT MODE OVERRIDES ===== */
+:host-context(.light-mode) .app-header-bar {
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom-color: rgba(15, 23, 42, 0.06);
+}
+
+:host-context(.light-mode):host(.scrolled) .app-header-bar {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+:host-context(.light-mode) .header-glow {
+  background: radial-gradient(ellipse, rgba(46, 77, 238, 0.04) 0%, transparent 70%);
+}
+
+:host-context(.light-mode) .header-line {
+  background: linear-gradient(90deg, transparent, rgba(46, 77, 238, 0.12), rgba(99, 102, 241, 0.18), rgba(46, 77, 238, 0.12), transparent);
+}
+
+:host-context(.light-mode) .brand-name {
+  background: linear-gradient(135deg, #0f1729 0%, #2741D9 50%, #4F6AFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+:host-context(.light-mode) .nav-link {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:host-context(.light-mode) .nav-link:hover {
+  color: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.06);
+}
+
+:host-context(.light-mode) .nav-link.active {
+  color: rgba(15, 23, 42, 0.95);
+  background: rgba(46, 77, 238, 0.06);
+  border-color: rgba(46, 77, 238, 0.12);
+}
+
+:host-context(.light-mode) .stats-link {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+}
+
+:host-context(.light-mode) .stats-link:hover {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+:host-context(.light-mode) .level-badge {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+:host-context(.light-mode) .theme-toggle-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.1);
+  color: rgba(15, 23, 42, 0.65);
+}
+
+:host-context(.light-mode) .theme-toggle-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.16);
+  color: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 4px 15px rgba(46, 77, 238, 0.08);
+}
+
+:host-context(.light-mode) .install-btn {
+  background: linear-gradient(135deg, rgba(46, 77, 238, 0.08), rgba(99, 102, 241, 0.08));
+  border-color: rgba(46, 77, 238, 0.2);
+  color: #2741D9;
+}
+
+:host-context(.light-mode) .install-btn:hover {
+  background: linear-gradient(135deg, rgba(46, 77, 238, 0.14), rgba(99, 102, 241, 0.14));
+  border-color: rgba(46, 77, 238, 0.35);
+  color: #1A2FAA;
+}
+
+:host-context(.light-mode) .hamburger-line {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+@media (max-width: 768px) {
+  :host-context(.light-mode) .main-nav {
+    background: linear-gradient(180deg, #f8faff 0%, #f0f4ff 100%);
+    border-left-color: rgba(46, 77, 238, 0.1);
+    box-shadow: -4px 0 30px rgba(0, 0, 0, 0.08);
+  }
+
+  :host-context(.light-mode) .mobile-overlay {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  :host-context(.light-mode) .mobile-install-banner {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 255, 0.97));
+    border-top-color: rgba(46, 77, 238, 0.15);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  :host-context(.light-mode) .mobile-install-close {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: rgba(15, 23, 42, 0.45);
   }
 }

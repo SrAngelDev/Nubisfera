@@ -95,13 +95,17 @@ export class SearchHistoryService {
 
   /**
    * Guardar historial en localStorage
+   * OPTIMIZACIÓN: Operación async para no bloquear el hilo
    */
   private saveHistory(history: SearchHistoryItem[]): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-    } catch (error) {
-      console.error('Error guardando historial de búsqueda:', error);
-    }
+    // Usar setTimeout para mover la operación fuera del flujo crítico
+    setTimeout(() => {
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+      } catch (error) {
+        console.error('Error guardando historial de búsqueda:', error);
+      }
+    }, 0);
   }
 
   /**

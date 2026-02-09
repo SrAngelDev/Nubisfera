@@ -1,76 +1,212 @@
 <div class="acerca-de-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-particles">
+      <span class="particle" *ngFor="let p of [1,2,3,4,5,6,7,8]"></span>
+    </div>
+    <div class="hero-content">
+      <div class="hero-logo">
+        <span class="logo-icon">🌤️</span>
+        <div class="logo-rings">
+          <span class="ring ring-1"></span>
+          <span class="ring ring-2"></span>
+          <span class="ring ring-3"></span>
+        </div>
+      </div>
+      <h1 class="hero-title">Nubisfera</h1>
+      <p class="hero-subtitle">La experiencia meteorológica definitiva</p>
+      <p class="hero-description">
+        Consulta el tiempo en cualquier parte del mundo con datos 100% reales de Open-Meteo, 
+        predicciones de hasta 16 días y una interfaz diseñada para deleitar.
+      </p>
+      <div class="hero-badges">
+        <span class="hero-badge">✨ Open Source</span>
+        <span class="hero-badge">📱 PWA</span>
+        <span class="hero-badge">🌍 Global</span>
+      </div>
+    </div>
+  </section>
+
   <div class="content">
-    <h1>🌦️ Acerca de Nubisfera</h1>
-    
-    <section class="intro">
-      <p class="tagline">Tu fuente moderna y fiable para consultar el tiempo en cualquier parte del mundo.</p>
+    <!-- Stats Section -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        @for (stat of stats; track stat.label) {
+          <div class="stat-card">
+            <span class="stat-icon">{{ stat.icon }}</span>
+            <span class="stat-value">{{ formatNumber(stat.current) }}{{ stat.suffix }}</span>
+            <span class="stat-label">{{ stat.label }}</span>
+          </div>
+        }
+      </div>
     </section>
 
-    <section class="info-section">
-      <h2>¿Qué es Nubisfera?</h2>
-      <p>
-        Nubisfera es una aplicación web moderna que proporciona información meteorológica detallada 
-        de cualquier ciudad del mundo, utilizando los datos de <strong>Open-Meteo</strong>, 
-        una API meteorológica gratuita y de código abierto con cobertura internacional.
-      </p>
-    </section>
-
+    <!-- Features Section -->
     <section class="features-section">
-      <h2>✨ Características</h2>
+      <div class="section-header">
+        <h2>✨ Características</h2>
+        <p class="section-subtitle">Todo lo que necesitas para estar al día con el tiempo</p>
+      </div>
       <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🔍</div>
-          <h3>Búsqueda Global</h3>
-          <p>Busca y consulta el tiempo en cualquier ciudad del mundo con búsqueda instantánea</p>
+        @for (feature of features; track feature.title; let i = $index) {
+          <div class="feature-card" [style.--delay]="(i * 0.08) + 's'" [style.--gradient]="feature.gradient">
+            <div class="feature-card-glow"></div>
+            <div class="feature-icon-wrapper">
+              <span class="feature-icon">{{ feature.icon }}</span>
+            </div>
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.description }}</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-it-works-section">
+      <div class="section-header">
+        <h2>⚙️ ¿Cómo funciona?</h2>
+        <p class="section-subtitle">Arquitectura simple, resultados poderosos</p>
+      </div>
+      <div class="steps-container">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Busca tu ciudad</h3>
+            <p>Escribe el nombre o usa búsqueda por voz para encontrar cualquier ciudad del mundo</p>
+          </div>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🌡️</div>
-          <h3>Predicción Detallada</h3>
-          <p>Hasta 7 días de predicción con datos horarios y temperaturas máximas/mínimas</p>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Obtenemos los datos</h3>
+            <p>Consultamos Open-Meteo en tiempo real para obtener datos meteorológicos reales y precisos</p>
+          </div>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3>Sistema de Caché</h3>
-          <p>Carga instantánea de datos previamente consultados</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🎨</div>
-          <h3>Interfaz Moderna</h3>
-          <p>Diseño dark mode profesional con animaciones fluidas</p>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Visualiza el resultado</h3>
+            <p>Gráficos interactivos, mapas y dashboards te muestran toda la información</p>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- Tech Section -->
     <section class="tech-section">
-      <h2>🛠️ Tecnologías</h2>
-      <div class="tech-badges">
-        <span class="tech-badge">Angular 20.3</span>
-        <span class="tech-badge">TypeScript 5.9</span>
-        <span class="tech-badge">Open-Meteo API</span>
-        <span class="tech-badge">RxJS 7.8</span>
+      <div class="section-header">
+        <h2>🛠️ Tecnologías</h2>
+        <p class="section-subtitle">Construido con las mejores herramientas del ecosistema</p>
+      </div>
+      <div class="tech-grid">
+        @for (tech of technologies; track tech.name; let i = $index) {
+          <div class="tech-card" [style.--delay]="(i * 0.06) + 's'">
+            <span class="tech-icon">{{ tech.icon }}</span>
+            <span class="tech-name">{{ tech.name }}</span>
+            <div class="tech-glow" [style.--tech-color]="tech.color"></div>
+          </div>
+        }
       </div>
     </section>
 
-    <section class="info-section">
-      <h2>📚 Propósito Educativo</h2>
+    <!-- Timeline / Roadmap -->
+    <section class="timeline-section">
+      <div class="section-header">
+        <h2>🗺️ Evolución del Proyecto</h2>
+        <p class="section-subtitle">El camino desde la primera línea de código hasta hoy</p>
+      </div>
+      <div class="timeline-container">
+        @for (item of timeline; track item.version; let i = $index) {
+          <div class="timeline-item" [class.timeline-current]="i === 0">
+            <div class="timeline-marker">
+              <span class="timeline-icon">{{ item.icon }}</span>
+            </div>
+            <div class="timeline-card">
+              <div class="timeline-header">
+                <span class="timeline-version">v{{ item.version }}</span>
+                <span class="timeline-date">{{ item.date }}</span>
+              </div>
+              <h3>{{ item.title }}</h3>
+              <ul class="timeline-highlights">
+                @for (highlight of item.highlights; track highlight) {
+                  <li>{{ highlight }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <div class="section-header">
+        <h2>❓ Preguntas Frecuentes</h2>
+        <p class="section-subtitle">Respuestas a las dudas más comunes</p>
+      </div>
+      <div class="faq-list">
+        @for (faq of faqs; track faq.question; let i = $index) {
+          <div 
+            class="faq-item" 
+            [class.faq-expanded]="isFaqExpanded(i)"
+            (click)="toggleFaq(i)"
+          >
+            <div class="faq-question">
+              <span class="faq-icon">{{ faq.icon }}</span>
+              <span class="faq-text">{{ faq.question }}</span>
+              <span class="faq-toggle" [class.faq-toggle-open]="isFaqExpanded(i)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+            @if (isFaqExpanded(i)) {
+              <div class="faq-answer">
+                <p>{{ faq.answer }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Educational Purpose -->
+    <section class="purpose-section">
+      <div class="purpose-icon">📚</div>
+      <h2>Propósito Educativo</h2>
       <p>
-        Este proyecto ha sido desarrollado con <strong>propósitos exclusivamente educativos</strong> para 
-        aprender y practicar Angular 20, Standalone Components, programación reactiva con RxJS, 
-        y diseño responsive moderno.
+        Este proyecto ha sido desarrollado con <strong>propósitos exclusivamente educativos</strong> 
+        para aprender y practicar Angular, Standalone Components, programación reactiva con RxJS, 
+        visualización de datos con D3.js y Chart.js, y diseño responsive moderno.
+      </p>
+      <p class="purpose-note">
+        No es un servicio meteorológico profesional. Para predicciones oficiales, 
+        consulta tu servicio meteorológico nacional.
       </p>
     </section>
 
-    <section class="footer-section">
-      <h2>👤 Autor</h2>
-      <p>
-        <strong>Angel Sanchez Gasanz (SrAngelDev)</strong><br>
-        <a href="https://github.com/SrAngelDev/Nubisfera" target="_blank" rel="noopener noreferrer">
-          💻 Ver código fuente en GitHub
+    <!-- Author / Footer -->
+    <section class="author-section">
+      <div class="author-avatar">
+        <span class="avatar-emoji">👨‍💻</span>
+      </div>
+      <h2>Creado por</h2>
+      <p class="author-name">Angel Sanchez Gasanz</p>
+      <p class="author-alias">&#64;SrAngelDev</p>
+      <div class="author-links">
+        <a href="https://github.com/SrAngelDev/Nubisfera" target="_blank" rel="noopener noreferrer" class="author-link github-link">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          <span>Ver en GitHub</span>
         </a>
-      </p>
-      <p class="made-with">
-        Hecho con ❤️ y ☕
-      </p>
+      </div>
+      <div class="made-with">
+        <p>Hecho con <span class="heart">❤️</span> y mucho <span class="coffee">☕</span></p>
+        <p class="copyright">© {{ currentYear }} Nubisfera · Todos los derechos reservados</p>
+      </div>
     </section>
   </div>
 </div>

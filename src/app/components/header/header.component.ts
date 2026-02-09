@@ -1,6 +1,7 @@
 import { Component, HostBinding, HostListener, signal, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { GamificationService } from '../../services/gamification.service';
+import { ThemeService } from '../../services/theme.service';
 
 
 @Component({
@@ -14,6 +15,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @HostBinding('class.scrolled') isScrolled = false;
   isMobileMenuOpen = false;
   currentLevel = signal(1);
+
+  /** Theme */
+  readonly themeService: ThemeService;
 
   /** PWA Install */
   canInstall = signal(false);
@@ -33,8 +37,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private gamificationService: GamificationService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    themeService: ThemeService
   ) {
+    this.themeService = themeService;
     this.gamificationService.stats$.subscribe(stats => {
       this.currentLevel.set(stats.level);
     });
@@ -83,6 +89,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
   closeMobileMenu() {
     this.isMobileMenuOpen = false;
     document.body.style.overflow = '';
+  }
+
+  toggleTheme(): void {
+    this.themeService.cycle();
+    this.gamificationService.trackAction('switch_theme');
+  }
+
+  getThemeIcon(): string {
+    const mode = this.themeService.mode();
+    if (mode === 'dark') return '🌙';
+    if (mode === 'light') return '☀️';
+    return '🖥️';
+  }
+
+  getThemeLabel(): string {
+    const mode = this.themeService.mode();
+    if (mode === 'dark') return 'Oscuro';
+    if (mode === 'light') return 'Claro';
+    return 'Auto';
   }
 
   dismissMobileInstall() {

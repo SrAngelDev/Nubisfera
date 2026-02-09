@@ -9,6 +9,7 @@ import { GamificationNotificationsComponent } from './components/gamification-no
 
 // Importar servicios
 import { GamificationService } from './services/gamification.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +24,8 @@ import { GamificationService } from './services/gamification.service';
 })
 export class App implements OnInit {
   constructor(
-    private gamificationService: GamificationService
+    private gamificationService: GamificationService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {

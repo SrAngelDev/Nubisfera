@@ -32,7 +32,7 @@ import { Subscription } from 'rxjs';
             </div>
             <div class="stat-badge">
               <i class="fas fa-fire"></i>
-              <span>{{ stats()?.currentStreak || 0 }} días</span>
+              <span>{{ stats()?.currentStreak || 0 }} {{ (stats()?.currentStreak === 1) ? 'día' : 'días' }}</span>
             </div>
           </div>
         </div>
@@ -42,7 +42,13 @@ import { Subscription } from 'rxjs';
           <div class="level-progress">
             <div class="progress-info">
               <span class="level-title">{{ levelConfig()!.title }}</span>
-              <span class="points-needed">{{ stats()?.pointsToNextLevel || 0 }} pts para siguiente nivel</span>
+              <span class="points-needed">
+                @if (stats()?.pointsToNextLevel === 0) {
+                  ¡Nivel máximo alcanzado! 🏆
+                } @else {
+                  {{ stats()?.pointsToNextLevel }} pts para siguiente nivel
+                }
+              </span>
             </div>
             <div class="progress-bar">
               <div 
@@ -704,6 +710,9 @@ export class AchievementsPanelComponent implements OnInit, OnDestroy {
     const config = this.levelConfig();
     
     if (!stats || !config) return 0;
+    
+    // Nivel máximo: barra completa
+    if (config.maxPoints === Infinity || stats.pointsToNextLevel === 0) return 100;
     
     const currentPoints = stats.totalPoints - config.minPoints;
     const maxPoints = config.maxPoints - config.minPoints;
