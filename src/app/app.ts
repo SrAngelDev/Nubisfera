@@ -10,6 +10,7 @@ import { GamificationNotificationsComponent } from './components/gamification-no
 // Importar servicios
 import { GamificationService } from './services/gamification.service';
 import { ThemeService } from './services/theme.service';
+import { PwaUpdateService } from './services/pwa-update.service';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,7 @@ import { ThemeService } from './services/theme.service';
 })
 export class App implements OnInit {
   private router = inject(Router);
+  private pwaUpdates = inject(PwaUpdateService);
   get isPrimary(): boolean { return this.router.url.split('?')[0] === '/'; }
   constructor(
     private gamificationService: GamificationService,
@@ -31,6 +33,7 @@ export class App implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.pwaUpdates.start();
     // Los servicios se inicializan automáticamente
     // La gamificación rastrea la visita en su constructor
   }

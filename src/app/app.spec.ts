@@ -3,12 +3,13 @@ import { App } from './app';
 import { provideRouter } from '@angular/router';
 import { GamificationService } from './services/gamification.service';
 import { ThemeService } from './services/theme.service';
+import { PwaUpdateService } from './services/pwa-update.service';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), { provide: GamificationService, useValue: {} }, { provide: ThemeService, useValue: {} }],
+      providers: [provideRouter([]), { provide: GamificationService, useValue: {} }, { provide: ThemeService, useValue: {} }, { provide: PwaUpdateService, useValue: { start: jasmine.createSpy('start') } }],
     }).compileComponents();
   });
 
@@ -21,6 +22,7 @@ describe('App', () => {
   it('should render title', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
+    expect(TestBed.inject(PwaUpdateService).start).toHaveBeenCalled();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.mobile-brand')?.textContent).toContain('Nubisfera');
     expect(Array.from(compiled.querySelectorAll('.mobile-navigation a')).map(a => a.textContent?.trim())).toEqual(['Tiempo', 'Lugares', 'Más']);

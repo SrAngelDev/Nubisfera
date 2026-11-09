@@ -1,3 +1,42 @@
 [build]
   publish = "dist/Nubisfera/browser"
   command = "npm run build"
+
+# Revalidate entry points and worker metadata, not fingerprinted JS/CSS assets.
+# Angular's worker cache is updated by SwUpdate in the running application.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/ngsw.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Netlify-CDN-Cache-Control = "no-store"
+
+[[headers]]
+  for = "/ngsw-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+    Netlify-CDN-Cache-Control = "no-store"
+
+[[headers]]
+  for = "/safety-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/worker-basic.min.js"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
