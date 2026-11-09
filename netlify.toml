@@ -2,17 +2,21 @@
   publish = "dist/Nubisfera/browser"
   command = "npm run build"
 
+# Angular signs index.html in ngsw.json. Post-build HTML changes break PWA updates.
+[build.processing]
+  skip_processing = true
+
 # Revalidate entry points and worker metadata, not fingerprinted JS/CSS assets.
 # Angular's worker cache is updated by SwUpdate in the running application.
 [[headers]]
   for = "/"
   [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate, no-transform"
 
 [[headers]]
   for = "/index.html"
   [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate, no-transform"
 
 [[headers]]
   for = "/ngsw.json"

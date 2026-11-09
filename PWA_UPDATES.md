@@ -19,6 +19,13 @@ la caché gestionada por Angular, no la invalidan por sí solas.
 
 ## Primera distribución del mecanismo
 
+En producción se detectó que Netlify añadía un comentario al HTML después de generar
+`ngsw.json`. De los 26 archivos publicados, únicamente `index.html` no coincidía con
+su SHA-1. Al retirar ese comentario de la respuesta, la firma volvía a coincidir exactamente.
+Esto invalida la nueva versión para Angular, aunque los JS nuevos estén publicados.
+Se desactiva el posprocesamiento en `[build.processing]` y se añade `no-transform`
+a las respuestas HTML para conservar los bytes generados durante la compilación.
+
 Una instalación que todavía está ejecutando código antiguo no puede ejecutar este servicio
 hasta descargar esta versión. Con el despliegue nuevo publicado y conexión disponible,
 cerrar todas las ventanas de la web/PWA y volver a abrir permite al worker existente buscar
