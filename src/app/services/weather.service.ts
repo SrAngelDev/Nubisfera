@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, map, catchError, of, switchMap, shareReplay, tap } from 'rxjs';
+import { Observable, from, map, catchError, of, switchMap, shareReplay, tap, throwError } from 'rxjs';
 import { fetchWeatherApi } from 'openmeteo';
 import { Municipio } from '../models/municipio.model';
 import { WeatherData, DailyForecast, HourlyForecast } from '../models/weather.model';
@@ -78,10 +78,10 @@ export class WeatherService {
   /**
    * Obtiene la predicción del tiempo para un municipio usando coordenadas
    */
-  getWeatherForecast(municipio: Municipio): Observable<WeatherData> {
+  getWeatherForecast(municipio: Municipio, strict = false): Observable<WeatherData> {
     if (!municipio.latitud_dec || !municipio.longitud_dec) {
       console.error('El municipio no tiene coordenadas:', municipio);
-      return of(this.getEmptyWeatherData(municipio));
+      return strict ? throwError(() => new Error('Coordenadas no disponibles')) : of(this.getEmptyWeatherData(municipio));
     }
 
     const latitude = parseFloat(municipio.latitud_dec);
@@ -182,7 +182,7 @@ export class WeatherService {
         
         console.log('🌡️ Procesando datos actuales...');
         const currentData = {
-          time: new Date(), // Usar la hora actual del sistema
+          time: new Date(Number(current.time()) * 1000),
           temperature: current.variables(0)?.value() ?? 0,
           humidity: current.variables(1)?.value() ?? 0,
           apparentTemperature: current.variables(2)?.value() ?? 0,
@@ -245,7 +245,7 @@ export class WeatherService {
           hourlyData.length = hourlyLength;
           
           for (let i = 0; i < hourlyLength; i++) {
-            const time = new Date((hourlyTimeStart + i * hourlyInterval + utcOffsetSeconds) * 1000);
+            const time = new Date((hourlyTimeStart + i * hourlyInterval + (strict ? 0 : utcOffsetSeconds)) * 1000);
             
             hourlyData[i] = {
               time,
@@ -318,7 +318,7 @@ export class WeatherService {
           dailyData.length = dailyLength;
           
           for (let i = 0; i < dailyLength; i++) {
-            const time = new Date((dailyTimeStart + i * dailyInterval + utcOffsetSeconds) * 1000);
+            const time = new Date((dailyTimeStart + i * dailyInterval + (strict ? 0 : utcOffsetSeconds)) * 1000);
             
             dailyData[i] = {
               date: time,
@@ -327,8 +327,8 @@ export class WeatherService {
               temperatureMin: tempMinArray?.[i] ?? 0,
               apparentTemperatureMax: appTempMaxArray?.[i] ?? 0,
               apparentTemperatureMin: appTempMinArray?.[i] ?? 0,
-              sunrise: sunriseArray?.[i] ? new Date((Number(sunriseArray[i]) + utcOffsetSeconds) * 1000) : time,
-              sunset: sunsetArray?.[i] ? new Date((Number(sunsetArray[i]) + utcOffsetSeconds) * 1000) : time,
+              sunrise: sunriseArray?.[i] ? new Date((Number(sunriseArray[i]) + (strict ? 0 : utcOffsetSeconds)) * 1000) : time,
+              sunset: sunsetArray?.[i] ? new Date((Number(sunsetArray[i]) + (strict ? 0 : utcOffsetSeconds)) * 1000) : time,
               daylightDuration: daylightDurationArray?.[i],
               sunshineDuration: sunshineDurationArray?.[i],
               uvIndexMax: uvIndexMaxArray?.[i],
@@ -353,7 +353,7 @@ export class WeatherService {
           latitude: response.latitude(),
           longitude: response.longitude(),
           elevation: response.elevation(),
-          timezone: 'Europe/Madrid',
+          timezone: strict ? (response.timezone() || 'UTC') : 'Europe/Madrid',
           current: currentData,
           hourly: hourlyData,
           daily: dailyData
@@ -370,7 +370,7 @@ export class WeatherService {
       }),
       catchError(error => {
         console.error('Error obteniendo datos del tiempo:', error);
-        return of(this.getEmptyWeatherData(municipio));
+        return strict ? throwError(() => error) : of(this.getEmptyWeatherData(municipio));
       })
     );
   }
@@ -558,7 +558,7 @@ export class WeatherService {
    * BÚSQUEDA GLOBAL: Busca ciudades en todo el mundo
    * Implementa caché y deduplicación de peticiones
    */
-  searchMunicipios(query: string, count: number = 100): Observable<Municipio[]> {
+  searchMunicipios(query: string, count: number = 100, strict = false): Observable<Municipio[]> {
     if (!query || query.trim().length < 1) {
       return of([]);
     }
@@ -566,7 +566,7 @@ export class WeatherService {
     const normalizedQuery = query.trim().toLowerCase();
     // OPTIMIZACIÓN: Limitar resultados por defecto para mejor rendimiento
     const limitedCount = Math.min(count, 20);
-    const cacheKey = `${normalizedQuery}_${limitedCount}`;
+    const cacheKey = `${normalizedQuery}_${limitedCount}_${strict ? 'strict' : 'compat'}`;
     
     console.log(`🔍 Buscando municipios para: "${query}"`);
     
@@ -683,7 +683,7 @@ export class WeatherService {
         console.error('   Query:', query);
         console.error('   URL:', url);
         this.pendingRequests.delete(cacheKey);
-        return of([]);
+        return strict ? throwError(() => error) : of([]);
       }),
       shareReplay(1) // Compartir resultado entre suscriptores
     );

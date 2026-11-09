@@ -1,0 +1,127 @@
+<main id="main-content" class="mobile-page" tabindex="-1" [attr.inert]="searchOpen() || selectedDay() ? '' : null">
+  @if (view() === 'weather') {
+    @if (data(); as weather) {
+      <div class="location-bar">
+        <button class="location-button" (click)="openSearch($event)" aria-label="Cambiar localidad">
+          <span class="eyebrow">TU PREVISIÓN</span>
+          <span class="location-name">{{ weather.municipio.nombre }} <app-mobile-icon name="arrow" /></span>
+          <span class="location-region">{{ weather.municipio.provincia || weather.municipio.pais }}</span>
+        </button>
+        <button class="icon-button favorite-button" [class.is-favorite]="places.isFavorite(weather.municipio)" (click)="places.toggleFavorite(weather.municipio)" [attr.aria-label]="places.isFavorite(weather.municipio) ? 'Quitar de favoritos' : 'Guardar en favoritos'" [attr.aria-pressed]="places.isFavorite(weather.municipio)"><app-mobile-icon name="star" /></button>
+      </div>
+      @if (offline() || stale()) {
+        <div class="status-strip" role="status"><app-mobile-icon [name]="offline() ? 'offline' : 'clock'" /><span>{{ offline() ? 'Sin conexión · datos guardados' : 'Datos guardados · pendientes de actualizar' }}</span></div>
+      }
+      @if (error()) {
+        <div class="error-message" role="alert"><p>{{ error() }}</p><button class="text-action" (click)="refresh()" [disabled]="loading()">Reintentar</button></div>
+      }
+      <section class="current" aria-label="Tiempo actual" [attr.aria-busy]="loading()">
+        <div class="current-reading">
+          <div><p class="current-label">Ahora <span class="live-dot" [class.muted]="stale() || offline()"></span></p><div class="temperature">{{ weather.current.temperature | number:'1.0-0' }}<span>°</span></div></div>
+          <app-mobile-icon class="weather-symbol" [name]="icon(weather.current.weatherCode, weather.current.isDay)" />
+        </div>
+        <h1 class="condition">{{ description(weather.current.weatherCode) }}</h1>
+        <p class="feels-like">Sensación de {{ weather.current.apparentTemperature | number:'1.0-0' }}°
+          @if (today; as day) { <span class="max-min">Máx. {{ day.temperatureMax | number:'1.0-0' }}° <span> / </span> Mín. {{ day.temperatureMin | number:'1.0-0' }}°</span> }
+        </p>
+        <div class="update-row"><span>{{ stale() || offline() ? 'Guardado' : 'Actualizado' }} {{ savedAt() | date:'d/M, HH:mm' }}</span><button class="refresh-button" (click)="refresh()" [disabled]="loading()" aria-label="Actualizar el tiempo"><app-mobile-icon name="refresh" [class.rotating]="loading()" /><span>{{ loading() ? 'Actualizando' : 'Actualizar' }}</span></button></div>
+      </section>
+      <section class="outlook"><app-mobile-icon [name]="summary.includes('Posibilidad') ? 'rain' : 'clock'" /><p>{{ summary }}</p></section>
+      <section class="forecast-section" aria-labelledby="hours-title">
+        <div class="section-heading"><h2 id="hours-title">Próximas horas</h2><span>24 h</span></div>
+        <p class="scroll-hint">Desliza para ver más horas <span aria-hidden="true">→</span></p>
+        <div class="hour-strip" tabindex="0" role="region" aria-label="Previsión de las próximas 24 horas, desplázate horizontalmente">
+          @for (hour of hours; track hour.time.getTime()) {
+            <div class="hour-cell"><span class="hour-time">{{ time(hour.time) }}</span><app-mobile-icon [name]="icon(hour.weatherCode, hour.isDay)" [attr.aria-label]="description(hour.weatherCode)" role="img" /><strong>{{ hour.temperature | number:'1.0-0' }}°</strong><span class="rain-chance"><app-mobile-icon name="drop" />{{ hour.precipitationProbability | number:'1.0-0' }}%</span></div>
+          } @empty { <p class="muted-text">No hay previsión horaria disponible para este periodo.</p> }
+        </div>
+      </section>
+      <section class="forecast-section" aria-labelledby="days-title">
+        <div class="section-heading"><h2 id="days-title">Próximos días</h2><span>Toca para ampliar</span></div>
+        <div class="day-list">
+          @for (day of days; track day.date.getTime(); let i = $index) {
+            <button class="day-row" (click)="openDay(day, $event)" [attr.aria-label]="dayLabel(day, i) + ', ' + description(day.weatherCode) + ', máxima ' + day.temperatureMax.toFixed(0) + ' grados, mínima ' + day.temperatureMin.toFixed(0) + ' grados, lluvia ' + day.precipitationProbabilityMax.toFixed(0) + ' por ciento. Ver detalle'">
+              <span class="day-label">{{ dayLabel(day, i) }}</span><span class="day-weather"><app-mobile-icon [name]="icon(day.weatherCode)" /><small>{{ day.precipitationProbabilityMax | number:'1.0-0' }}%</small></span><span class="day-low">{{ day.temperatureMin | number:'1.0-0' }}°</span><span class="temperature-track" aria-hidden="true"><span [style.left.%]="rangeStart(day)" [style.width.%]="rangeWidth(day)"></span></span><strong class="day-high">{{ day.temperatureMax | number:'1.0-0' }}°</strong><app-mobile-icon class="row-arrow" name="arrow" />
+            </button>
+          }
+        </div>
+        @if (weather.daily.length > 7) { <button class="expand-button" (click)="expanded.set(!expanded())" [attr.aria-expanded]="expanded()">{{ expanded() ? 'Mostrar 7 días' : 'Ver hasta ' + weather.daily.length + ' días' }}<app-mobile-icon [name]="expanded() ? 'back' : 'arrow'" /></button> }
+        <p class="footnote">La incertidumbre aumenta en los días más lejanos.</p>
+      </section>
+      <section class="forecast-section" aria-labelledby="details-title">
+        <div class="section-heading"><h2 id="details-title">Un poco más de detalle</h2></div>
+        <dl class="details-grid">
+          <div><dt><app-mobile-icon name="wind" /> Viento</dt><dd>{{ weather.current.windSpeed | number:'1.0-0' }} <small>km/h</small></dd><span>Rachas {{ weather.current.windGusts == null ? '—' : (weather.current.windGusts | number:'1.0-0') }} km/h</span></div>
+          <div><dt><app-mobile-icon name="drop" /> Humedad</dt><dd>{{ weather.current.humidity | number:'1.0-0' }}<small>%</small></dd><span>Humedad relativa</span></div>
+          @if (today; as day) {
+            <div><dt><app-mobile-icon name="sun" /> Índice UV</dt><dd>{{ day.uvIndexMax == null ? '—' : (day.uvIndexMax | number:'1.0-0') }}</dd><span>Máximo previsto hoy</span></div>
+            <div><dt><app-mobile-icon name="rain" /> Precipitación</dt><dd>{{ day.precipitationSum | number:'1.0-1' }} <small>mm</small></dd><span>Acumulación prevista hoy</span></div>
+          }
+        </dl>
+        @if (today; as day) { <div class="sun-times"><span><app-mobile-icon name="sunrise" /> Amanecer <strong>{{ time(day.sunrise) }}</strong></span><span><app-mobile-icon name="sunset" /> Atardecer <strong>{{ time(day.sunset) }}</strong></span></div> }
+      </section>
+      <p class="source-note">Previsión de Open-Meteo · Horas de la localidad.<br>Los resúmenes de previsión no son avisos oficiales.</p>
+    } @else {
+      <section class="welcome" [hidden]="loading()">
+        <span class="eyebrow">TU DÍA EMPIEZA AQUÍ</span><app-mobile-icon class="welcome-symbol" name="sun" />
+        <h1>El tiempo.<br>A tu alcance.</h1><p>Ahora, las próximas horas y los días que vienen.</p>
+        <button class="primary-button" (click)="openSearch($event)"><app-mobile-icon name="search" /> Buscar una ciudad</button>
+        <button class="secondary-button" (click)="locate()" [disabled]="locating()"><app-mobile-icon name="locate" />{{ locating() ? 'Localizando…' : 'Usar mi ubicación' }}</button>
+        <p class="footnote">La ubicación solo se solicita cuando tú lo decides.</p>
+      </section>
+      @if (loading()) { <div class="loading-placeholder" role="status"><span class="skeleton skeleton-large"></span><span class="skeleton"></span><span class="skeleton"></span><p>Consultando la previsión…</p></div> }
+      @if (error()) { <div class="error-message" role="alert"><p>{{ error() }}</p><button class="text-action" (click)="refresh()" [disabled]="loading()">Reintentar</button></div> }
+      @if (offline()) { <p class="status-strip" role="status">Sin conexión. Necesitas internet para consultar un lugar por primera vez.</p> }
+    }
+  }
+  @if (view() === 'places') {
+    <section class="places-page"><span class="eyebrow">CERCA O LEJOS</span><h1>Tus lugares</h1><p>El tiempo donde te importa.</p>
+      <button class="search-shortcut" (click)="openSearch($event)"><app-mobile-icon name="search" /> Buscar una ciudad <app-mobile-icon name="arrow" /></button>
+      <button class="location-shortcut" (click)="locate()" [disabled]="locating()"><app-mobile-icon name="locate" />{{ locating() ? 'Localizando…' : 'Usar mi ubicación' }}</button>
+      <h2 class="list-title">Favoritos <span>{{ places.favorites().length }}</span></h2>
+      @for (place of places.favorites(); track place.id) {
+        <div class="place-row"><button class="place-select" (click)="choose(place)"><app-mobile-icon name="pin" /><span><strong>{{ place.nombre }}</strong><small>{{ place.provincia || place.pais }}</small></span><app-mobile-icon name="arrow" /></button><button class="icon-button is-favorite" (click)="places.toggleFavorite(place)" [attr.aria-label]="'Quitar ' + place.nombre + ' de favoritos'"><app-mobile-icon name="star" /></button></div>
+      } @empty { <div class="empty-places"><app-mobile-icon name="star" /><p>Guarda tus lugares habituales</p><small>Toca la estrella junto al nombre de una localidad al consultar su tiempo.</small></div> }
+      @if (recent.length) { <h2 class="list-title">Consultados recientemente</h2>
+        @for (place of recent; track place.id) { <div class="place-row"><button class="place-select" (click)="choose(place)"><app-mobile-icon name="clock" /><span><strong>{{ place.nombre }}</strong><small>{{ place.provincia || place.pais }}</small></span><app-mobile-icon name="arrow" /></button><button class="icon-button" (click)="places.toggleFavorite(place)" [attr.aria-label]="'Guardar ' + place.nombre + ' en favoritos'"><app-mobile-icon name="star" /></button></div> }
+      }
+    </section>
+  }
+  @if (view() === 'more') {
+    <section class="more-page"><span class="eyebrow">A TU MANERA</span><h1>Un poco más</h1><p>Personaliza y explora Nubisfera.</p>
+      <h2 class="list-title">Apariencia</h2><div class="theme-options" role="group" aria-label="Tema de la aplicación"><button (click)="theme.setMode('light')" [attr.aria-pressed]="theme.mode() === 'light'"><app-mobile-icon name="sun" /> Claro</button><button (click)="theme.setMode('dark')" [attr.aria-pressed]="theme.mode() === 'dark'"><app-mobile-icon name="moon" /> Oscuro</button><button (click)="theme.setMode('auto')" [attr.aria-pressed]="theme.mode() === 'auto'">Sistema</button></div>
+      <h2 class="list-title">Explorar</h2>
+      <div class="more-links"><a routerLink="/comparar"><app-mobile-icon name="compare" /><span>Comparar ciudades<small>Dos lugares, una misma vista</small></span><app-mobile-icon name="arrow" /></a><a routerLink="/dashboard"><app-mobile-icon name="chart" /><span>Panel meteorológico<small>Indicadores y datos avanzados</small></span><app-mobile-icon name="arrow" /></a><a routerLink="/timeline"><app-mobile-icon name="clock" /><span>Cronología<small>Explora la evolución del tiempo</small></span><app-mobile-icon name="arrow" /></a><a routerLink="/logros"><app-mobile-icon name="trophy" /><span>Tus logros</span><app-mobile-icon name="arrow" /></a><a routerLink="/acerca-de"><app-mobile-icon name="info" /><span>Acerca de Nubisfera</span><app-mobile-icon name="arrow" /></a></div>
+      <div class="install-section"><app-mobile-icon name="download" /><h2>Siempre a mano</h2><p>También puedes añadir Nubisfera a tu pantalla de inicio.</p>@if (canInstall()) { <button class="secondary-button" (click)="install()">Instalar Nubisfera</button> } @else { <p class="footnote">En iPhone: Compartir → Añadir a pantalla de inicio. En Android: menú del navegador → Instalar o Añadir a pantalla de inicio, si está disponible.</p> }</div>
+      <p class="source-note">Nubisfera · Datos de Open-Meteo<br>Sin cuenta. Tus lugares se guardan en este navegador.</p>
+    </section>
+  }
+  @if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+</main>
+
+@if (searchOpen()) {
+  <section class="full-screen-panel search-panel" role="dialog" aria-modal="true" aria-labelledby="search-title" (keydown)="trapFocus($event)">
+    <div class="panel-heading"><h2 id="search-title">Buscar un lugar</h2><button class="icon-button" (click)="closeSearch()" aria-label="Cerrar búsqueda"><app-mobile-icon name="close" /></button></div>
+    <label class="search-field"><app-mobile-icon name="search" /><input id="mobile-city-search" type="search" aria-label="Nombre de la ciudad" placeholder="Ciudad o municipio" [(ngModel)]="query" (ngModelChange)="search()" autocomplete="off" enterkeyhint="search" /></label>
+    <button class="location-shortcut" (click)="locate()" [disabled]="locating()"><app-mobile-icon name="locate" />{{ locating() ? 'Localizando…' : 'Usar mi ubicación' }}</button>
+    @if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+    <div aria-live="polite" class="search-status">@if (searching()) { Buscando lugares… } @else if (query.trim().length >= 2 && !results().length) { {{ searchError() ? 'No se pudo completar la búsqueda. Comprueba tu conexión y vuelve a intentarlo.' : 'Sin resultados. Prueba otro nombre o comprueba tu conexión.' }} } @else if (query.trim().length === 1) { Escribe al menos dos letras. }</div>
+    <ul class="search-results">@for (place of results(); track place.id) { <li><button (click)="choose(place)"><app-mobile-icon name="pin" /><span><strong>{{ place.nombre }}</strong><small>{{ place.provincia || place.ccaa }}{{ place.pais ? ' · ' + place.pais : '' }}</small></span><app-mobile-icon name="arrow" /></button></li> }</ul>
+    @if (!query.trim()) {
+      @if (places.favorites().length) { <h3 class="list-title">Favoritos</h3>@for (place of places.favorites(); track place.id) { <button class="saved-search-row" (click)="choose(place)"><app-mobile-icon name="star" /><span>{{ place.nombre }}</span><app-mobile-icon name="arrow" /></button> } }
+      @if (recent.length) { <h3 class="list-title">Recientes</h3>@for (place of recent; track place.id) { <button class="saved-search-row" (click)="choose(place)"><app-mobile-icon name="clock" /><span>{{ place.nombre }}</span><app-mobile-icon name="arrow" /></button> } }
+      @if (!places.recent().length && !places.favorites().length) { <p class="search-tip">Busca por nombre y elige la localidad correcta en los resultados.</p> }
+    }
+  </section>
+}
+@if (selectedDay(); as day) {
+  <section class="full-screen-panel day-panel" role="dialog" aria-modal="true" aria-labelledby="day-title" (keydown)="trapFocus($event)">
+    <div class="panel-heading"><span class="eyebrow">{{ data()?.municipio?.nombre }}</span><button id="close-day" class="icon-button" (click)="closeDay()" aria-label="Cerrar detalle del día"><app-mobile-icon name="close" /></button></div>
+    <h2 id="day-title" class="day-title">{{ dayTitle(day) }}</h2>
+    <div class="day-overview"><app-mobile-icon [name]="icon(day.weatherCode)" /><div><strong>{{ day.temperatureMax | number:'1.0-0' }}° <span>/ {{ day.temperatureMin | number:'1.0-0' }}°</span></strong><p>{{ description(day.weatherCode) }}</p></div></div>
+    <dl class="day-metrics"><div><dt>Probabilidad de lluvia</dt><dd>{{ day.precipitationProbabilityMax | number:'1.0-0' }}%</dd></div><div><dt>Precipitación prevista</dt><dd>{{ day.precipitationSum | number:'1.0-1' }} mm</dd></div><div><dt>Viento máximo</dt><dd>{{ day.windSpeedMax | number:'1.0-0' }} km/h</dd></div><div><dt>Índice UV máximo</dt><dd>{{ day.uvIndexMax == null ? '—' : (day.uvIndexMax | number:'1.0-0') }}</dd></div></dl>
+    <h3 class="list-title">Hora a hora</h3><p class="footnote">Hora local · Probabilidad de lluvia y cantidad prevista.</p>
+    <div class="detail-table-wrap"><table class="hour-table"><caption class="sr-only">Previsión horaria de {{ dayTitle(day) }}</caption><thead><tr><th scope="col">Hora</th><th scope="col">Cielo</th><th scope="col">Temp.</th><th scope="col">Lluvia</th><th scope="col">Viento</th></tr></thead><tbody>@for (hour of hoursFor(day); track hour.time.getTime()) { <tr><th scope="row">{{ time(hour.time) }}</th><td><app-mobile-icon [name]="icon(hour.weatherCode, hour.isDay)" role="img" [attr.aria-label]="description(hour.weatherCode)" /></td><td>{{ hour.temperature | number:'1.0-0' }}°</td><td>{{ hour.precipitationProbability | number:'1.0-0' }}%<small>{{ hour.precipitation | number:'1.0-1' }} mm</small></td><td>{{ hour.windSpeed | number:'1.0-0' }}<small>km/h</small></td></tr> }</tbody></table></div>
+    <p class="footnote">La previsión puede cambiar, especialmente en los días más lejanos.</p>
+  </section>
+}

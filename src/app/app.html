@@ -2,15 +2,15 @@
 <div class="app-container">
   
   <!-- Header: Se mantiene simple, el foco está en el contenido -->
-  <app-header></app-header>
+  <app-mobile-shell></app-mobile-shell>
   
   <!-- Router Outlet para las rutas -->
-  <router-outlet></router-outlet>
+  <div id="route-content" tabindex="-1"><router-outlet></router-outlet></div>
   
   <!-- Footer Global -->
-  <app-footer></app-footer>
+  @if (!isPrimary) { <app-footer class="secondary-footer"></app-footer> }
   
   <!-- Gamification Notifications (Global) -->
-  <app-gamification-notifications></app-gamification-notifications>
+  @if (!isPrimary) { <app-gamification-notifications></app-gamification-notifications> }
   
 </div>

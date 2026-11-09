@@ -7,99 +7,49 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <footer class="footer">
-      <div class="footer-glow"></div>
-      
+      <div class="footer-glow" aria-hidden="true"></div>
+
       <div class="footer-container">
-        <!-- Línea separadora con gradiente -->
-        <div class="footer-divider">
-          <div class="divider-line"></div>
-          <div class="divider-icon">
-            <i class="fas fa-cloud-sun"></i>
-          </div>
-          <div class="divider-line"></div>
+        <div class="footer-mast">
+          <!-- Wordmark + tagline -->
+          <a routerLink="/" class="footer-brand" aria-label="Nubisfera — inicio">
+            <span class="brand-icon"><i class="fas fa-cloud-sun"></i></span>
+            <span class="brand-copy">
+              <span class="brand-name">Nubisfera<span class="version-tag">v2.0</span></span>
+              <span class="brand-tagline">Tu ventana inteligente al cielo</span>
+            </span>
+          </a>
+
+          <!-- Links esenciales -->
+          <nav class="footer-nav" aria-label="Enlaces del pie de página">
+            <a routerLink="/comparar" class="footer-link">Comparar</a>
+            <a routerLink="/timeline" class="footer-link">Timeline</a>
+            <a routerLink="/acerca-de" class="footer-link">Acerca de</a>
+            <a href="https://github.com/SrAngelDev/Nubisfera" target="_blank" rel="noopener" class="footer-link">
+              <i class="fab fa-github" aria-hidden="true"></i> GitHub
+            </a>
+          </nav>
         </div>
 
-        <!-- Contenido principal -->
-        <div class="footer-content">
-          <!-- Brand -->
-          <div class="footer-brand">
-            <div class="brand-logo">
-              <div class="logo-icon">
-                <i class="fas fa-cloud-sun"></i>
-              </div>
-              <div class="logo-text">
-                <h3>Nubisfera</h3>
-                <span class="version-tag">v2.0</span>
-              </div>
-            </div>
-            <p class="brand-tagline">Tu ventana inteligente al cielo</p>
-          </div>
-
-          <!-- Links -->
-          <div class="footer-links">
-            <div class="links-group">
-              <h4>Navegación</h4>
-              <a routerLink="/" class="footer-link">
-                <i class="fas fa-home"></i>
-                <span>Inicio</span>
-              </a>
-              <a routerLink="/comparar" class="footer-link">
-                <i class="fas fa-columns"></i>
-                <span>Comparar</span>
-              </a>
-              <a routerLink="/timeline" class="footer-link">
-                <i class="fas fa-stream"></i>
-                <span>Timeline</span>
-              </a>
-              <a routerLink="/acerca-de" class="footer-link">
-                <i class="fas fa-info-circle"></i>
-                <span>Acerca de</span>
-              </a>
-            </div>
-
-            <div class="links-group">
-              <h4>Recursos</h4>
-              <a href="https://github.com/SrAngelDev/Nubisfera" target="_blank" rel="noopener" class="footer-link">
-                <i class="fab fa-github"></i>
-                <span>GitHub</span>
-              </a>
-            </div>
-          </div>
-
-          <!-- Tech & Credits -->
-          <div class="footer-credits">
-            <h4>Desarrollado con</h4>
-            <div class="tech-pills">
-              <span class="tech-pill">
-                <i class="fab fa-angular"></i> Angular
-              </span>
-              <span class="tech-pill">
-                <i class="fas fa-code"></i> TypeScript
-              </span>
-              <span class="tech-pill">
-                <i class="fas fa-stream"></i> RxJS
-              </span>
-            </div>
-            <p class="credits-author">
-              Hecho con <i class="fas fa-heart heart-icon"></i> por
-              <a href="https://github.com/SrAngelDev" target="_blank" rel="noopener">Angel Sanchez</a>
-            </p>
-          </div>
-        </div>
-
-        <!-- Bottom bar -->
+        <!-- Línea de créditos -->
         <div class="footer-bottom">
-          <p class="copyright">© {{ currentYear }} Nubisfera • Datos proporcionados por OpenMeteo</p>
+          <p class="copyright">
+            © {{ currentYear }} Nubisfera · Datos de OpenMeteo · Hecho con
+            <i class="fas fa-heart heart-icon" aria-hidden="true"></i> por
+            <a href="https://github.com/SrAngelDev" target="_blank" rel="noopener">Angel Sanchez</a>
+          </p>
         </div>
       </div>
     </footer>
   `,
   styles: [`
+    /* Hallmark · footer: Ft1 mast-headed */
     .footer {
       position: relative;
-      background: linear-gradient(180deg, transparent 0%, rgba(8, 12, 21, 0.95) 15%, #080c15 100%);
-      color: rgba(255, 255, 255, 0.85);
-      padding: 0 0 1.5rem;
+      background: var(--background-light);
+      border-top: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      padding: var(--space-10) 0 var(--space-6);
       margin-top: auto;
       overflow: hidden;
     }
@@ -111,340 +61,142 @@ import { RouterLink } from '@angular/router';
       transform: translateX(-50%);
       width: 600px;
       height: 160px;
-      background: radial-gradient(ellipse, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      background: radial-gradient(ellipse, var(--surface-overlay) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .footer-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 var(--space-6);
       position: relative;
       z-index: 1;
     }
 
-    /* Divider */
-    .footer-divider {
+    .footer-mast {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 2rem 0 2.5rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      padding-bottom: var(--space-8);
     }
 
-    .divider-line {
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
-    }
-
-    .divider-icon {
-      color: rgba(59, 130, 246, 0.5);
-      font-size: 0.9rem;
-    }
-
-    /* Content grid */
-    .footer-content {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-      padding-bottom: 2.5rem;
-    }
-
-    @media (min-width: 768px) {
-      .footer-content {
-        grid-template-columns: 1.2fr 1.5fr 1fr;
-        gap: 3rem;
-      }
-    }
-
-    /* Brand */
     .footer-brand {
       display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .brand-logo {
-      display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: inherit;
     }
 
-    .logo-icon {
+    .brand-icon {
       width: 40px;
       height: 40px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      flex-shrink: 0;
+      border-radius: var(--radius-lg);
+      background: var(--gradient-sky);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.1rem;
-      color: white;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      color: var(--text-inverse);
+      box-shadow: var(--shadow-sm);
     }
 
-    .logo-text {
+    .brand-copy {
       display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
+      flex-direction: column;
+      gap: 0.2rem;
     }
 
-    .logo-text h3 {
-      font-size: 1.25rem;
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
       font-weight: 700;
-      color: white;
-      margin: 0;
-      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
     }
 
     .version-tag {
+      font-family: var(--font-mono);
       font-size: 0.65rem;
-      font-weight: 600;
-      color: rgba(99, 102, 241, 0.9);
-      background: rgba(99, 102, 241, 0.12);
+      font-weight: 500;
+      color: var(--accent-cyan);
+      background: var(--surface-overlay);
       padding: 0.15rem 0.45rem;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       letter-spacing: 0.03em;
     }
 
     .brand-tagline {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.45);
-      margin: 0;
-      line-height: 1.4;
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
     }
 
-    /* Links */
-    .footer-links {
+    .footer-nav {
       display: flex;
-      gap: 3rem;
-    }
-
-    .links-group h4 {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: rgba(255, 255, 255, 0.35);
-      margin: 0 0 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-6);
     }
 
     .footer-link {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-secondary);
       text-decoration: none;
-      font-size: 0.85rem;
-      padding: 0.35rem 0;
-      transition: all 0.2s ease;
-    }
-
-    .footer-link i {
-      font-size: 0.75rem;
-      width: 16px;
-      text-align: center;
-      opacity: 0.7;
-      transition: all 0.2s ease;
+      font-size: var(--text-sm);
+      transition: color var(--transition-fast);
     }
 
     .footer-link:hover {
-      color: rgba(255, 255, 255, 0.95);
-      transform: translateX(3px);
+      color: var(--accent-cyan);
     }
 
-    .footer-link:hover i {
-      color: #3b82f6;
-      opacity: 1;
-    }
-
-    /* Credits */
-    .footer-credits {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .footer-credits h4 {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: rgba(255, 255, 255, 0.35);
-      margin: 0;
-    }
-
-    .tech-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .tech-pill {
-      font-size: 0.72rem;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.6);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 0.3rem 0.6rem;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: all 0.2s ease;
-    }
-
-    .tech-pill:hover {
-      background: rgba(59, 130, 246, 0.1);
-      border-color: rgba(59, 130, 246, 0.2);
-      color: rgba(255, 255, 255, 0.85);
-    }
-
-    .credits-author {
-      font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.4);
-      margin: 0.25rem 0 0;
-    }
-
-    .credits-author a {
-      color: rgba(59, 130, 246, 0.8);
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-
-    .credits-author a:hover {
-      color: #3b82f6;
-    }
-
-    .heart-icon {
-      color: #ef4444;
-      font-size: 0.7rem;
-      animation: heartbeat 2s ease-in-out infinite;
-    }
-
-    @keyframes heartbeat {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
-
-    /* Bottom bar */
     .footer-bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: var(--space-5);
       text-align: center;
     }
 
     .copyright {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.3);
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
       margin: 0;
+    }
+
+    .copyright a {
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .copyright a:hover {
+      color: var(--accent-cyan);
+    }
+
+    .heart-icon {
+      color: var(--error-red);
+      font-size: 0.7rem;
     }
 
     /* Responsive */
     @media (max-width: 767px) {
-      .footer-content {
-        text-align: center;
-      }
-
-      .footer-brand {
-        align-items: center;
-      }
-
-      .footer-links {
-        justify-content: center;
-        gap: 2.5rem;
-      }
-
-      .footer-credits {
-        align-items: center;
-      }
-
-      .tech-pills {
-        justify-content: center;
-      }
-
-      .footer-link:hover {
-        transform: none;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .footer-links {
+      .footer-mast {
         flex-direction: column;
-        gap: 1.5rem;
+        align-items: flex-start;
       }
-    }
 
-    /* ===== LIGHT MODE ===== */
-    :host-context(.light-mode) .footer {
-      background: linear-gradient(180deg, transparent 0%, rgba(240, 244, 255, 0.95) 15%, #eef2ff 100%);
-      color: rgba(15, 23, 42, 0.85);
-    }
-
-    :host-context(.light-mode) .footer-glow {
-      background: radial-gradient(ellipse, rgba(46, 77, 238, 0.04) 0%, transparent 70%);
-    }
-
-    :host-context(.light-mode) .divider-line {
-      background: linear-gradient(90deg, transparent, rgba(46, 77, 238, 0.15), transparent);
-    }
-
-    :host-context(.light-mode) .divider-icon {
-      color: rgba(46, 77, 238, 0.4);
-    }
-
-    :host-context(.light-mode) .logo-text h3 {
-      color: #0f1729;
-    }
-
-    :host-context(.light-mode) .version-tag {
-      color: #4F6AFF;
-      background: rgba(46, 77, 238, 0.08);
-    }
-
-    :host-context(.light-mode) .brand-tagline {
-      color: rgba(15, 23, 42, 0.5);
-    }
-
-    :host-context(.light-mode) .links-group h4,
-    :host-context(.light-mode) .footer-credits h4 {
-      color: rgba(15, 23, 42, 0.4);
-    }
-
-    :host-context(.light-mode) .footer-link {
-      color: rgba(15, 23, 42, 0.6);
-    }
-
-    :host-context(.light-mode) .footer-link:hover {
-      color: rgba(15, 23, 42, 0.9);
-    }
-
-    :host-context(.light-mode) .tech-pill {
-      color: rgba(15, 23, 42, 0.6);
-      background: rgba(15, 23, 42, 0.03);
-      border-color: rgba(15, 23, 42, 0.08);
-    }
-
-    :host-context(.light-mode) .tech-pill:hover {
-      background: rgba(46, 77, 238, 0.06);
-      border-color: rgba(46, 77, 238, 0.15);
-      color: rgba(15, 23, 42, 0.85);
-    }
-
-    :host-context(.light-mode) .credits-author {
-      color: rgba(15, 23, 42, 0.45);
-    }
-
-    :host-context(.light-mode) .footer-bottom {
-      border-top-color: rgba(15, 23, 42, 0.06);
-    }
-
-    :host-context(.light-mode) .copyright {
-      color: rgba(15, 23, 42, 0.35);
+      .footer-nav {
+        gap: var(--space-4);
+      }
     }
   `]
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
 }
+

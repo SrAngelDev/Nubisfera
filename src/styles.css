@@ -1,176 +1,9 @@
-/* ===== NUBISFERA - SISTEMA DE DISEÑO MODERNO ===== */
-/* Design System v2.0 - Premium Weather Experience */
+/* ===== NUBISFERA - SISTEMA DE DISEÑO ===== */
+/* Hallmark · genre: atmospheric · design system v3.0 — ver design.md para el sistema completo */
+
+@import './tokens.css';
 
 /* Fonts are loaded via index.html to avoid build issues */
-
-:root {
-  /* ============================================
-     SPACING SYSTEM (8pt Grid)
-     ============================================ */
-  --space-0: 0;
-  --space-0-5: 0.125rem;  /* 2px */
-  --space-1: 0.25rem;     /* 4px */
-  --space-2: 0.5rem;      /* 8px */
-  --space-3: 0.75rem;     /* 12px */
-  --space-4: 1rem;        /* 16px */
-  --space-5: 1.25rem;     /* 20px */
-  --space-6: 1.5rem;      /* 24px */
-  --space-7: 1.75rem;     /* 28px */
-  --space-8: 2rem;        /* 32px */
-  --space-10: 2.5rem;     /* 40px */
-  --space-12: 3rem;       /* 48px */
-  --space-16: 4rem;       /* 64px */
-  --space-20: 5rem;       /* 80px */
-  --space-24: 6rem;       /* 96px */
-  --space-32: 8rem;       /* 128px */
-  
-  /* ============================================
-     FLUID TYPOGRAPHY
-     ============================================ */
-  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);        /* 12-14px */
-  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);          /* 14-16px */
-  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);          /* 16-18px */
-  --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);         /* 18-20px */
-  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);          /* 20-24px */
-  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);               /* 24-32px */
-  --text-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem);       /* 30-40px */
-  --text-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);           /* 36-48px */
-  --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);               /* 48-64px */
-  
-  /* ============================================
-     BORDER RADIUS
-     ============================================ */
-  --radius-none: 0;
-  --radius-sm: 0.375rem;   /* 6px */
-  --radius-md: 0.5rem;     /* 8px */
-  --radius-lg: 0.75rem;    /* 12px */
-  --radius-xl: 1rem;       /* 16px */
-  --radius-2xl: 1.5rem;    /* 24px */
-  --radius-3xl: 2rem;      /* 32px */
-  --radius-full: 9999px;
-  
-  /* ============================================
-     TRANSITIONS & ANIMATIONS
-     ============================================ */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slower: 500ms cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Easing curves */
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  
-  /* ============================================
-     Z-INDEX (ELEVATION)
-     ============================================ */
-  --z-base: 1;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-modal-backdrop: 400;
-  --z-modal: 500;
-  --z-toast: 600;
-  --z-tooltip: 700;
-  --z-popover: 800;
-  
-  /* ============================================
-     COLOR PALETTE - SEMANTIC COLORS
-     Basada en el logo de Nubisfera
-     ============================================ */
-  --primary-blue: #2E4DEE;
-  --primary-blue-light: #5D7FFF;
-  --primary-blue-dark: #1A2FAA;
-  --secondary-blue: #3B5BFF;
-  --accent-cyan: #5DDFFF;
-  --accent-cyan-light: #87EBFF;
-  --accent-cyan-dark: #4DD4E8;
-  --sky-light: #B0E0F6;
-  --sky-medium: #87CEEB;
-  --cloud-white: #FFFFFF;
-  --success-green: #4ade80;
-  --warning-yellow: #fbbf24;
-  --error-red: #f87171;
-  --info-cyan: #5DDFFF;
-  
-  /* ============================================
-     BACKGROUNDS & SURFACES
-     ============================================ */
-  --background-dark: #0a0e1f;
-  --background-light: #141a2e;
-  --surface-dark: #1a2341;
-  --surface-light: #242e4d;
-  --surface-elevated: #2d3959;
-  --surface-overlay: rgba(93, 223, 255, 0.05);
-  
-  /* ============================================
-     TEXT COLORS
-     ============================================ */
-  --text-primary: #e8edf4;
-  --text-secondary: #9ca3af;
-  --text-tertiary: #6b7280;
-  --text-quaternary: #4b5563;
-  --text-inverse: #0f1419;
-  
-  /* ============================================
-     BORDERS
-     ============================================ */
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-width: 1px;
-  --border-width-thick: 2px;
-  
-  /* ============================================
-     SHADOWS - ELEVATION SYSTEM
-     ============================================ */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.5);
-  --shadow-xl: 0 25px 50px -10px rgb(0 0 0 / 0.6);
-  --shadow-2xl: 0 35px 70px -15px rgb(0 0 0 / 0.7);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.3);
-  
-  /* Glassmorphism */
-  --glass-bg: rgba(93, 223, 255, 0.05);
-  --glass-border: rgba(93, 223, 255, 0.12);
-  --glass-blur: blur(16px);
-  
-  /* ============================================
-     GRADIENTS
-     ============================================ */
-  --gradient-sky: linear-gradient(135deg, #2E4DEE 0%, #5D7FFF 100%);
-  --gradient-sky-diagonal: linear-gradient(145deg, #2E4DEE 0%, #3B5BFF 100%);
-  --gradient-horizon: linear-gradient(135deg, #5DDFFF, #87CEEB);
-  --gradient-ethereal: linear-gradient(145deg, #0a0e1f 0%, #1a2341 50%, #242e4d 100%);
-  --gradient-ethereal-alt: linear-gradient(145deg, #141a2e 0%, #1a2341 50%, #242e4d 100%);
-  --gradient-blue-purple: linear-gradient(135deg, #2E4DEE 0%, #5D7FFF 100%);
-  --gradient-cyan-blue: linear-gradient(135deg, #5DDFFF 0%, #3B5BFF 100%);
-  --gradient-mesh-1: radial-gradient(at 40% 20%, hsla(227, 85%, 55%, 0.4) 0, transparent 50%),
-                      radial-gradient(at 80% 0%, hsla(200, 100%, 68%, 0.3) 0, transparent 50%),
-                      radial-gradient(at 0% 50%, hsla(227, 85%, 55%, 0.3) 0, transparent 50%);
-  --gradient-glass: linear-gradient(135deg, rgba(93, 223, 255, 0.08) 0%, rgba(46, 77, 238, 0.08) 100%);
-  
-  /* ============================================
-     BREAKPOINTS (for reference in JS)
-     ============================================ */
-  --breakpoint-xs: 320px;
-  --breakpoint-sm: 640px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
-  --breakpoint-2xl: 1536px;
-  
-  /* ============================================
-     OPACITY LEVELS
-     ============================================ */
-  --opacity-disabled: 0.4;
-  --opacity-hover: 0.8;
-  --opacity-pressed: 0.6;
-}
 
 /* ============================================
    RESET & BASE STYLES
@@ -195,7 +28,7 @@ html {
 }
 
 body {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background: var(--background-dark);
   color: var(--text-primary);
   line-height: 1.6;
@@ -208,8 +41,11 @@ body {
    TYPOGRAPHY
    ============================================ */
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
   font-weight: 600;
-  line-height: 1.3;
+  font-style: normal;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
@@ -236,7 +72,7 @@ a:hover {
 }
 
 a:focus-visible {
-  outline: 2px solid var(--primary-blue);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -261,7 +97,7 @@ a:focus-visible {
    ============================================ */
 /* Focus visible improvements */
 *:focus-visible {
-  outline: 2px solid var(--primary-blue);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -716,60 +552,9 @@ a:focus-visible {
    THEME SYSTEM - DARK / LIGHT MODE
    ============================================ */
 
-/* Dark mode ya es el valor por defecto en :root */
-
-/* Light mode: se activa al añadir .light-mode al <html> */
-:root.light-mode {
-  /* Backgrounds */
-  --background-dark: #f0f4ff;
-  --background-light: #f8faff;
-  --surface-dark: #ffffff;
-  --surface-light: #f1f5f9;
-  --surface-elevated: #ffffff;
-  --surface-overlay: rgba(46, 77, 238, 0.04);
-
-  /* Text */
-  --text-primary: #0f1729;
-  --text-secondary: #475569;
-  --text-tertiary: #64748b;
-  --text-quaternary: #94a3b8;
-  --text-inverse: #f8fafc;
-
-  /* Borders */
-  --border-light: rgba(15, 23, 42, 0.08);
-  --border-medium: rgba(15, 23, 42, 0.12);
-  --border-strong: rgba(15, 23, 42, 0.2);
-
-  /* Shadows - más suaves en light */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-  --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.06);
-  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08);
-  --shadow-lg: 0 10px 24px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 40px -8px rgb(0 0 0 / 0.12);
-  --shadow-2xl: 0 30px 60px -12px rgb(0 0 0 / 0.15);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.04);
-
-  /* Glass - claro */
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(15, 23, 42, 0.08);
-  --glass-blur: blur(20px);
-
-  /* Gradients - versiones claras */
-  --gradient-ethereal: linear-gradient(145deg, #f0f4ff 0%, #e8eeff 50%, #f8faff 100%);
-  --gradient-ethereal-alt: linear-gradient(145deg, #f8faff 0%, #eef2ff 50%, #f0f4ff 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(46, 77, 238, 0.04) 0%, rgba(93, 223, 255, 0.04) 100%);
-  --gradient-mesh-1: radial-gradient(at 40% 20%, hsla(227, 85%, 55%, 0.08) 0, transparent 50%),
-                      radial-gradient(at 80% 0%, hsla(200, 100%, 68%, 0.06) 0, transparent 50%),
-                      radial-gradient(at 0% 50%, hsla(227, 85%, 55%, 0.06) 0, transparent 50%);
-
-  /* Colores primarios ajustados para contraste en light */
-  --primary-blue: #2741D9;
-  --primary-blue-light: #4F6AFF;
-  --primary-blue-dark: #1A2FAA;
-  --accent-cyan: #0EA5E9;
-  --accent-cyan-light: #38BDF8;
-  --accent-cyan-dark: #0284C7;
-}
+/* Dark mode (Modo Noche) es el valor por defecto en :root.
+   Modo Día (.light-mode / .light-theme, activado por ThemeService)
+   está definido íntegramente en tokens.css — ver ese archivo. */
 
 /* Body background adapta con el tema */
 :root.light-mode body {
@@ -1006,3 +791,47 @@ html {
    END OF OPTIMIZACIONES
    ==========================================================================
 */
+
+/* Nubisfera mobile consultation: shared constraints for every route. */
+html, body { overflow-x: clip; }
+body:has(.full-screen-panel) { overflow-y: hidden; }
+body:has(.full-screen-panel) .mobile-navigation,
+body:has(.full-screen-panel) .mobile-brand { visibility:hidden; }
+app-root { display:block; min-width:0; }
+app-city-comparison, app-weather-dashboard, app-weather-timeline,
+app-achievements-panel, app-acerca-de { display:block; width:min(100%,var(--mobile-width)); margin-inline:auto; min-width:0; }
+app-city-comparison .comparison-container,
+app-weather-dashboard .dashboard-container,
+app-weather-timeline .timeline-container,
+app-achievements-panel .achievements-container,
+app-acerca-de .acerca-de-container { width:100%; max-width:100%; margin:0; border-radius:0; }
+app-city-comparison .comparison-header,
+app-weather-dashboard .dashboard-header,
+app-weather-timeline .timeline-header,
+app-achievements-panel .header-content { flex-direction:column; align-items:stretch; gap:var(--space-4); }
+app-city-comparison .cities-grid,
+app-weather-dashboard .widgets-grid,
+app-weather-timeline .charts-grid,
+app-achievements-panel .achievements-grid { grid-template-columns:minmax(0,1fr); }
+app-weather-timeline .mode-selector,
+app-achievements-panel .achievement-filters { display:flex; overflow-x:auto; flex-wrap:nowrap; max-width:100%; }
+app-weather-timeline .mode-btn,
+app-achievements-panel .filter-btn { flex-shrink:0; white-space:nowrap; min-height:var(--mobile-touch); }
+app-city-comparison h2, app-weather-dashboard h2,
+app-weather-timeline h2, app-achievements-panel h2,
+app-acerca-de h1, app-acerca-de h2 { overflow-wrap:anywhere; min-width:0; }
+app-city-comparison input, app-weather-dashboard input,
+app-weather-timeline input { min-width:0; font-size:1rem; }
+app-city-comparison .comparison-container,
+app-weather-dashboard .dashboard-container,
+app-achievements-panel .achievements-container { padding:var(--space-4); }
+app-city-comparison .city-selector { width:100%; min-width:0; }
+app-city-comparison .search-wrapper { min-width:0; flex:1; }
+app-city-comparison .add-btn { white-space:nowrap; }
+app-weather-timeline .timeline-container { padding:var(--space-4); }
+app-weather-timeline .timeline-header { position:static; }
+app-acerca-de .hero-section { min-height:0; padding:var(--space-8) var(--space-4); }
+app-acerca-de .hero-particles, app-acerca-de .logo-rings { display:none; }
+app-acerca-de .hero-title { font-size:var(--text-3xl); }
+app-acerca-de .stats-grid, app-acerca-de .features-grid { grid-template-columns:minmax(0,1fr); }
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }

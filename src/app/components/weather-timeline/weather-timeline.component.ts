@@ -159,7 +159,7 @@ import * as d3 from 'd3';
           >
             <i class="fas fa-thermometer-half"></i>
             Temperatura
-            <span class="metric-color" style="background: #5DDFFF;"></span>
+            <span class="metric-color" style="background: var(--accent-cyan);"></span>
           </button>
           <button
             class="metric-toggle"
@@ -168,7 +168,7 @@ import * as d3 from 'd3';
           >
             <i class="fas fa-cloud-rain"></i>
             Precipitación
-            <span class="metric-color" style="background: #2E4DEE;"></span>
+            <span class="metric-color" style="background: var(--primary-blue);"></span>
           </button>
           <button
             class="metric-toggle"
@@ -335,13 +335,13 @@ import * as d3 from 'd3';
       height: 80px;
       margin: 0 auto 1.5rem;
       border-radius: 24px;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15));
-      border: 1px solid rgba(59, 130, 246, 0.25);
+      background: linear-gradient(135deg, color-mix(in oklch, var(--accent-cyan) 15%, transparent), color-mix(in oklch, var(--secondary-blue) 15%, transparent));
+      border: 1px solid color-mix(in oklch, var(--accent-cyan) 25%, transparent);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 2rem;
-      color: #3b82f6;
+      color: var(--accent-cyan);
     }
 
     .search-title {
@@ -374,9 +374,9 @@ import * as d3 from 'd3';
     }
 
     .search-box:focus-within {
-      border-color: rgba(59, 130, 246, 0.5);
+      border-color: color-mix(in oklch, var(--accent-cyan) 50%, transparent);
       background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent-cyan) 10%, transparent);
     }
 
     .search-icon {
@@ -453,7 +453,7 @@ import * as d3 from 'd3';
     }
 
     .search-result-item:hover {
-      background: rgba(59, 130, 246, 0.1);
+      background: color-mix(in oklch, var(--accent-cyan) 10%, transparent);
     }
 
     .search-result-item:last-child {
@@ -467,7 +467,7 @@ import * as d3 from 'd3';
     }
 
     .result-info i {
-      color: #3b82f6;
+      color: var(--accent-cyan);
       font-size: 0.85rem;
       opacity: 0.7;
     }
@@ -505,8 +505,8 @@ import * as d3 from 'd3';
     .spinner {
       width: 20px;
       height: 20px;
-      border: 2px solid rgba(59, 130, 246, 0.2);
-      border-top-color: #3b82f6;
+      border: 2px solid color-mix(in oklch, var(--accent-cyan) 20%, transparent);
+      border-top-color: var(--accent-cyan);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -538,9 +538,9 @@ import * as d3 from 'd3';
     }
 
     .back-btn:hover {
-      background: rgba(59, 130, 246, 0.15);
-      border-color: rgba(59, 130, 246, 0.3);
-      color: #3b82f6;
+      background: color-mix(in oklch, var(--accent-cyan) 15%, transparent);
+      border-color: color-mix(in oklch, var(--accent-cyan) 30%, transparent);
+      color: var(--accent-cyan);
     }
 
     /* Timeline loading overlay */
@@ -1193,6 +1193,13 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
   // Subscriptions
   private subscriptions: Subscription[] = [];
 
+  /** Lee un token de color de tokens.css para usarlo en trazos SVG/D3 (sigue el tema activo) */
+  private getCssVarColor(varName: string, fallback: string): string {
+    if (typeof document === 'undefined') return fallback;
+    const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return value || fallback;
+  }
+
   constructor(
     private timelineService: TimelineService,
     private weatherService: WeatherService,
@@ -1368,7 +1375,7 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
       .attr('class', 'temperature-line')
       .attr('d', temperatureLine)
       .style('fill', 'none')
-      .style('stroke', '#5DDFFF')
+      .style('stroke', this.getCssVarColor('--accent-cyan', '#5DDFFF'))
       .style('stroke-width', 3)
       .style('opacity', 0);
 
@@ -1405,12 +1412,12 @@ export class WeatherTimelineComponent implements OnInit, OnDestroy {
 
     gradient.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#5DDFFF')
+      .attr('stop-color', this.getCssVarColor('--accent-cyan', '#5DDFFF'))
       .attr('stop-opacity', 0.6);
 
     gradient.append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#5DDFFF')
+      .attr('stop-color', this.getCssVarColor('--accent-cyan', '#5DDFFF'))
       .attr('stop-opacity', 0);
   }
 

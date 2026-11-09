@@ -2,22 +2,23 @@
   width: 100%;
   margin: 2rem 0;
   padding: 2rem;
-  background: linear-gradient(135deg, #2E4DEE 0%, #5DDFFF 100%);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  background: var(--gradient-sky);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
 }
 
 .map-header {
   text-align: center;
   margin-bottom: 2rem;
-  color: white;
+  color: var(--text-inverse);
 }
 
 .map-title {
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 2px 2px 4px color-mix(in oklch, black 20%, transparent);
 }
 
 .map-subtitle {
@@ -82,10 +83,10 @@
 /* Contenedor del mapa */
 .spain-map-container {
   flex: 1;
-  background: white;
-  border-radius: 15px;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-lg);
   padding: 1rem;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   min-height: 600px;
   overflow: hidden;
   position: relative;
@@ -113,10 +114,10 @@
 /* Panel de información */
 .map-info-panel {
   flex: 0 0 380px;
-  background: white;
-  border-radius: 15px;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-lg);
   padding: 2rem;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   max-height: 750px;
   display: flex;
   flex-direction: column;
@@ -125,19 +126,20 @@
 .info-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--border-light);
 }
 
 .info-header h3 {
+  font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .info-subtitle {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-tertiary);
 }
 
 /* Lista de provincias */
@@ -153,22 +155,22 @@
   gap: 1rem;
   padding: 1rem;
   margin-bottom: 0.5rem;
-  border-radius: 10px;
-  background: #f8f9fa;
+  border-radius: var(--radius-md);
+  background: var(--surface-overlay);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .provincia-item:hover {
-  background: #e9ecef;
+  background: color-mix(in oklch, var(--accent-cyan) 8%, var(--surface-overlay));
   transform: translateX(5px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .provincia-item.selected {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  background: var(--gradient-sky);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 15px color-mix(in oklch, var(--primary-blue) 40%, transparent);
 }
 
 .provincia-rank {
@@ -177,16 +179,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-sky);
+  color: var(--text-inverse);
   border-radius: 50%;
   font-weight: 700;
   font-size: 1rem;
 }
 
 .provincia-item.selected .provincia-rank {
-  background: white;
-  color: #667eea;
+  background: var(--text-inverse);
+  color: var(--primary-blue);
 }
 
 .provincia-info {
@@ -199,16 +201,16 @@
 .provincia-nombre {
   font-weight: 600;
   font-size: 1rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .provincia-item.selected .provincia-nombre {
-  color: white;
+  color: var(--text-inverse);
 }
 
 .provincia-capital {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-tertiary);
 }
 
 .provincia-item.selected .provincia-capital {
@@ -233,13 +235,13 @@
 /* Leyenda */
 .legend-info {
   padding-top: 1.5rem;
-  border-top: 2px solid #f0f0f0;
+  border-top: 2px solid var(--border-light);
 }
 
 .legend-info h4 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
@@ -254,20 +256,20 @@
   align-items: center;
   gap: 0.75rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-tertiary);
 }
 
 .legend-color {
   width: 30px;
   height: 20px;
   border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Scrollbar personalizado */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #2E4DEE #f0f0f0;
+  scrollbar-color: var(--accent-cyan) var(--surface-overlay);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -275,17 +277,17 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  background: var(--surface-overlay);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-sky);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: var(--gradient-horizon);
 }
 
 /* Responsive */

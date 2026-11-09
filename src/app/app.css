@@ -877,3 +877,12 @@
     padding: 3rem 0 1.5rem;
   }
 }
+/* Mobile-only shell. Existing component styles remain available to secondary routes. */
+.app-container {
+  min-height: 100svh;
+  padding-top: 0;
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  background: var(--color-paper);
+  overflow-x: clip;
+}
+.secondary-footer { display:block; width:min(100%,var(--mobile-width)); margin-inline:auto; }

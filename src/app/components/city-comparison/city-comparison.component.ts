@@ -274,8 +274,8 @@ interface CityWeatherData {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(100, 149, 237, 0.1);
-      border: 1px solid rgba(100, 149, 237, 0.2);
+      background: color-mix(in oklch, var(--primary-blue) 10%, transparent);
+      border: 1px solid color-mix(in oklch, var(--primary-blue) 20%, transparent);
       border-radius: 12px;
       color: var(--primary-blue);
       cursor: pointer;
@@ -283,7 +283,7 @@ interface CityWeatherData {
     }
 
     .back-btn:hover {
-      background: rgba(100, 149, 237, 0.2);
+      background: color-mix(in oklch, var(--primary-blue) 20%, transparent);
       transform: translateX(-4px);
     }
 
@@ -382,7 +382,7 @@ interface CityWeatherData {
     }
 
     .search-result-item:hover {
-      background: rgba(100, 149, 237, 0.1);
+      background: color-mix(in oklch, var(--primary-blue) 10%, transparent);
     }
 
     .search-result-item i {
@@ -438,7 +438,7 @@ interface CityWeatherData {
 
     .add-btn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(100, 149, 237, 0.4);
+      box-shadow: 0 8px 20px color-mix(in oklch, var(--primary-blue) 40%, transparent);
     }
 
     .add-btn:disabled {
@@ -531,8 +531,8 @@ interface CityWeatherData {
       align-items: center;
       gap: 0.375rem;
       padding: 0.375rem 0.75rem;
-      background: rgba(100, 149, 237, 0.1);
-      border: 1px solid rgba(100, 149, 237, 0.2);
+      background: color-mix(in oklch, var(--primary-blue) 10%, transparent);
+      border: 1px solid color-mix(in oklch, var(--primary-blue) 20%, transparent);
       border-radius: 8px;
       color: var(--primary-blue);
       font-size: 0.8rem;
@@ -709,7 +709,7 @@ interface CityWeatherData {
     }
 
     .metric-toggle:hover {
-      background: rgba(100, 149, 237, 0.1);
+      background: color-mix(in oklch, var(--primary-blue) 10%, transparent);
       border-color: var(--primary-blue);
       color: var(--primary-blue);
     }
@@ -718,7 +718,7 @@ interface CityWeatherData {
       background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
       border-color: var(--primary-blue);
       color: white;
-      box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3);
+      box-shadow: 0 4px 12px color-mix(in oklch, var(--primary-blue) 30%, transparent);
     }
 
     .main-chart-wrapper {
@@ -804,6 +804,22 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
+  /** Lee un token de color de tokens.css para usarlo en Chart.js/Canvas (sigue el tema activo) */
+  private getCssVarColor(varName: string, fallback: string): string {
+    if (typeof document === 'undefined') return fallback;
+    const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return value || fallback;
+  }
+
+  /** Variante del token de color con opacidad, apta para gradientes de Canvas (oklch soporta "/ alpha") */
+  private getCssVarColorAlpha(varName: string, alpha: number, fallback: string): string {
+    const color = this.getCssVarColor(varName, fallback);
+    if (color.startsWith('oklch(') && color.endsWith(')')) {
+      return `${color.slice(0, -1)} / ${alpha})`;
+    }
+    return color;
+  }
+
   constructor(
     private gamificationService: GamificationService,
     private weatherService: WeatherService,
@@ -846,8 +862,8 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
 
       const gradient = canvas.getContext('2d')?.createLinearGradient(0, 0, 0, 120);
       if (gradient) {
-        gradient.addColorStop(0, 'rgba(100, 149, 237, 0.3)');
-        gradient.addColorStop(1, 'rgba(100, 149, 237, 0.0)');
+        gradient.addColorStop(0, this.getCssVarColorAlpha('--primary-blue', 0.3, 'color-mix(in oklch, var(--primary-blue) 30%, transparent)'));
+        gradient.addColorStop(1, this.getCssVarColorAlpha('--primary-blue', 0, 'color-mix(in oklch, var(--primary-blue) 0%, transparent)'));
       }
 
       const config: ChartConfiguration = {
@@ -856,7 +872,7 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
           labels: city.hourlyLabels,
           datasets: [{
             data: city.hourlyTemps,
-            borderColor: '#2E4DEE',
+            borderColor: this.getCssVarColor('--primary-blue', '#2E4DEE'),
             backgroundColor: gradient,
             borderWidth: 2,
             fill: true,
@@ -908,7 +924,7 @@ export class CityComparisonComponent implements OnInit, OnDestroy {
 
     const metric = this.activeMetric();
     const datasets = citiesData.map((city, index) => {
-      const colors = ['#2E4DEE', '#FF6B6B', '#00E396'];
+      const colors = [this.getCssVarColor('--primary-blue', '#2E4DEE'), '#FF6B6B', '#00E396'];
       let data: number[];
 
       switch (metric) {

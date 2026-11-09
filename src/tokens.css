@@ -1,0 +1,271 @@
+/* Hallmark · genre: atmospheric · route: custom (tuned) · macrostructure families: Marquee Hero (home) / instrument-panel (app pages) / Stat-Led (acerca-de)
+ * theme: custom · vibe: "cielo nocturno, aurora azul-cian, instrumento meteorológico premium" · anchor: brand blue/cyan (preserved)
+ * paper (noche): oklch(16% 0.03 260) · accent (noche): oklch(78% 0.14 215) · paper (día): oklch(97% 0.012 230) · accent (día): oklch(52% 0.19 265)
+ * display: Tomorrow · body: Geist · outlier/mono: JetBrains Mono (hero temp + lecturas de datos, ≤2 roles)
+ * axes: dual (dark+light) / geometric-condensed / cool ~215-265° · studied: no · context: user-provided
+ */
+
+/* ============================================
+   NUBISFERA — DESIGN TOKENS (Hallmark v1)
+   Sistema dual: Modo Noche (default) / Modo Día (.light-mode)
+   Todas las superficies, texto y acentos usan OKLCH con tinte
+   hacia el ancla azul/cian de marca — nunca gris puro ni #000/#fff.
+   Los nombres heredados (--primary-blue, --background-dark, etc.)
+   se mantienen para no romper los componentes existentes; los
+   alias --color-* son la capa canónica Hallmark para trabajo nuevo.
+   ============================================ */
+
+:root {
+  /* ============================================
+     TIPOGRAFÍA — FUENTES (2+1)
+     ============================================ */
+  --font-display: 'Tomorrow', 'Segoe UI', -apple-system, sans-serif;
+  --font-body: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Consolas', monospace;
+
+  /* ============================================
+     SPACING SYSTEM (8pt Grid)
+     ============================================ */
+  --space-0: 0;
+  --space-0-5: 0.125rem;  /* 2px */
+  --space-1: 0.25rem;     /* 4px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-4: 1rem;        /* 16px */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-7: 1.75rem;     /* 28px */
+  --space-8: 2rem;        /* 32px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-12: 3rem;       /* 48px */
+  --space-16: 4rem;       /* 64px */
+  --space-20: 5rem;       /* 80px */
+  --space-24: 6rem;       /* 96px */
+  --space-32: 8rem;       /* 128px */
+
+  /* ============================================
+     FLUID TYPOGRAPHY
+     ============================================ */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);        /* 12-14px */
+  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);          /* 14-16px */
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);          /* 16-18px */
+  --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);         /* 18-20px */
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);          /* 20-24px */
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);               /* 24-32px */
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem);       /* 30-40px */
+  --text-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);           /* 36-48px */
+  --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);               /* 48-64px */
+  --text-display: clamp(3.5rem, 2.75rem + 4.5vw, 6.5rem);      /* hero display */
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  --radius-none: 0;
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-3xl: 2rem;      /* 32px */
+  --radius-full: 9999px;
+
+  /* ============================================
+     TRANSITIONS & ANIMATIONS
+     ============================================ */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slower: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Easing curves — --ease-elastic queda definida solo por compatibilidad;
+     no debe usarse en estados de UI (hover/focus/active). Fade + lift únicamente. */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ============================================
+     Z-INDEX (ELEVATION)
+     ============================================ */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+  --z-popover: 800;
+
+  /* ============================================
+     COLOR PALETTE — MODO NOCHE (default)
+     OKLCH, tintado hacia el ancla azul/cian de marca
+     ============================================ */
+  --primary-blue: oklch(52% 0.19 265);
+  --primary-blue-light: oklch(64% 0.16 260);
+  --primary-blue-dark: oklch(34% 0.16 267);
+  --secondary-blue: oklch(55% 0.18 262);
+  --accent-cyan: oklch(78% 0.14 215);
+  --accent-cyan-light: oklch(85% 0.10 210);
+  --accent-cyan-dark: oklch(70% 0.13 217);
+  --sky-light: oklch(88% 0.06 220);
+  --sky-medium: oklch(80% 0.09 218);
+  --cloud-white: oklch(98% 0.006 240);
+  --success-green: oklch(78% 0.16 145);
+  --warning-yellow: oklch(83% 0.15 85);
+  --error-red: oklch(68% 0.19 25);
+  --info-cyan: var(--accent-cyan);
+
+  /* Backgrounds & surfaces */
+  --background-dark: oklch(16% 0.03 260);
+  --background-light: oklch(20% 0.035 260);
+  --surface-dark: oklch(20% 0.035 260);
+  --surface-light: oklch(25% 0.04 258);
+  --surface-elevated: oklch(28% 0.045 256);
+  --surface-overlay: oklch(78% 0.14 215 / 5%);
+
+  /* Text */
+  --text-primary: oklch(94% 0.015 240);
+  --text-secondary: oklch(78% 0.02 240);
+  --text-tertiary: oklch(62% 0.02 240);
+  --text-quaternary: oklch(48% 0.02 240);
+  --text-inverse: oklch(16% 0.03 260);
+
+  /* Borders */
+  --border-light: oklch(94% 0.015 240 / 8%);
+  --border-medium: oklch(94% 0.015 240 / 12%);
+  --border-strong: oklch(94% 0.015 240 / 18%);
+  --border-width: 1px;
+  --border-width-thick: 2px;
+
+  /* Shadows — elevation, tintadas ligeramente hacia el azul de noche en vez de negro puro */
+  --shadow-xs: 0 1px 2px 0 rgb(6 10 22 / 0.05);
+  --shadow-sm: 0 2px 4px 0 rgb(6 10 22 / 0.3);
+  --shadow-md: 0 6px 12px -2px rgb(6 10 22 / 0.4);
+  --shadow-lg: 0 12px 24px -4px rgb(6 10 22 / 0.5);
+  --shadow-xl: 0 25px 50px -10px rgb(6 10 22 / 0.6);
+  --shadow-2xl: 0 35px 70px -15px rgb(6 10 22 / 0.7);
+  --shadow-inner: inset 0 2px 4px 0 rgb(6 10 22 / 0.3);
+
+  /* Glassmorphism */
+  --glass-bg: oklch(78% 0.14 215 / 5%);
+  --glass-border: oklch(78% 0.14 215 / 12%);
+  --glass-blur: blur(16px);
+
+  /* Gradients */
+  --gradient-sky: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+  --gradient-sky-diagonal: linear-gradient(145deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+  --gradient-horizon: linear-gradient(135deg, var(--accent-cyan), var(--sky-medium));
+  --gradient-ethereal: linear-gradient(145deg, var(--background-dark) 0%, var(--surface-dark) 50%, var(--surface-light) 100%);
+  --gradient-ethereal-alt: linear-gradient(145deg, var(--background-light) 0%, var(--surface-dark) 50%, var(--surface-light) 100%);
+  --gradient-blue-purple: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+  --gradient-cyan-blue: linear-gradient(135deg, var(--accent-cyan) 0%, var(--secondary-blue) 100%);
+  --gradient-mesh-1:
+    radial-gradient(at 40% 20%, oklch(52% 0.19 265 / 0.35) 0, transparent 50%),
+    radial-gradient(at 80% 0%, oklch(78% 0.14 215 / 0.25) 0, transparent 50%),
+    radial-gradient(at 0% 50%, oklch(52% 0.19 265 / 0.25) 0, transparent 50%);
+  --gradient-glass: linear-gradient(135deg, oklch(78% 0.14 215 / 8%) 0%, oklch(52% 0.19 265 / 8%) 100%);
+
+  /* ============================================
+     BREAKPOINTS (for reference in JS)
+     ============================================ */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ============================================
+     OPACITY LEVELS
+     ============================================ */
+  --opacity-disabled: 0.4;
+  --opacity-hover: 0.8;
+  --opacity-pressed: 0.6;
+
+  /* ============================================
+     ALIAS CANÓNICO HALLMARK (para trabajo nuevo)
+     ============================================ */
+  --color-paper: var(--background-dark);
+  --color-paper-2: var(--surface-dark);
+  --color-paper-3: var(--surface-elevated);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-rule: var(--border-medium);
+  --color-accent: var(--accent-cyan);
+  --color-accent-2: var(--primary-blue);
+  --color-accent-ink: var(--text-inverse);
+  --color-focus: oklch(80% 0.19 215);
+}
+
+/* Mobile consultation tokens share the existing dual theme. */
+:root {
+  --mobile-width: 32rem;
+  --mobile-touch: 2.75rem;
+  --mobile-text-micro: .75rem;
+  --mobile-on-primary: var(--cloud-white);
+  --mobile-star: var(--warning-yellow);
+  --mobile-transparent: transparent;
+  --mobile-accent-wash: color-mix(in oklch, var(--color-accent) 8%, var(--color-paper));
+  --mobile-temperature-range: linear-gradient(90deg, var(--color-accent), var(--mobile-star));
+}
+
+/* ============================================
+   COLOR PALETTE — MODO DÍA (.light-mode / .light-theme)
+   Excepción de paper claro (tipo "Day Foundry"), mismo ancla azul/cian
+   ============================================ */
+:root.light-mode {
+  --primary-blue: oklch(52% 0.19 265);
+  --primary-blue-light: oklch(60% 0.17 262);
+  --primary-blue-dark: oklch(38% 0.17 267);
+  --secondary-blue: oklch(48% 0.18 263);
+  --accent-cyan: oklch(58% 0.14 217);
+  --accent-cyan-light: oklch(66% 0.13 215);
+  --accent-cyan-dark: oklch(50% 0.14 218);
+  --sky-light: oklch(93% 0.03 220);
+  --sky-medium: oklch(86% 0.05 218);
+  --cloud-white: oklch(100% 0 0);
+  --success-green: oklch(58% 0.15 145);
+  --warning-yellow: oklch(68% 0.16 80);
+  --error-red: oklch(56% 0.20 25);
+  --info-cyan: var(--accent-cyan);
+
+  --background-dark: oklch(97% 0.012 230);
+  --background-light: oklch(94% 0.016 230);
+  --surface-dark: oklch(99% 0.005 230);
+  --surface-light: oklch(96% 0.01 228);
+  --surface-elevated: oklch(99% 0.004 230);
+  --surface-overlay: oklch(52% 0.19 265 / 4%);
+
+  --text-primary: oklch(22% 0.03 255);
+  --text-secondary: oklch(40% 0.025 255);
+  --text-tertiary: oklch(54% 0.02 255);
+  --text-quaternary: oklch(66% 0.015 255);
+  --text-inverse: oklch(97% 0.012 230);
+
+  --border-light: oklch(22% 0.03 255 / 8%);
+  --border-medium: oklch(22% 0.03 255 / 12%);
+  --border-strong: oklch(22% 0.03 255 / 20%);
+
+  --shadow-xs: 0 1px 2px 0 rgb(30 41 59 / 0.04);
+  --shadow-sm: 0 2px 4px 0 rgb(30 41 59 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(30 41 59 / 0.08);
+  --shadow-lg: 0 10px 24px -4px rgb(30 41 59 / 0.1);
+  --shadow-xl: 0 20px 40px -8px rgb(30 41 59 / 0.12);
+  --shadow-2xl: 0 30px 60px -12px rgb(30 41 59 / 0.15);
+  --shadow-inner: inset 0 2px 4px 0 rgb(30 41 59 / 0.04);
+
+  --glass-bg: oklch(99% 0.005 230 / 75%);
+  --glass-border: oklch(22% 0.03 255 / 8%);
+  --glass-blur: blur(20px);
+
+  --gradient-ethereal: linear-gradient(145deg, var(--background-dark) 0%, var(--background-light) 50%, var(--surface-light) 100%);
+  --gradient-ethereal-alt: linear-gradient(145deg, var(--background-light) 0%, var(--surface-light) 50%, var(--background-dark) 100%);
+  --gradient-glass: linear-gradient(135deg, oklch(52% 0.19 265 / 5%) 0%, oklch(58% 0.14 217 / 5%) 100%);
+  --gradient-mesh-1:
+    radial-gradient(at 40% 20%, oklch(52% 0.19 265 / 0.08) 0, transparent 50%),
+    radial-gradient(at 80% 0%, oklch(58% 0.14 217 / 0.07) 0, transparent 50%),
+    radial-gradient(at 0% 50%, oklch(52% 0.19 265 / 0.06) 0, transparent 50%);
+
+  --color-focus: oklch(55% 0.20 265);
+}

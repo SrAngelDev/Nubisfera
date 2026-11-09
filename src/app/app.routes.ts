@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { AcercaDeComponent } from './components/acerca-de/acerca-de.component';
+import { MobileWeatherComponent } from './components/mobile-weather/mobile-weather.component';
 
 /**
  * Rutas de la aplicación con lazy loading para componentes pesados
@@ -9,7 +8,7 @@ import { AcercaDeComponent } from './components/acerca-de/acerca-de.component';
 export const routes: Routes = [
   { 
     path: '', 
-    component: HomeComponent,
+    component: MobileWeatherComponent,
     title: 'Nubisfera - Predicción del Tiempo' 
   },
   { 
@@ -38,7 +37,7 @@ export const routes: Routes = [
   },
   { 
     path: 'acerca-de', 
-    component: AcercaDeComponent,
+    loadComponent: () => import('./components/acerca-de/acerca-de.component').then(m => m.AcercaDeComponent),
     title: 'Acerca de - Nubisfera' 
   }
 ];

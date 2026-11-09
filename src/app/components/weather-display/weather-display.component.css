@@ -251,7 +251,7 @@
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  border-color: rgba(100, 149, 237, 0.4);
+  border-color: color-mix(in oklch, var(--primary-blue) 40%, transparent);
 }
 
 .day-card.premium-card.interactive:hover::before {
@@ -292,7 +292,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3);
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--primary-blue) 30%, transparent);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -397,7 +397,7 @@
 
 .detail-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(100, 149, 237, 0.3);
+  border-color: color-mix(in oklch, var(--primary-blue) 30%, transparent);
   transform: translateY(-2px);
 }
 
@@ -783,10 +783,10 @@
 }
 
 .hour-card.premium-card.is-current {
-  background: rgba(100, 149, 237, 0.15);
+  background: color-mix(in oklch, var(--primary-blue) 15%, transparent);
   border-color: var(--primary-blue);
   box-shadow: 
-    0 12px 40px rgba(100, 149, 237, 0.25),
+    0 12px 40px color-mix(in oklch, var(--primary-blue) 25%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -811,7 +811,7 @@
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  border-color: rgba(100, 149, 237, 0.4);
+  border-color: color-mix(in oklch, var(--primary-blue) 40%, transparent);
 }
 
 /* Hour Card Header */
@@ -843,7 +843,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 3px 8px rgba(100, 149, 237, 0.3);
+  box-shadow: 0 3px 8px color-mix(in oklch, var(--primary-blue) 30%, transparent);
 }
 
 /* Hour Card Body */
@@ -920,7 +920,7 @@
 
 .metric-item-compact:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(100, 149, 237, 0.3);
+  border-color: color-mix(in oklch, var(--primary-blue) 30%, transparent);
   transform: translateY(-2px);
 }
 
@@ -1514,8 +1514,8 @@
 
 /* ── Tiempo Actual ── */
 :host-context(.light-mode) .current-weather {
-  background: linear-gradient(135deg, #2741D9 0%, #0EA5E9 100%);
-  box-shadow: 0 8px 32px rgba(39, 65, 217, 0.2);
+  background: var(--gradient-sky);
+  box-shadow: 0 8px 32px color-mix(in oklch, var(--primary-blue) 20%, transparent);
 }
 
 /* Textos sobre el fondo azul del current se mantienen blancos, OK */
@@ -1533,7 +1533,7 @@
   box-shadow:
     0 16px 48px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 1);
-  border-color: rgba(39, 65, 217, 0.25);
+  border-color: color-mix(in oklch, var(--primary-blue) 25%, transparent);
 }
 
 :host-context(.light-mode) .day-card-header .day-name {
@@ -1565,8 +1565,8 @@
 }
 
 :host-context(.light-mode) .detail-item:hover {
-  background: rgba(39, 65, 217, 0.05);
-  border-color: rgba(39, 65, 217, 0.15);
+  background: color-mix(in oklch, var(--primary-blue) 5%, transparent);
+  border-color: color-mix(in oklch, var(--primary-blue) 15%, transparent);
 }
 
 :host-context(.light-mode) .detail-value {
@@ -1583,13 +1583,13 @@
 }
 
 :host-context(.light-mode) .hourly-day-header {
-  background: linear-gradient(135deg, rgba(39, 65, 217, 0.06) 0%, rgba(14, 165, 233, 0.06) 100%);
-  border-color: rgba(39, 65, 217, 0.1);
+  background: linear-gradient(135deg, color-mix(in oklch, var(--primary-blue) 6%, transparent) 0%, color-mix(in oklch, var(--accent-cyan) 6%, transparent) 100%);
+  border-color: color-mix(in oklch, var(--primary-blue) 10%, transparent);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 :host-context(.light-mode) .hourly-day-header:hover {
-  box-shadow: 0 6px 20px rgba(39, 65, 217, 0.08);
+  box-shadow: 0 6px 20px color-mix(in oklch, var(--primary-blue) 8%, transparent);
 }
 
 :host-context(.light-mode) .day-date-detail {
@@ -1619,10 +1619,10 @@
 }
 
 :host-context(.light-mode) .hour-card.premium-card.is-current {
-  background: rgba(39, 65, 217, 0.06);
+  background: color-mix(in oklch, var(--primary-blue) 6%, transparent);
   border-color: var(--primary-blue);
   box-shadow:
-    0 8px 32px rgba(39, 65, 217, 0.12),
+    0 8px 32px color-mix(in oklch, var(--primary-blue) 12%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
@@ -1630,7 +1630,7 @@
   box-shadow:
     0 16px 48px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 1);
-  border-color: rgba(39, 65, 217, 0.25);
+  border-color: color-mix(in oklch, var(--primary-blue) 25%, transparent);
 }
 
 :host-context(.light-mode) .hour-card-header {
@@ -1662,8 +1662,8 @@
 }
 
 :host-context(.light-mode) .metric-item-compact:hover {
-  background: rgba(39, 65, 217, 0.05);
-  border-color: rgba(39, 65, 217, 0.15);
+  background: color-mix(in oklch, var(--primary-blue) 5%, transparent);
+  border-color: color-mix(in oklch, var(--primary-blue) 15%, transparent);
 }
 
 :host-context(.light-mode) .metric-content .metric-value {

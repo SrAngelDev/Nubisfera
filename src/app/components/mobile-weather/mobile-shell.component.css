@@ -1,0 +1,13 @@
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4 · macrostructure: mobile weather instrument · blue/cyan */
+:host { display: contents; }
+.mobile-brand { width: min(100%, var(--mobile-width)); margin-inline: auto; padding: calc(var(--space-4) + env(safe-area-inset-top)) var(--space-5) var(--space-3); display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); }
+.mobile-brand a { display:flex; gap:var(--space-2); align-items:center; color:var(--color-ink); font-family:var(--font-display); font-weight:600; font-size:var(--text-lg); }
+.mobile-brand app-mobile-icon { color:var(--color-accent); }
+.brand-caption { font-size:var(--mobile-text-micro); color:var(--color-ink-2); letter-spacing:.12em; white-space:nowrap; }
+.mobile-navigation { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:min(100%, var(--mobile-width)); padding:var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom)); background:var(--color-paper-2); border-top:1px solid var(--color-rule); display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); z-index:var(--z-fixed); }
+.mobile-navigation a { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--space-1); min-height:var(--mobile-touch); color:var(--color-ink-2); font-size:var(--text-xs); white-space:nowrap; border-radius:var(--radius-lg); padding:var(--space-1); }
+.mobile-navigation a.selected { color:var(--color-accent); background:var(--mobile-accent-wash); }
+.mobile-navigation app-mobile-icon { font-size:var(--text-base); }
+.skip-link { position:fixed; left:var(--space-4); top:var(--space-4); transform:translateY(-200%); z-index:var(--z-toast); padding:var(--space-3); color:var(--color-ink); background:var(--color-paper-2); }
+.skip-link:focus { transform:none; }
+@media(max-width:350px) { .brand-caption { display:none; } }

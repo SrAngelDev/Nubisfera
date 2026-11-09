@@ -1,0 +1,41 @@
+[
+  {
+    "date": "2026-11-09",
+    "scope": "app",
+    "macrostructure": "Single-column mobile weather instrument",
+    "theme": "custom",
+    "theme_axes": "dual dark+light / geometric-condensed / brand blue-cyan",
+    "enrichment": "none",
+    "brief": "Mobile browser consultation, bottom navigation, full-screen search, saved places, hourly/daily detail, offline cache",
+    "validation": "19 ChromeHeadless tests; 320/375/414/768px; both themes; 200% primary-view text"
+  },
+  {
+    "date": "2026-07-27",
+    "scope": "app",
+    "macrostructure": "Marquee Hero (home) / instrument-panel (app pages) / Stat-Led (acerca-de)",
+    "theme": "custom",
+    "theme_axes": "dual (dark+light) / geometric-condensed / cool ~215-265°",
+    "vibe": "cielo nocturno, aurora azul-cian, instrumento meteorológico premium",
+    "enrichment": "none (widgets de datos reales D3/Three.js/Chart.js son el contenido)",
+    "nav": "N5",
+    "footer": "Ft1",
+    "brief": "Nubisfera · rediseño completo app meteorológica (6 rutas + shell compartido)"
+  },
+  {
+    "date": "2026-07-27",
+    "scope": "app",
+    "phase": "migración de componentes a tokens.css var()/color-mix",
+    "components_migrated": [
+      "home.component.css",
+      "search-weather.component.css",
+      "weather-display.component.css",
+      "acerca-de.component.css",
+      "spain-map.component.css",
+      "weather-charts.component.css",
+      "weather-timeline.component.ts (estilos inline + D3 runtime color)",
+      "city-comparison.component.ts (estilos inline + Chart.js runtime color)"
+    ],
+    "notes": "Eliminados bloques :host-context(.light-mode)/:host-context(.dark-theme) redundantes; sustituidos rgba/hex de marca fuera de la paleta OKLCH por var()/color-mix(); añadido helper getCssVarColor() para D3/Canvas. Colores semánticos/categóricos (severidad de alertas, rareza de logros, paleta de comparación de ciudades) se dejaron intactos por diseño. Verificado con `ng build` tras cada componente.",
+    "brief": "Continuación de la migración iniciada en la sesión anterior (header/footer/tokens)."
+  }
+]
