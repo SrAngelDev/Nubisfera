@@ -10,10 +10,11 @@ import { ThemeService } from '../../services/theme.service';
 import { Municipio } from '../../models/municipio.model';
 import { DailyForecast, HourlyForecast, WeatherData, WMO_WEATHER_CODES } from '../../models/weather.model';
 import { MobileIconComponent } from './mobile-icon.component';
+import { PwaInstallComponent } from './pwa-install.component';
 
 @Component({
   selector: 'app-mobile-weather', standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MobileIconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, MobileIconComponent, PwaInstallComponent],
   templateUrl: './mobile-weather.component.html', styleUrl: './mobile-weather.component.css'
 })
 export class MobileWeatherComponent implements OnInit, OnDestroy {
@@ -40,9 +41,7 @@ export class MobileWeatherComponent implements OnInit, OnDestroy {
   readonly searchOpen = signal(false);
   readonly selectedDay = signal<DailyForecast | null>(null);
   readonly expanded = signal(false);
-  readonly canInstall = signal(false);
   query = '';
-  private installPrompt: any = null;
   private dead = false;
   private clock = signal(Date.now());
   private timer?: ReturnType<typeof setInterval>;
@@ -56,10 +55,6 @@ export class MobileWeatherComponent implements OnInit, OnDestroy {
     if (place) this.load(place);
   };
   private offlineHandler = () => { this.offline.set(true); this.stale.set(true); };
-  private installHandler = (event: Event) => {
-    event.preventDefault(); this.installPrompt = event; this.canInstall.set(true);
-  };
-  private installedHandler = () => { this.canInstall.set(false); this.installPrompt = null; };
 
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntil(this.destroyed$)).subscribe(params => {
@@ -103,8 +98,6 @@ export class MobileWeatherComponent implements OnInit, OnDestroy {
     if (place && navigator.onLine) this.load(place);
     window.addEventListener('online', this.onlineHandler);
     window.addEventListener('offline', this.offlineHandler);
-    window.addEventListener('beforeinstallprompt', this.installHandler);
-    window.addEventListener('appinstalled', this.installedHandler);
     this.timer = setInterval(() => {
       this.clock.set(Date.now());
       if (this.savedAt() && Date.now() - this.savedAt()! > 30 * 60 * 1000) this.stale.set(true);
@@ -117,8 +110,6 @@ export class MobileWeatherComponent implements OnInit, OnDestroy {
     if (this.timer) clearInterval(this.timer);
     window.removeEventListener('online', this.onlineHandler);
     window.removeEventListener('offline', this.offlineHandler);
-    window.removeEventListener('beforeinstallprompt', this.installHandler);
-    window.removeEventListener('appinstalled', this.installedHandler);
   }
 
   load(place: Municipio): void {
@@ -181,13 +172,6 @@ export class MobileWeatherComponent implements OnInit, OnDestroy {
       this.locating.set(false);
       this.notice.set(error.code === error.PERMISSION_DENIED ? 'Permiso de ubicación denegado. Puedes buscar tu ciudad manualmente.' : 'No hemos podido localizarte. Busca tu ciudad manualmente.');
     }, { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false });
-  }
-  async install(): Promise<void> {
-    if (!this.installPrompt) return;
-    const prompt = this.installPrompt;
-    this.installPrompt = null; this.canInstall.set(false);
-    try { await prompt.prompt(); await prompt.userChoice; }
-    catch { this.notice.set('Puedes instalar Nubisfera desde el menú de tu navegador.'); }
   }
   get hours(): HourlyForecast[] {
     const now = this.clock();

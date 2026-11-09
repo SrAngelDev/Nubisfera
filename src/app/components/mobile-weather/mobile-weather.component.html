@@ -61,6 +61,7 @@
         @if (today; as day) { <div class="sun-times"><span><app-mobile-icon name="sunrise" /> Amanecer <strong>{{ time(day.sunrise) }}</strong></span><span><app-mobile-icon name="sunset" /> Atardecer <strong>{{ time(day.sunset) }}</strong></span></div> }
       </section>
       <p class="source-note">Previsión de Open-Meteo · Horas de la localidad.<br>Los resúmenes de previsión no son avisos oficiales.</p>
+      <app-pwa-install [compact]="true" />
     } @else {
       <section class="welcome" [hidden]="loading()">
         <span class="eyebrow">TU DÍA EMPIEZA AQUÍ</span><app-mobile-icon class="welcome-symbol" name="sun" />
@@ -68,6 +69,7 @@
         <button class="primary-button" (click)="openSearch($event)"><app-mobile-icon name="search" /> Buscar una ciudad</button>
         <button class="secondary-button" (click)="locate()" [disabled]="locating()"><app-mobile-icon name="locate" />{{ locating() ? 'Localizando…' : 'Usar mi ubicación' }}</button>
         <p class="footnote">La ubicación solo se solicita cuando tú lo decides.</p>
+        <app-pwa-install [compact]="true" />
       </section>
       @if (loading()) { <div class="loading-placeholder" role="status"><span class="skeleton skeleton-large"></span><span class="skeleton"></span><span class="skeleton"></span><p>Consultando la previsión…</p></div> }
       @if (error()) { <div class="error-message" role="alert"><p>{{ error() }}</p><button class="text-action" (click)="refresh()" [disabled]="loading()">Reintentar</button></div> }
@@ -92,7 +94,7 @@
       <h2 class="list-title">Apariencia</h2><div class="theme-options" role="group" aria-label="Tema de la aplicación"><button (click)="theme.setMode('light')" [attr.aria-pressed]="theme.mode() === 'light'"><app-mobile-icon name="sun" /> Claro</button><button (click)="theme.setMode('dark')" [attr.aria-pressed]="theme.mode() === 'dark'"><app-mobile-icon name="moon" /> Oscuro</button><button (click)="theme.setMode('auto')" [attr.aria-pressed]="theme.mode() === 'auto'">Sistema</button></div>
       <h2 class="list-title">Explorar</h2>
       <div class="more-links"><a routerLink="/comparar"><app-mobile-icon name="compare" /><span>Comparar ciudades<small>Dos lugares, una misma vista</small></span><app-mobile-icon name="arrow" /></a><a routerLink="/dashboard"><app-mobile-icon name="chart" /><span>Panel meteorológico<small>Indicadores y datos avanzados</small></span><app-mobile-icon name="arrow" /></a><a routerLink="/timeline"><app-mobile-icon name="clock" /><span>Cronología<small>Explora la evolución del tiempo</small></span><app-mobile-icon name="arrow" /></a><a routerLink="/logros"><app-mobile-icon name="trophy" /><span>Tus logros</span><app-mobile-icon name="arrow" /></a><a routerLink="/acerca-de"><app-mobile-icon name="info" /><span>Acerca de Nubisfera</span><app-mobile-icon name="arrow" /></a></div>
-      <div class="install-section"><app-mobile-icon name="download" /><h2>Siempre a mano</h2><p>También puedes añadir Nubisfera a tu pantalla de inicio.</p>@if (canInstall()) { <button class="secondary-button" (click)="install()">Instalar Nubisfera</button> } @else { <p class="footnote">En iPhone: Compartir → Añadir a pantalla de inicio. En Android: menú del navegador → Instalar o Añadir a pantalla de inicio, si está disponible.</p> }</div>
+      <app-pwa-install />
       <p class="source-note">Nubisfera · Datos de Open-Meteo<br>Sin cuenta. Tus lugares se guardan en este navegador.</p>
     </section>
   }

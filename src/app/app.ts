@@ -11,6 +11,7 @@ import { GamificationNotificationsComponent } from './components/gamification-no
 import { GamificationService } from './services/gamification.service';
 import { ThemeService } from './services/theme.service';
 import { PwaUpdateService } from './services/pwa-update.service';
+import { PwaInstallService } from './services/pwa-install.service';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +27,7 @@ import { PwaUpdateService } from './services/pwa-update.service';
 export class App implements OnInit {
   private router = inject(Router);
   private pwaUpdates = inject(PwaUpdateService);
+  private pwaInstall = inject(PwaInstallService);
   get isPrimary(): boolean { return this.router.url.split('?')[0] === '/'; }
   constructor(
     private gamificationService: GamificationService,

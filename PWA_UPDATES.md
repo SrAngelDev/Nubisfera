@@ -54,3 +54,13 @@ debe descargar la nueva versión y recargarse conservando favoritos. El servidor
 
 Referencias: https://angular.dev/ecosystem/service-workers/communications y
 https://docs.netlify.com/manage/routing/headers/.
+
+## Botón de instalación
+
+`PwaInstallService` se inicializa desde la raíz para conservar `beforeinstallprompt`
+al navegar entre rutas. El botón Instalar Nubisfera aparece en Inicio y Más.
+Invoca el diálogo nativo directamente desde el clic cuando el navegador lo ofrece;
+un evento solo se utiliza una vez. Se distinguen solicitud aceptada e instalación
+confirmada mediante `appinstalled`. En modo standalone se omite la invitación.
+En iPhone/iPad y navegadores sin diálogo, los pasos aparecen únicamente al pulsar.
+Una web no puede abrir el diálogo de añadir a la pantalla de inicio de iOS.

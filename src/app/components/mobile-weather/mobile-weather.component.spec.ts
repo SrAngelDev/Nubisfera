@@ -173,7 +173,7 @@ describe('Mobile weather consultation', () => {
           fixture.componentInstance.view.set(view); fixture.detectChanges();
           doc.body.replaceChildren(fixture.nativeElement.cloneNode(true));
           expect(doc.documentElement.scrollWidth).withContext(`${theme} ${view} ${width}`).toBeLessThanOrEqual(width);
-          const buttons = doc.querySelectorAll<HTMLElement>('.primary-button, .secondary-button, .theme-options button');
+          const buttons = doc.querySelectorAll<HTMLElement>('.primary-button, .secondary-button, .theme-options button, .install-button');
           for (const button of buttons) expect(button.scrollWidth).withContext(button.textContent || '').toBeLessThanOrEqual(button.clientWidth + 1);
         }
         fixture.componentInstance.searchOpen.set(true); fixture.detectChanges();
