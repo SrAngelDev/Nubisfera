@@ -23,8 +23,16 @@ En producción se detectó que Netlify añadía un comentario al HTML después d
 `ngsw.json`. De los 26 archivos publicados, únicamente `index.html` no coincidía con
 su SHA-1. Al retirar ese comentario de la respuesta, la firma volvía a coincidir exactamente.
 Esto invalida la nueva versión para Angular, aunque los JS nuevos estén publicados.
-Se desactiva el posprocesamiento en `[build.processing]` y se añade `no-transform`
-a las respuestas HTML para conservar los bytes generados durante la compilación.
+Desactivar el posprocesamiento y añadir `no-transform` no impidió la inyección en la
+respuesta publicada. Por ello `scripts/prepare-pwa-manifest.mjs` elimina exclusivamente
+la firma de `/index.html` del manifiesto generado. El HTML permanece en la lista de
+precarga: cada nueva versión lo descarga y guarda en su propia caché. Angular permite
+recursos sin firma y no reutiliza ese HTML mediante su optimización de hashes.
+Todos los JavaScript, CSS y demás recursos conservan sus comprobaciones de integridad.
+La versión nueva ya puede instalarse aunque el proveedor añada ese comentario al HTML.
+El proceso falla si cambia inesperadamente la estructura del manifiesto. Se prueba con
+`npm run test:pwa-manifest`. Debe usarse `npm run build`, que ejecuta esta preparación
+después de la compilación de producción.
 
 Una instalación que todavía está ejecutando código antiguo no puede ejecutar este servicio
 hasta descargar esta versión. Con el despliegue nuevo publicado y conexión disponible,
